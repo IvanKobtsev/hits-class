@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <WarningsAsErrors>NU1605</WarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="coverlet.collector">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MartinCostello.Logging.XUnit" />
+    <PackageReference Include="EasyNetQ.Management.Client" />
+    <PackageReference Include="ErikEJ.EntityFrameworkCore.DgmlBuilder" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="System.IO.Pipelines" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lib\Testing\Team13.Testing\Team13.Testing.csproj" />
+    <ProjectReference Include="..\..\src\Team13.HitsClass.App\Team13.HitsClass.App.csproj" />
+    <ProjectReference Include="..\..\src\Team13.HitsClass.Http\Team13.HitsClass.Http.csproj" />
+    <ProjectReference Include="..\Team13.HitsClass.TestUtils\Team13.HitsClass.TestUtils.csproj" />
+  </ItemGroup>
+</Project>

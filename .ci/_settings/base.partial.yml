@@ -1,0 +1,37 @@
+# ------------------------------------
+# This is the base file that is used in all pipelines
+# Here you can override values defined in 'base.yml'.
+# ------------------------------------
+variables:
+  DUMMY: 1
+  projectName: HitsClass
+  appName: hitsclass
+  ENABLE_DEPLOY: true
+  ENABLE_DEPLOY_DEV: true
+  ENABLE_DEPLOY_PROD: true
+  # # General
+  # DISABLE_BUILD: false
+  # DISABLE_TESTS: false
+  # # -----------
+
+  # # Storybook
+  # ENABLE_STORYBOOK: true
+  # RUN_STORYBOOK_TESTS_AFTER_BUILD: false
+  # RUN_STORYBOOK_TESTS_PARALLEL_BUILD: true
+  # # -----------
+
+  # # e2e
+  # ENABLE_E2E_DOCKER: true
+  # ENABLE_E2E_STAGE: false
+  # DEPLOY_IF_E2E_FAILS: false
+  # e2e_test_shards: 2
+  # sb_test_shards: 2
+  # # -----------
+
+  # # Deployment
+  # DOCKER_TAG: latest
+  # ENABLE_DEPLOY: true
+  # ENABLE_DEPLOY_GREEN: false
+  # ENABLE_DEPLOY_PROD: false
+  # DEPLOY_IF_STORYBOOK_FAILS: false
+  # # -----------

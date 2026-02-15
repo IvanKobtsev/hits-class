@@ -1,0 +1,24 @@
+parameters:
+  - name: name
+    type: string
+    default: latest
+
+steps:
+  - checkout: none
+  - task: Docker@2
+    displayName: '[Docker]: login'
+    inputs:
+      containerRegistry: $(connectorACR)
+      command: 'login'
+
+  - task: Bash@3
+    displayName: '[docker]: Add "${{ parameters.name }}" tag'
+    inputs:
+      targetType: 'inline'
+      script: 'docker buildx imagetools create $(ACR_REGISTRY)/$(ACR_REPOSITORY):$(BUILD_NUMBER) --tag $(ACR_REGISTRY)/$(ACR_REPOSITORY):${{ parameters.name }}'
+
+  - task: Docker@2
+    displayName: '[Docker]: logout'
+    inputs:
+      containerRegistry: $(connectorACR)
+      command: 'logout'

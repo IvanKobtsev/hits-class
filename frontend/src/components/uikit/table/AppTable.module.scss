@@ -1,0 +1,5 @@
+@use '../../../styles/variables' as *;
+.sortable-column-header {
+  cursor: pointer;
+  user-select: none;
+}

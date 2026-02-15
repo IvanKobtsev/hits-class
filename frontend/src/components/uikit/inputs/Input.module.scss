@@ -1,0 +1,56 @@
+@use 'src/styles/variables' as *;
+@use 'src/styles/base' as *;
+
+.helperText {
+  @extend .inputErrorText;
+  color: rgba($normal, 0.5);
+}
+
+.helperText[data-error='true'] {
+  color: rgba($danger, 0.5);
+}
+
+.input {
+  @extend .base-input;
+}
+
+.inputContainer {
+  // required for proper displaying of endAdornment
+  position: relative;
+}
+
+.inputWithAdornmentWrapper {
+  position: relative;
+}
+
+.endAdornment {
+  position: absolute;
+  right: 8px;
+  height: 70%;
+  top: 15%;
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  @extend .none-select;
+
+  > svg {
+    height: 100%;
+  }
+}
+
+.passwordEye {
+  margin-right: -4px;
+  width: 24px;
+}
+
+.input-with-adornment {
+  padding-right: $input-padding + 16;
+}
+
+.non-form-input {
+  height: $normal-input-height;
+}
+
+.search-input-cross {
+  height: 50% !important;
+}

@@ -1,0 +1,48 @@
+steps:
+  - checkout: self
+    fetchDepth: 1
+    submodules: true
+
+  - template: ../steps/cache-node-modules.yml
+    parameters:
+      ENABLE_STORYBOOK: false
+
+  - script: npx playwright install
+    workingDirectory: e2e
+    displayName: 'npx playwright install'
+
+  - script: yarn typecheck
+    workingDirectory: e2e
+    displayName: 'yarn typecheck'
+
+  - script: |
+      UNIQUE_ID=citest-${SYSTEM_JOBPOSITIONINPHASE} yarn test --shard ${SYSTEM_JOBPOSITIONINPHASE}/${SYSTEM_TOTALJOBSINPHASE}
+    workingDirectory: e2e
+    displayName: 'run tests'
+
+  - task: Bash@3
+    displayName: '[bash]: get docker logs'
+    condition: failed()
+    inputs:
+      targetType: 'inline'
+      script: |
+        docker ps
+        docker logs e2e-branch-backend-1
+      workingDirectory: .ci/tests/e2e-branch
+
+  - script: |
+      mkdir -p test-results
+    workingDirectory: e2e
+    displayName: 'mkdir -p test-results'
+
+  - task: PublishTestResults@2
+    condition: always()
+    displayName: 'publish test results'
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/junit.xml'
+      mergeTestResults: false
+
+  - publish: $(Build.SourcesDirectory)/e2e/test-results
+    condition: always()
+    artifact: 'e2e-stage-results$(System.JobAttempt)'

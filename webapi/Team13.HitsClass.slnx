@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/Lib/">
+    <Project Path="Lib/DomainHelpers/Team13.DomainHelpers/Team13.DomainHelpers.csproj" />
+    <Project Path="Lib/HttpClientExtension/Team13.HttpClientExtension/Team13.HttpClientExtension.csproj" />
+    <Project Path="Lib/Logging/Team13.Logging.Tests/Team13.Logging.Tests.csproj" />
+    <Project Path="Lib/Logging/Team13.Logging/Team13.Logging.csproj" />
+    <Project Path="Lib/LowLevelPrimitives/Team13.LowLevelPrimitives/Team13.LowLevelPrimitives.csproj" />
+    <Project Path="Lib/Mailing/Team13.Mailing/Team13.Mailing.csproj" />
+    <Project Path="Lib/NpgSql/Team13.NpgSql/Team13.NpgSql.csproj" />
+    <Project Path="Lib/PersistenceHelpers/Team13.PersistenceHelpers/Team13.PersistenceHelpers.csproj" />
+    <Project Path="Lib/Testing/Team13.Testing/Team13.Testing.csproj" />
+    <Project Path="Lib/WebApi/Team13.WebApi.Tests/Team13.WebApi.Tests.csproj" />
+    <Project Path="Lib/WebApi/Team13.WebApi/Team13.WebApi.csproj" />
+    <Project Path="Lib/WebHooks/Team13.WebHooks/Team13.WebHooks.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="tests/Team13.HitsClass.App.Tests/Team13.HitsClass.App.Tests.csproj" />
+    <Project Path="tests/Team13.HitsClass.ComponentTests/Team13.HitsClass.ComponentTests.csproj" />
+    <Project Path="tests/Team13.HitsClass.Domain.Tests/Team13.HitsClass.Domain.Tests.csproj" />
+    <Project Path="tests/Team13.HitsClass.TestUtils/Team13.HitsClass.TestUtils.csproj" />
+  </Folder>
+  <Project Path="src/Team13.HitsClass.App/Team13.HitsClass.App.csproj" />
+  <Project Path="src/Team13.HitsClass.Common/Team13.HitsClass.Common.csproj" />
+  <Project Path="src/Team13.HitsClass.Domain/Team13.HitsClass.Domain.csproj" />
+  <Project Path="src/Team13.HitsClass.Http/Team13.HitsClass.Http.csproj" />
+  <Project Path="src/Team13.HitsClass.Persistence/Team13.HitsClass.Persistence.csproj" />
+</Solution>

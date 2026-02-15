@@ -1,0 +1,21 @@
+Index: webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj b/webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj
+--- a/webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj	(revision a0fb32374d448a8147d30342cf55f34115d5e345)
++++ b/webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj	(revision 55ae1b03e164ef0741810de4395b2d65ccc7ee05)
+@@ -104,6 +104,12 @@
+     </Content>
+     <Content Include="..\..\..\README.md">
+       <Link>README.md</Link>
++    </Content>
++    <Content Include="..\..\Directory.Build.props">
++      <Link>Directory.Build.props</Link>
++    </Content>
++    <Content Include="..\..\Directory.Packages.props">
++      <Link>Directory.Packages.props</Link>
+     </Content>
+     <None Update="logs;idsrv4test.pfx;Dockerfile">
+       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>

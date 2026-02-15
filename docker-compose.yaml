@@ -1,0 +1,100 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:13.3
+    container_name: postgres_hitsclass
+    restart: always
+    networks:
+      - internal
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - '${POSTGRES_EXTERNAL_PORT:-5432}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    profiles:
+      - db
+
+  web:
+    image: '${IMAGE_URL}'
+    container_name: web_hitsclass
+    restart: always
+    networks:
+      - internal
+      - load-balancer
+    environment:
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_HOST=${VIRTUAL_HOST}
+      - LETSENCRYPT_EMAIL=${EMAIL}
+      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
+      - OpenId__SigningCertificate__Base64Certificate=${OpenId__SigningCertificate__Base64Certificate}
+      - OpenId__SigningCertificate__Password=${OpenId__SigningCertificate__Password}
+      - OpenId__EncryptionCertificate__Base64Certificate=${OpenId__EncryptionCertificate__Base64Certificate}
+      - OpenId__EncryptionCertificate__Password=${OpenId__EncryptionCertificate__Password}
+      - Hangfire__DashboardPassword=${Hangfire__DashboardPassword}
+      - DefaultUser__Password=${DefaultUser__Password}
+      - REACT_APP_SENTRY_DSN=${Sentry__Dsn}
+      - Sentry__Dsn=${Sentry__Dsn}
+      - Serilog__Remote__Server=${Serilog__Remote__Server}
+      - Serilog__Remote__Port=${Serilog__Remote__Port}
+      - Serilog__Remote__Token=${Serilog__Remote__Token}
+      - Serilog__Remote__InstanceName=${Serilog__Remote__InstanceName}
+      - Serilog__Elastic__Url=${Serilog__Elastic__Url}
+      - Serilog__Elastic__User=${Serilog__Elastic__User}
+      - Serilog__Elastic__Password=${Serilog__Elastic__Password}
+      - SignUrl__Secret=${SignUrl__Secret}
+      - TestApiEnabled=${TestApiEnabled}
+    volumes:
+      - ./deafult_file_storage:/files:rw
+
+  nginx-proxy:
+    image: nginxproxy/nginx-proxy
+    container_name: nginx-proxy_hitsclass
+    restart: always
+    networks:
+      - load-balancer
+    ports:
+      - '${HTTP_PORT:-80}:80'
+      - '${HTTPS_PORT:-443}:443'
+    volumes:
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - certs:/etc/nginx/certs:ro
+      - ./nginx/logs:/var/log/nginx:rw
+      - ./nginx/conf.d/proxy.conf:/etc/nginx/conf.d/proxy.conf:ro
+      - ./nginx/conf.d/compression.conf:/etc/nginx/conf.d/compression.conf:ro
+      - ./nginx/vhost.d/default_location:/etc/nginx/vhost.d/default_location:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    profiles:
+      - nginx
+
+  acme:
+    image: nginxproxy/acme-companion
+    container_name: acme_hitsclass
+    restart: always
+    depends_on:
+      - 'nginx-proxy'
+    volumes:
+      - acme:/etc/acme.sh:rw
+      - vhost:/etc/nginx/vhost.d:rw
+      - html:/usr/share/nginx/html:rw
+      - certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - DEFAULT_EMAIL=${EMAIL}
+      - NGINX_PROXY_CONTAINER=nginx-proxy_hitsclass
+    profiles:
+      - nginx
+
+networks:
+  load-balancer:
+    external: true
+  internal:
+
+volumes:
+  acme:
+  vhost:
+  html:
+  certs:
+  postgres_data:

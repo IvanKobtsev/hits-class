@@ -1,0 +1,9 @@
+build
+.vscode
+.idea
+publish
+webapi
+nginx
+frontend/src/services/api/api-client.ts
+.yarn
+scripts/.env_template

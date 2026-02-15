@@ -1,0 +1,12 @@
+﻿@using Team13.HitsClass.App.Views.Shared
+@model Team13.HitsClass.App.Views.Emails.Example.ExampleEmailModel
+@{
+    Layout = "GeneralEmailTemplate";
+}
+
+<p style="@Constants.DefaultParagraphStyle">
+    Greetings, @Model.Username!
+</p>
+<p style="@Constants.DefaultParagraphStyle">
+    Welcome to our <a href="@Model.SiteRootUrl">HitsClass</a>.
+</p>

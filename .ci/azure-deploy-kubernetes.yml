@@ -1,0 +1,59 @@
+parameters:
+  - name: restartDeployment
+    type: boolean
+    default: false
+  - name: Environment
+    displayName: Environment to deploy
+    type: string
+    default: dev
+  - name: BuildAppNumber
+    displayName: Build number to deploy
+    type: string
+    default: latest
+
+steps:
+  - template: ./steps/promote-docker-image.yml
+    parameters:
+      Environment: ${{ parameters.Environment }}
+      BuildAppNumber: ${{ parameters.BuildAppNumber }}
+
+  - checkout: self
+    fetchDepth: 1
+    submodules: true
+
+  - task: Bash@3
+    displayName: '[bash] Prepare versions and environment variables'
+    inputs:
+      filePath: '$(Build.SourcesDirectory)/k8s/aks-env/prepare-k8s-templates.sh'
+      workingDirectory: $(Build.SourcesDirectory)/k8s/aks-env
+      arguments: '${{ parameters.Environment }}'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.SourcesDirectory)/k8s/aks-env/deploy_${{ parameters.Environment }}'
+      ArtifactName: 'deploy_${{ parameters.Environment }}'
+      publishLocation: 'Container'
+
+  - task: KubernetesManifest@1
+    displayName: '[k8s]: applying 02,03,12-deployment.yaml'
+    inputs:
+      action: 'deploy'
+      connectionType: 'kubernetesServiceConnection'
+      # $K8S_NAMESPACE is exported from prepare-k8s-templates.sh
+      namespace: '$(K8S_NAMESPACE)'
+      manifests: |
+        $(Build.SourcesDirectory)/k8s/aks-env/deploy_${{ parameters.Environment }}/02-configMaps.yaml
+        $(Build.SourcesDirectory)/k8s/aks-env/deploy_${{ parameters.Environment }}/03-secretProviderClass.yaml
+        $(Build.SourcesDirectory)/k8s/aks-env/deploy_${{ parameters.Environment }}/12-deployment.yaml
+      containers: |
+        $(ACR_REGISTRY)/$(ACR_REPOSITORY):${{ parameters.BuildAppNumber }}
+
+  - ${{ if eq(parameters.restartDeployment, true) }}:
+      - task: Kubernetes@1
+        displayName: '[k8s]: force restart deployment $(appName)'
+        inputs:
+          connectionType: 'Kubernetes Service Connection'
+          # $K8S_NAMESPACE is exported from prepare-k8s-templates.sh
+          namespace: '$(K8S_NAMESPACE)'
+          command: 'rollout'
+          arguments: 'restart deployment $(appName)'

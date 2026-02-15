@@ -1,0 +1,202 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using Hangfire;
+using MailKit.Net.Smtp;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MimeKit;
+using Team13.Logging;
+using Team13.Mailing.Models;
+
+namespace Team13.Mailing;
+
+public class MailSender : IMailSender
+{
+    private readonly ILogger _logger;
+    private readonly MailSenderOptions _options;
+    private readonly MailSettings _mailSettings;
+    private readonly IBackgroundJobClient _backgroundJobClient;
+    private readonly IRazorRenderService _razorRenderService;
+
+    public MailSender(
+        IRazorRenderService razorRenderService,
+        IOptions<MailSenderOptions> options,
+        MailSettings mailSettings,
+        IBackgroundJobClient backgroundJobClient,
+        ILogger<MailSender> logger
+    )
+    {
+        _razorRenderService = razorRenderService;
+        _options = options.Value;
+        _mailSettings = mailSettings;
+        _backgroundJobClient = backgroundJobClient;
+        _logger = logger;
+    }
+
+    public async Task Send<T>(string recipient, T model, List<string> attachments = null)
+        where T : EmailModelBase
+    {
+        using var _ = _logger.LogOperation(
+            new OperationContext()
+            {
+                { Field.Email, recipient },
+                { Field.EmailSubject, model.GetType() },
+            }
+        );
+
+        if (_options.Enabled == false)
+        {
+            _logger.LogInformation($"Sending email is disabled");
+        }
+
+        var sendingIsDisabled =
+            _options.DisabledModels != null
+            && _options.DisabledModels.TryGetValue(typeof(T).Name, out bool isDisabled)
+            && isDisabled;
+
+        if (sendingIsDisabled)
+        {
+            _logger.LogInformation($"Sending email for model: {model.GetType()} is disabled");
+            return;
+        }
+
+        model.SiteRootUrl = _options.SiteUrl;
+        model.RecipientEmail = recipient;
+
+        (string Subject, string Content) rendered = await RenderContentAndSubject(model);
+
+        if (!string.IsNullOrEmpty(rendered.Content))
+        {
+            _backgroundJobClient.Enqueue<MailSender>(x =>
+                x.Send(recipient, rendered.Subject, rendered.Content, null, attachments)
+            );
+        }
+    }
+
+    private async Task<(string Subject, string Content)> RenderContentAndSubject<T>(T model)
+        where T : EmailModelBase
+    {
+        try
+        {
+            _logger.LogInformation($"Rendering template for model: {model.GetType()}");
+
+            string subjectViewPath = _mailSettings.EmailViewPathProvider(
+                model,
+                EmailTemplateType.Subject
+            );
+            string subject = await RenderTemplate(model, subjectViewPath);
+            model.Subject = subject;
+
+            string contentViewPath = _mailSettings.EmailViewPathProvider(
+                model,
+                EmailTemplateType.Content
+            );
+            string content = await RenderTemplate(model, contentViewPath);
+            return (subject, content);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, $"Error rendering template. ModelType: {model.GetType()}");
+            throw;
+        }
+    }
+
+    private static List<string> _globalAttachments = new() { "Views/Emails/Images/logo.png" };
+
+    [AutomaticRetry(
+        Attempts = 10,
+        DelaysInSeconds = new[] { 60, 120, 240, 480, 600, 1810, 3610, 4010, 5450, 7300 }
+    )]
+    public virtual async Task Send(
+        string recipient,
+        string subject,
+        string text,
+        string from = null,
+        List<string> attachments = null
+    )
+    {
+        var message = new MimeMessage();
+
+        message.From.Add(new MailboxAddress(_options.FromName, from ?? _options.From));
+        message.To.Add(new MailboxAddress("", recipient));
+
+        var bodyBuilder = new BodyBuilder();
+
+        foreach (var attachment in _globalAttachments)
+        {
+            MimeEntity entity = bodyBuilder.LinkedResources.Add(attachment);
+            var fileName = Path.GetFileName(attachment);
+            entity.ContentDisposition = new ContentDisposition(ContentDisposition.Inline);
+            entity.ContentId = fileName;
+            entity.ContentType.Name = fileName;
+            entity.ContentDisposition.FileName = fileName;
+        }
+
+        if (attachments != null)
+        {
+            foreach (var attachment in attachments)
+            {
+                MimeEntity entity = bodyBuilder.LinkedResources.Add(attachment);
+                entity.ContentId = Guid.NewGuid().ToString();
+            }
+        }
+
+        bodyBuilder.HtmlBody = text;
+        message.Subject = subject;
+
+        message.Body = bodyBuilder.ToMessageBody();
+
+        List<string> sentTo = message.To.Union(message.Bcc).Select(x => x.ToString()).ToList();
+        _logger.LogInformation($"Sending email on '{subject}' to {string.Join(", ", sentTo)}");
+
+        await RawSendEmail(message);
+
+        _logger.LogInformation($"Email on '{subject}' was sent to {string.Join(", ", sentTo)}");
+    }
+
+    private async Task RawSendEmail(MimeMessage message)
+    {
+        using var _ = _logger.LogOperation(
+            new OperationContext()
+            {
+                { Field.Email, message.To },
+                { Field.EmailSubject, message.Subject },
+            }
+        );
+
+        using var client = new SmtpClient();
+        await client.ConnectAsync(_options.Host, _options.Port, _options.SecureSocketOptions);
+
+        await client.AuthenticateAsync(_options.Login, _options.Password);
+
+        await client.SendAsync(message);
+        await client.DisconnectAsync(true);
+    }
+
+    internal async Task<string> RenderTemplate<T>(T model, string viewPath)
+    {
+        // var viewName = DatabaseFileProvider.SerializeToFilePath(new DatabaseFileProvider.EmailTemplateIdentifier
+        // {
+        //     Guid = emailTemplateId ?? Guid.Empty,
+        //     Type = templateName,
+        //     SubType = subType,
+        // });
+
+        try
+        {
+            return await _razorRenderService.RenderToStringAsync(viewPath, model);
+        }
+        catch (Exception e)
+        {
+            throw new InvalidOperationException(
+                $"There was a problem compiling Razor Email template."
+                    + $"Error: {e.Message}. ViewName: {viewPath}. ModelType: {model.GetType()}"
+                    + $"Stack trace: {e.StackTrace}",
+                e
+            );
+        }
+    }
+}

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Version>1.0.0</Version>
+    <PackageId>Team13.HitsClass.Domain</PackageId>
+    <Description>
+      The Domain module of the ServiceTemplate microservice.
+      Responsible for representing concepts of the business, information about the
+      business situation, and business rules.
+    </Description>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="JsonKnownTypes" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Lib\DomainHelpers\Team13.DomainHelpers\Team13.DomainHelpers.csproj" />
+    <ProjectReference Include="..\..\Lib\WebHooks\Team13.WebHooks\Team13.WebHooks.csproj" />
+    <ProjectReference Include="..\Team13.HitsClass.Common\Team13.HitsClass.Common.csproj" />
+  </ItemGroup>
+</Project>

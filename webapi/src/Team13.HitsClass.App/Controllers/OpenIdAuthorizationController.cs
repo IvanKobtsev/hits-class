@@ -1,0 +1,65 @@
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using OpenIddict.Abstractions;
+using Shaddix.OpenIddict.ExternalAuthentication;
+using Shaddix.OpenIddict.ExternalAuthentication.Infrastructure;
+using Team13.HitsClass.Domain;
+using Team13.HitsClass.Persistence;
+using Team13.LowLevelPrimitives;
+
+namespace Team13.HitsClass.App.Controllers;
+
+public class OpenIdAuthorizationController : OpenIdAuthorizationControllerBase<User, string>
+{
+    private readonly HitsClassDbContext _dbContext;
+
+    public OpenIdAuthorizationController(
+        SignInManager<User> signInManager,
+        UserManager<User> userManager,
+        HitsClassDbContext dbContext,
+        ILogger<OpenIdAuthorizationController> logger
+    )
+        : base(signInManager, userManager, logger)
+    {
+        _dbContext = dbContext;
+    }
+
+    protected override async Task<IList<Claim>> GetClaims(
+        User user,
+        OpenIddictRequest openIddictRequest
+    )
+    {
+        var result = await base.GetClaims(user, openIddictRequest);
+        result.Add(new Claim(CustomTenantIdAccessor.TenantIdClaim, user.TenantId.ToString()));
+        return result;
+    }
+
+    public override Task<IActionResult> Authorize(string? provider)
+    {
+        using var ignoreFilter = CustomTenantIdAccessor.IgnoreTenantIdQueryFilter();
+        return base.Authorize(provider);
+    }
+
+    public override Task<IActionResult> Exchange()
+    {
+        using var ignoreFilter = CustomTenantIdAccessor.IgnoreTenantIdQueryFilter();
+        return base.Exchange();
+    }
+
+    protected override async Task UpdateUser(User user, ExternalLoginInfo externalLoginInfo)
+    {
+        await base.UpdateUser(user, externalLoginInfo);
+    }
+
+    protected override async Task<User?> CreateNewUser(ExternalLoginInfo externalUserInfo)
+    {
+        var tenant = new Tenant();
+        _dbContext.Add(tenant);
+        await _dbContext.SaveChangesAsync();
+
+        var user = await base.CreateNewUser(externalUserInfo);
+        user!.SetTenantIdUnsafe(tenant.Id);
+        return user;
+    }
+}

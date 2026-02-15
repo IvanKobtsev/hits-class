@@ -1,0 +1,43 @@
+# ------------------------------------
+# This is the base file that is used in all pipelines
+# Please, DO NOT CHANGE it
+# Change 'base.partial.yml' instead
+# ------------------------------------
+variables:
+  projectName: HitsClass
+  appName: hitsclass
+  BASE_VERSION: 1.1
+  PATCH_VERSION: $[ counter(variables['BASE_VERSION'], 1) ]
+  BUILD_NUMBER: $(BASE_VERSION).$(PATCH_VERSION)
+  REACT_APP_BUILD_NUMBER: $(BUILD_NUMBER)
+  solution: 'webapi/Team13.HitsClass.slnx'
+  project: 'webapi/src/Team13.HitsClass.App/Team13.HitsClass.App.csproj'
+
+  # General
+  DISABLE_BUILD: false
+  DISABLE_TESTS: false
+  # -----------
+
+  # Storybook
+  ENABLE_STORYBOOK: true
+  RUN_STORYBOOK_TESTS_AFTER_BUILD: false
+  RUN_STORYBOOK_TESTS_PARALLEL_BUILD: true
+  # -----------
+
+  # e2e
+  ENABLE_E2E_DOCKER: true
+  ENABLE_E2E_STAGE: false
+  DEPLOY_IF_E2E_FAILS: true
+  e2e_test_shards: 1
+  sb_test_shards: 1
+  # -----------
+
+  # Deployment
+  DOCKER_TAG: latest
+  ENABLE_DEPLOY: true
+  ENABLE_DEPLOY_DEV: true
+  ENABLE_DEPLOY_PROD: false
+  ENABLE_DEPLOY_GREEN: false
+  DEPLOY_KUBERNETES: true
+  DEPLOY_IF_STORYBOOK_FAILS: false
+  # -----------

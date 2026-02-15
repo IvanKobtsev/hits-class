@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Destructurama.JsonNet" />
+    <PackageReference Include="Metalama.Framework" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Sentry.Serilog" />
+    <PackageReference Include="Serilog.AspNetCore" />
+    <PackageReference Include="Serilog.Sinks.Loggly" />
+    <PackageReference Include="Serilog.Sinks.OpenSearch" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\HttpClientExtension\Team13.HttpClientExtension\Team13.HttpClientExtension.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,52 @@
+using System.Collections.Generic;
+using MailKit.Security;
+
+namespace Team13.Mailing.Models;
+
+/// <summary>
+/// Options to configure SMTP transport (e.g. via appsettings.json)
+/// </summary>
+public class MailSenderOptions
+{
+    /// <summary>
+    /// URL of the stage the site is currently running on.
+    /// Required for building correct links within emails
+    /// </summary>
+    public string SiteUrl { get; set; }
+
+    /// <summary>
+    /// SMTP server host
+    /// </summary>
+    public string Host { get; set; }
+
+    /// <summary>
+    /// SMTP server port
+    /// </summary>
+    public int Port { get; set; }
+
+    public SecureSocketOptions SecureSocketOptions { get; set; } = SecureSocketOptions.Auto;
+
+    public string Login { get; set; }
+    public string Password { get; set; }
+
+    /// <summary>
+    /// Email of sender
+    /// </summary>
+    public string From { get; set; }
+
+    /// <summary>
+    /// Text description of sender. E.g. 'MCC Soft' (in 'MCC Soft <info@mcc-soft.de>')
+    /// </summary>
+    public string FromName { get; set; }
+
+    /// <summary>
+    /// If `false` no emails are being sent
+    /// Defaults to `true`
+    /// </summary>
+    public bool? Enabled { get; set; }
+
+    /// <summary>
+    /// Ability to disable certain emails from being sent
+    /// </summary>
+    public Dictionary<string, bool> DisabledModels { get; set; }
+}

@@ -1,0 +1,49 @@
+import { DatePath } from '../hook-form';
+import { DatePicker, DatePickerProps } from './DatePicker';
+import {
+  Controller,
+  FieldPath,
+  FieldValues,
+  UseControllerProps,
+} from 'react-hook-form';
+
+type HookFormDatePickerProps<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends DatePath<TFieldValues> = DatePath<TFieldValues>,
+  TTransformedValues = TFieldValues,
+> = Omit<DatePickerProps, 'onChange' | 'name'> & {
+  name: TName;
+  control: UseControllerProps<TFieldValues>['control'];
+  rules?: UseControllerProps<TFieldValues>['rules'];
+  onFocus?: () => void;
+  defaultValue?: unknown;
+};
+
+/*
+We have to use Controlled components for native html datepickers,
+because they require values in a form of 'yyyy-MM-DD', but in uncontrolled form react-hook-form
+supply them with Date object.
+ */
+export function HookFormDatePicker<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends DatePath<TFieldValues> = DatePath<TFieldValues>,
+  TTransformedValues = TFieldValues,
+>(props: HookFormDatePickerProps<TFieldValues, TName, TTransformedValues>) {
+  const { name, rules, control, ...rest } = props;
+  return (
+    <Controller
+      control={control}
+      // Without `any` here TS complains about `Type instantiation is excessively deep and possibly infinite`
+      // Type types are correct though.
+      name={name as any}
+      rules={rules}
+      render={({ field }) => (
+        <DatePicker
+          {...rest}
+          value={field.value as any}
+          onChange={field.onChange}
+        />
+      )}
+    />
+  );
+}

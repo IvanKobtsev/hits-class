@@ -1,0 +1,54 @@
+@use '../../../styles/variables' as *;
+
+.modal {
+  width: 400px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 28px;
+  padding: 24px;
+  border-bottom: 1px $separator solid;
+}
+
+.title {
+  font-weight: normal;
+  font-family: $font-family;
+  font-size: 24px;
+  line-height: 28px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 24px !important;
+  min-width: 400px;
+  max-width: 80vw;
+}
+
+.closeButton {
+  cursor: pointer;
+  padding-right: 4px;
+  padding-left: 28px;
+}
+
+.closeButton:hover path {
+  fill: $close-button-hover;
+}
+
+.closeButton:active path {
+  fill: $close-button-active;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.body {
+}

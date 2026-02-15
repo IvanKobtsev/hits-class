@@ -1,0 +1,18 @@
+{
+  "general": {
+    "required_field_is_empty": "Required field is empty.",
+    "maximum_length": "Maximum length should be {{value}}.",
+    "date_in_future": "Date cannot be in the future.",
+    "min_date": "Must be later than {{date}}.",
+    "invalid": "Invalid.",
+    "duplicate_name": "Duplicate name.",
+    "duplicate_name_with_value": "Duplicate name '{{name}}'."
+  },
+ "user": {
+    "user_not_found": "User with ID '{{id}}' wasn't found.",
+    "user_not_found_by_login": "User with login '{{login}}' wasn't found.",
+    "user_not_have_permission": "User doesn't have '{permission}' permission.",
+    "user_not_authenticated": "User is not authenticated.",
+    "password_reuse_forbidden": "New password cannot match the old password"
+  }
+}
