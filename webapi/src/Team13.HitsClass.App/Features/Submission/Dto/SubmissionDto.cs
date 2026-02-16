@@ -14,7 +14,7 @@ namespace Team13.HitsClass.App.Features.Submission.Dto
         public DateTime LastSubmittedAtUTC { get; set; }
         public DateTime LastMarkedAtUTC { get; set; }
         public List<FileInfoDto> Attachments { get; set; }
-        public User Author { get; set; }
+        // public UserDto Author { get; set; }
         // public List<Comment> Comments { get; set; }
     }
 }
