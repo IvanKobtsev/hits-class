@@ -1,0 +1,1 @@
+class_diagram: https://app.diagrams.net/?src=about#G1uza0Jfsc-hf7qUwkpVLsnjRlVlDa2K4E
