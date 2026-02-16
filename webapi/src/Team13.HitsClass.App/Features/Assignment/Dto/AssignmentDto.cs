@@ -13,7 +13,7 @@ namespace Team13.HitsClass.App.Features.Assignment.Dto
         // public UserDto Author { get; set; }
         public DateTime? DeadlineUTC { get; set; }
         public DateTime CreatedAtUTC { get; set; }
-        public DateTime LastUpdatedAtUTC { get; set; }
+        public DateTime? LastUpdatedAtUTC { get; set; }
         public List<FileInfoDto> Attachments { get; set; }
         // public List<CommentDto> Comments { get; set; }
     }
