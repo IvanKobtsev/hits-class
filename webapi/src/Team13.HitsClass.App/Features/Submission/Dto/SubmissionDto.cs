@@ -10,7 +10,7 @@ namespace Team13.HitsClass.App.Features.Submission.Dto
     {
         public Guid Id { get; }
         public SubmissionState State { get; set; }
-        public int Mark { get; set; }
+        public string Mark { get; set; }
         public DateTime LastSubmittedAtUTC { get; set; }
         public DateTime LastMarkedAtUTC { get; set; }
         public List<FileInfoDto> Attachments { get; set; }
