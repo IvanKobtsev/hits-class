@@ -53,7 +53,6 @@ public class ComponentTestBase : TestBase<HitsClassDbContext>, IDisposable
 
         Identity.RemoveClaims("sub");
         Identity.AddClaim("sub", _defaultUser.Id);
-        Identity.AddClaim(CustomTenantIdAccessor.TenantIdClaim, _defaultUser.TenantId.ToString());
     }
 
     private ComponentTestFixture CreateWebApplicationFactory(string connectionString)

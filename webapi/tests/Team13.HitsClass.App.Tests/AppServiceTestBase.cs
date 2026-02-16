@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Audit.Core;
 using MccSoft.IntegreSql.EF.DatabaseInitialization;
 using Microsoft.AspNetCore.Hosting;
@@ -14,11 +13,9 @@ using Microsoft.Extensions.Localization;
 using Team13.HitsClass.App.Setup;
 using Team13.HitsClass.App.Utils.Localization;
 using Team13.HitsClass.Domain;
-using Team13.HitsClass.Domain.WebHook;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.Testing;
-using Team13.WebHooks;
 
 namespace Team13.HitsClass.App.Tests;
 
@@ -53,7 +50,6 @@ public class AppServiceTestBase : TestBase<HitsClassDbContext>
                     _defaultUser = await db.Users.FirstAsync(x => x.Email == "default@test.test");
                 });
                 _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
-                _userAccessorMock.Setup(x => x.GetTenantId()).Returns(_defaultUser.TenantId);
             });
         }
     }
@@ -71,13 +67,8 @@ public class AppServiceTestBase : TestBase<HitsClassDbContext>
             nameof(HitsClassDbContext) + "AppServiceTest",
             async (db) =>
             {
-                var tenant = new Tenant();
-                db.Tenants.Add(tenant);
-                await db.SaveChangesAsync();
-
                 var user = new User("default@test.test");
                 db.Users.Add(user);
-                user.SetTenantIdUnsafe(tenant.Id);
                 await db.SaveChangesAsync();
             }
         );
@@ -89,7 +80,6 @@ public class AppServiceTestBase : TestBase<HitsClassDbContext>
     )
     {
         SetupServices.AddServices(services, configuration, environment);
-        services.AddWebHooks<HitsClassWebHookSubscription>();
 
         services
             .AddDefaultIdentity<User>()

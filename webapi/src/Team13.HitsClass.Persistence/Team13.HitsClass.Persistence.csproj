@@ -31,8 +31,4 @@
     <ProjectReference Include="..\Team13.HitsClass.Common\Team13.HitsClass.Common.csproj" />
     <ProjectReference Include="..\Team13.HitsClass.Domain\Team13.HitsClass.Domain.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Migrations\" />
-  </ItemGroup>
 </Project>

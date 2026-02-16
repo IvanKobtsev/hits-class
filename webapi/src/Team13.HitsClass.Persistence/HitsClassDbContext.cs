@@ -1,16 +1,10 @@
 using Audit.EntityFramework;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
-using Npgsql.TypeMapping;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.Audit;
-using Team13.HitsClass.Domain.WebHook;
 using Team13.LowLevelPrimitives;
-using Team13.PersistenceHelpers;
-using Team13.WebHooks;
-using Team13.WebHooks.Domain;
 
 namespace Team13.HitsClass.Persistence;
 
@@ -20,8 +14,6 @@ public class HitsClassDbContext
     IdentityDbContext<User>
 {
     public IUserAccessor UserAccessor { get; }
-    public DbSet<Product> Products { get; set; }
-    public DbSet<Tenant> Tenants { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<DbFile> Files { get; set; }
@@ -35,8 +27,10 @@ public class HitsClassDbContext
         UserAccessor = userAccessor;
     }
 
-    public static NpgsqlDbContextOptionsBuilder MapEnums(NpgsqlDbContextOptionsBuilder builder) =>
-        builder.MapEnum<ProductType>();
+    public static NpgsqlDbContextOptionsBuilder MapEnums(NpgsqlDbContextOptionsBuilder builder)
+    {
+        return builder;
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -51,26 +45,6 @@ public class HitsClassDbContext
 
         SetupQueryFilters(builder);
 
-        /*
-            Demonstrates how to register WebHook entities using a custom subscription type.
-            If the default <see cref="WebHookSubscription"/> entity meets your requirements,
-            you can simply register it as shown below:
-
-            builder.AddWebHookEntities<WebHookSubscription>(GetType());
-
-            Otherwise, provide your own type that inherits from WebHookSubscription,
-            e.g. <see cref="TemplateWebHookSubscription"/>, to extend or override behavior.
-        */
-        builder.AddWebHookEntities<HitsClassWebHookSubscription>(GetType());
-
-        /*
-            [Optional]
-            We recommend placing WebHook-related entities in a separate schema
-            (e.g. "webhooks") to keep them isolated from your main business logic tables.
-        */
-        builder.Entity<WebHook<HitsClassWebHookSubscription>>().Metadata.SetSchema("webhooks");
-        builder.Entity<HitsClassWebHookSubscription>().Metadata.SetSchema("webhooks");
-
         builder.Entity<DbFile>(b =>
         {
             b.OwnsOne(
@@ -83,44 +57,12 @@ public class HitsClassDbContext
         });
     }
 
-    private void SetupQueryFilters(ModelBuilder builder)
-    {
-        builder.SetupQueryFilter<ITenantEntity>(x =>
-            CurrentTenantIdForQueryFilter == null || x.TenantId == CurrentTenantIdForQueryFilter
-        );
-    }
+    private void SetupQueryFilters(ModelBuilder builder) { }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         base.OnConfiguring(optionsBuilder);
 
-        optionsBuilder.AddInterceptors(
-            new PostProcessEntitiesOnSaveInterceptor<ITenantEntity, HitsClassDbContext>(
-                (entity, context) =>
-                {
-                    // We need this check, because sometimes we work through all tenants and manage TenantId manually.
-                    // One of examples is new user creation, where there is no good place to
-                    // wrap .SaveChanges with .SetCustomTenantId
-                    if (entity.TenantId != 0)
-                        return;
-
-                    var currentTenantId = context.CurrentTenantId;
-                    if (currentTenantId != null && currentTenantId != 0)
-                    {
-                        entity.SetTenantIdUnsafe(currentTenantId.Value);
-                    }
-                }
-            )
-        );
-
         optionsBuilder.AddInterceptors(new AuditSaveChangesInterceptor());
     }
-
-    private int? CurrentTenantIdForQueryFilter =>
-        CustomTenantIdAccessor.IsTenantIdQueryFilterDisabled ? null : CurrentTenantId;
-
-    public int? CurrentTenantId =>
-        UserAccessor.IsHttpContextAvailable
-            ? UserAccessor.GetTenantId()
-            : CustomTenantIdAccessor.GetCustomTenantId();
 }

@@ -6,12 +6,8 @@ using Team13.DomainHelpers.DomainEvents.Events;
 
 namespace Team13.HitsClass.Domain;
 
-public class User : IdentityUser, ITenantEntity, IDomainEventEntity
+public class User : IdentityUser, IDomainEventEntity
 {
-    public int TenantId { get; private set; }
-
-    public Tenant Tenant { get; private set; }
-
     public string FirstName { get; private set; } = "";
 
     public string LastName { get; private set; } = "";
@@ -103,9 +99,5 @@ public class User : IdentityUser, ITenantEntity, IDomainEventEntity
         _domainEvents?.Clear();
     }
 
-    public void SetTenantIdUnsafe(int tenantId)
-    {
-        TenantId = tenantId;
-    }
     #endregion
 }

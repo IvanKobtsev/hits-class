@@ -31,7 +31,6 @@ public class OpenIdAuthorizationController : OpenIdAuthorizationControllerBase<U
     )
     {
         var result = await base.GetClaims(user, openIddictRequest);
-        result.Add(new Claim(CustomTenantIdAccessor.TenantIdClaim, user.TenantId.ToString()));
         return result;
     }
 
@@ -54,12 +53,7 @@ public class OpenIdAuthorizationController : OpenIdAuthorizationControllerBase<U
 
     protected override async Task<User?> CreateNewUser(ExternalLoginInfo externalUserInfo)
     {
-        var tenant = new Tenant();
-        _dbContext.Add(tenant);
-        await _dbContext.SaveChangesAsync();
-
         var user = await base.CreateNewUser(externalUserInfo);
-        user!.SetTenantIdUnsafe(tenant.Id);
         return user;
     }
 }

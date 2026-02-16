@@ -1,5 +1,4 @@
 ﻿using Hangfire;
-using Team13.HitsClass.App.Jobs;
 using Team13.HitsClass.App.Settings;
 
 namespace Team13.HitsClass.App.Setup;
@@ -16,14 +15,10 @@ public static partial class SetupHangfire
         RemoveAllJobs();
 
         // Configure your jobs here: Pass a Job and its settings inherited from HangFire Job Settings
-        appConfiguration.ConfigureJob<ProductDataLoggerJob, ProductDataLoggerJobSettings>(
-            recurringJobManager
-        );
     }
 
     static partial void RegisterJobs(this IServiceCollection services)
     {
         // Add your custom JobServices for resolving them from DI.
-        services.AddScoped<ProductDataLoggerJob>();
     }
 }

@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Team13.HitsClass.Domain;
-using Team13.HitsClass.Persistence;
-using Team13.LowLevelPrimitives;
 using Team13.WebApi.Serialization;
 
 namespace Team13.HitsClass.App.Services.Authentication.Seed;
@@ -12,28 +10,21 @@ public class DefaultUserSeeder
     private readonly IOptions<IdentityOptions> _identityOptions;
     private readonly IOptions<DefaultUserOptions> _defaultUserOptions;
     private readonly UserManager<User> _userManager;
-    private readonly HitsClassDbContext _dbContext;
 
     public DefaultUserSeeder(
         IOptions<IdentityOptions> identityOptions,
         IOptions<DefaultUserOptions> defaultUserOptions,
-        UserManager<User> userManager,
-        HitsClassDbContext dbContext
+        UserManager<User> userManager
     )
     {
         _identityOptions = identityOptions;
         _defaultUserOptions = defaultUserOptions;
         _userManager = userManager;
-        _dbContext = dbContext;
     }
 
     public async Task SeedUser()
     {
-        var tenant = await SeedTenant();
-
-        using var forceTenant = CustomTenantIdAccessor.SetCustomTenantId(tenant.Id);
-
-        DefaultUserOptions defaultUser = _defaultUserOptions.Value;
+        var defaultUser = _defaultUserOptions.Value;
         if (
             string.IsNullOrEmpty(defaultUser.UserName) || string.IsNullOrEmpty(defaultUser.Password)
         )
@@ -42,7 +33,7 @@ public class DefaultUserSeeder
         var userName = defaultUser.UserName;
         var password = defaultUser.Password;
 
-        User existingUser = await _userManager.FindByNameAsync(userName);
+        var existingUser = await _userManager.FindByNameAsync(userName);
         if (existingUser != null)
         {
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(existingUser, password);
@@ -51,7 +42,7 @@ public class DefaultUserSeeder
         }
 
         // preserve password settings to later reset to them
-        PasswordOptions passwordOptions = _identityOptions.Value.Password;
+        var passwordOptions = _identityOptions.Value.Password;
         var serializedPasswordOptions = DefaultJsonSerializer.Serialize(passwordOptions);
         try
         {
@@ -85,17 +76,5 @@ public class DefaultUserSeeder
                 serializedPasswordOptions
             );
         }
-    }
-
-    private async Task<Tenant> SeedTenant()
-    {
-        var tenant = _dbContext.Tenants.OrderBy(x => x.Id).FirstOrDefault() ?? new Tenant();
-        if (tenant.Id != 0)
-            return tenant;
-
-        _dbContext.Add(tenant);
-        await _dbContext.SaveChangesAsync();
-
-        return tenant;
     }
 }
