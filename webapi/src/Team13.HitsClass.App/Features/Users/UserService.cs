@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
 using Team13.HitsClass.App.Features.Users.Dto;
@@ -45,8 +45,8 @@ public class UserService
         {
             Id = userId,
             Username = user.UserName ?? "",
-            Nickname = $"{user.FirstName} {user.LastName}",
-            Permissions = permissions.ToList(),
+            //Nickname = $"{user.FirstName} {user.LastName}",
+            //Permissions = permissions.ToList(),
         };
     }
 
