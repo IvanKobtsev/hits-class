@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Team13.HitsClass.App.Features.Files.Dto;
 
 namespace Team13.HitsClass.App.Features.Assignment.Dto
 {
@@ -10,6 +7,7 @@ namespace Team13.HitsClass.App.Features.Assignment.Dto
         public Guid Id { get; }
         public string Title { get; set; }
         public string Description { get; set; }
+
         // public UserDto Author { get; set; }
         public DateTime? DeadlineUTC { get; set; }
         public DateTime CreatedAtUTC { get; set; }
