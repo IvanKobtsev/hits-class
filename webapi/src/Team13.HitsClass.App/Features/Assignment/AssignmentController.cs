@@ -20,8 +20,8 @@ namespace Team13.HitsClass.App.Features.Assignment
         /// <summary>
         /// Gets full information for specific assignment
         /// </summary>
-        [HttpGet("{id}")]
-        public async Task<AnnouncementDto> GetAssignment([FromRoute] Guid id)
+        [HttpGet("{id:int}")]
+        public async Task<AnnouncementDto> GetAssignment([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
@@ -29,8 +29,8 @@ namespace Team13.HitsClass.App.Features.Assignment
         /// <summary>
         /// Gets statistics for specific assignment
         /// </summary>
-        [HttpGet("{id}/statistics")]
-        public async Task<AssignmentStatisticDto> GetAssignmentStatistics([FromRoute] Guid id)
+        [HttpGet("{id:int}/statistics")]
+        public async Task<AssignmentStatisticDto> GetAssignmentStatistics([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
@@ -47,8 +47,8 @@ namespace Team13.HitsClass.App.Features.Assignment
         /// <summary>
         /// Update specific assignment (check permission)
         /// </summary>
-        [HttpPut("{id}")]
-        public async Task UpdateAssignment([FromRoute] Guid id, [FromBody] CreateAssignmentDto dto)
+        [HttpPut("{id:int}")]
+        public async Task UpdateAssignment([FromRoute] int id, [FromBody] CreateAssignmentDto dto)
         {
             throw new NotImplementedException();
         }
@@ -56,8 +56,8 @@ namespace Team13.HitsClass.App.Features.Assignment
         /// <summary>
         /// Delete specific assignment (check permission)
         /// </summary>
-        [HttpDelete("{id}")]
-        public async Task DeleteAssignment([FromRoute] Guid id)
+        [HttpDelete("{id:int}")]
+        public async Task DeleteAssignment([FromRoute] int id)
         {
             throw new NotImplementedException();
         }

@@ -43,7 +43,7 @@ namespace Team13.HitsClass.App.Features.Submission
         /// <summary>
         /// Mark submission (check permission)
         /// </summary>
-        [HttpPut("submission/{id}")]
+        [HttpPut("submission/{id}/mark")]
         public async Task<SubmissionDto> MarkSubmission([FromRoute] Guid id, [FromBody] MarkDto dto)
         {
             throw new NotImplementedException();

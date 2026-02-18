@@ -6,7 +6,7 @@ namespace Team13.HitsClass.App.Features.Assignment.Dto
 {
     public class AssignmentDto
     {
-        public Guid Id { get; }
+        public int Id { get; }
         public string Title { get; set; }
         public string? Description { get; set; }
         public UserDto Author { get; set; }

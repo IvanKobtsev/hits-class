@@ -5,7 +5,7 @@ namespace Team13.HitsClass.App.Features.Submission.Dto
 {
     public class SubmissionListElement
     {
-        public Guid Id { get; }
+        public int Id { get; }
         public SubmissionState State { get; set; }
         public string? Mark { get; set; }
         public UserDto Author { get; set; }

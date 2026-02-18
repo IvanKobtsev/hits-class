@@ -20,8 +20,8 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// <summary>
         /// Gets full information for specific announcement
         /// </summary>
-        [HttpGet("{id}")]
-        public async Task<AnnouncementDto> GetAnnouncement([FromRoute] Guid id)
+        [HttpGet("{id:int}")]
+        public async Task<AnnouncementDto> GetAnnouncement([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
@@ -38,9 +38,9 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// <summary>
         /// Update specific announcement (check permission)
         /// </summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:int}")]
         public async Task UpdateAnnouncement(
-            [FromRoute] Guid id,
+            [FromRoute] int id,
             [FromBody] CreateAnnouncementDto dto
         )
         {
@@ -50,8 +50,8 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// <summary>
         /// Delete specific announcement (check permission)
         /// </summary>
-        [HttpDelete("{id}")]
-        public async Task DeleteAnnouncement([FromRoute] Guid id)
+        [HttpDelete("{id:int}")]
+        public async Task DeleteAnnouncement([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
