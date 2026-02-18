@@ -16,8 +16,8 @@ namespace Team13.HitsClass.App.Features.Submission
         /// <summary>
         /// Create submission
         /// </summary>
-        [HttpPost("submission")]
-        public async Task CreateSubmission([FromBody] CreateSubmissionDto dto)
+        [HttpPost("assignment/{id:int}/submission")]
+        public async Task CreateSubmission([FromRoute] int id, [FromBody] CreateSubmissionDto dto)
         {
             throw new NotImplementedException();
         }
@@ -25,8 +25,17 @@ namespace Team13.HitsClass.App.Features.Submission
         /// <summary>
         /// Gets all submissions for an assignment (check permission)
         /// </summary>
-        [HttpGet("assignment/{id}/submissions")]
-        public async Task<List<SubmissionListElement>> GetSubmissions([FromRoute] Guid id)
+        [HttpGet("assignment/{id:int}/submissions")]
+        public async Task<List<SubmissionListElement>> GetSubmissions([FromRoute] int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets student's submission for an assignment
+        /// </summary>
+        [HttpGet("assignment/{id:int}/submission/my")]
+        public async Task<SubmissionDto> GetMySubmission([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
@@ -34,8 +43,8 @@ namespace Team13.HitsClass.App.Features.Submission
         /// <summary>
         /// Gets full information for specific submission (check permission)
         /// </summary>
-        [HttpGet("submission/{id}")]
-        public async Task<SubmissionDto> GetSubmission([FromRoute] Guid id)
+        [HttpGet("submission/{id:int}")]
+        public async Task<SubmissionDto> GetSubmission([FromRoute] int id)
         {
             throw new NotImplementedException();
         }
@@ -43,8 +52,8 @@ namespace Team13.HitsClass.App.Features.Submission
         /// <summary>
         /// Mark submission (check permission)
         /// </summary>
-        [HttpPut("submission/{id}/mark")]
-        public async Task<SubmissionDto> MarkSubmission([FromRoute] Guid id, [FromBody] MarkDto dto)
+        [HttpPut("submission/{id:int}/mark")]
+        public async Task<SubmissionDto> MarkSubmission([FromRoute] int id, [FromBody] MarkDto dto)
         {
             throw new NotImplementedException();
         }
