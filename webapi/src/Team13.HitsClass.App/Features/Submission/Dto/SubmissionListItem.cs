@@ -3,7 +3,7 @@ using Team13.HitsClass.Common;
 
 namespace Team13.HitsClass.App.Features.Submission.Dto
 {
-    public class SubmissionListElement
+    public class SubmissionListItem
     {
         public int Id { get; }
         public SubmissionState State { get; set; }

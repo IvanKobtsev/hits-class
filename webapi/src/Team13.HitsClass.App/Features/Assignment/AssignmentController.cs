@@ -6,7 +6,7 @@ using Team13.HitsClass.App.Features.Assignment.Dto;
 
 namespace Team13.HitsClass.App.Features.Assignment
 {
-    [Route("api/assignment")]
+    [Route("api/assignments")]
     [ApiController]
     public class AssignmentController
     {
@@ -39,7 +39,7 @@ namespace Team13.HitsClass.App.Features.Assignment
         /// Create assignment (check permission)
         /// </summary>
         [HttpPost]
-        public async Task CreateAssignment([FromBody] CreateAssignmentDto dto)
+        public async Task<AssignmentDto> CreateAssignment([FromBody] CreateAssignmentDto dto)
         {
             throw new NotImplementedException();
         }

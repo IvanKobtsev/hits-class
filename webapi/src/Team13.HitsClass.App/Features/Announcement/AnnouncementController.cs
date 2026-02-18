@@ -7,7 +7,7 @@ using Team13.HitsClass.App.Features.Users;
 namespace Team13.HitsClass.App.Features.Announcement
 {
     [Authorize]
-    [Route("api/announcement")]
+    [Route("api/announcements")]
     public class AnnouncementController
     {
         private readonly AnnouncementService _announcementService;
@@ -30,7 +30,7 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// Create announcement (check permission)
         /// </summary>
         [HttpPost]
-        public async Task CreateAnnouncement([FromBody] CreateAnnouncementDto dto)
+        public async Task<AnnouncementDto> CreateAnnouncement([FromBody] CreateAnnouncementDto dto)
         {
             throw new NotImplementedException();
         }
