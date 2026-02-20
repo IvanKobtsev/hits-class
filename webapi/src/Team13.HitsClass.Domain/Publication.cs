@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Team13.HitsClass.Domain;
+
+namespace Team13.HitsClass.Domain;
 
 /// <summary>
 /// Summary description for Publication

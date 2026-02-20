@@ -15,6 +15,24 @@ public class UserController
         _userService = userService;
     }
 
+    [HttpPost("register")]
+    public async Task Register([FromBody] RegisterUserDto dto)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpPost("confirm-email/{id}")]
+    public async Task<UserDto> ConfirmEmail([FromRoute] string id)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpGet]
+    public async Task<List<CourseMemberDto>> GetMembersOfClass(int classId)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Gets permissions for the current user
     /// </summary>

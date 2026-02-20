@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 
+namespace Team13.HitsClass.Domain;
+
 /// <summary>
 /// Summary description for Submission
 /// </summary>

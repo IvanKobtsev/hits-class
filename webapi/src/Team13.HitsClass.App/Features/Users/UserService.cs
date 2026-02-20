@@ -39,15 +39,7 @@ public class UserService
         var userId = _userAccessor.GetUserId();
         var user = await _dbContext.Users.FirstAsync(x => x.Id == userId);
 
-        var permissions = await GetCurrentUserPermissions();
-
-        return new CurrentUserDto()
-        {
-            Id = userId,
-            Username = user.UserName ?? "",
-            //Nickname = $"{user.FirstName} {user.LastName}",
-            //Permissions = permissions.ToList(),
-        };
+        return new CurrentUserDto() { Id = userId, Username = user.UserName ?? "" };
     }
 
     public async Task<ISet<string>> GetCurrentUserPermissions()
