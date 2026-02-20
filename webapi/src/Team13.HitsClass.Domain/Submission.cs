@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Team13.HitsClass.Domain.Enums;
+using Team13.HitsClass.Common;
+using Team13.HitsClass.Domain;
 
 namespace Team13.HitsClass.Domain;
 
@@ -16,5 +17,5 @@ public class Submission
     public DateTime LastMarkedAtUTC { get; set; }
     public List<DbFile> Attachments { get; set; }
     public User Author { get; set; }
-    // public List<Comment> Comments { get; set; }
+    //public List<Comment> Comments { get; set; }
 }

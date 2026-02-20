@@ -1,9 +1,9 @@
-namespace Team13.HitsClass.Domain.Enums
+namespace Team13.HitsClass.Common
 {
     public enum SubmissionState
     {
         Draft,
         Submitted,
-        Accepted
+        Accepted,
     }
 }
