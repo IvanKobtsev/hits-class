@@ -5,6 +5,7 @@
       "login_field": "Login",
       "password_field": "Password",
       "login_button": "Login",
+      "app_name": "HitsClass",
       "login_unknown_failure": "Authentication failed",
       "login_failed": "Invalid login or password",
       "login_user_locked": "User is locked",
