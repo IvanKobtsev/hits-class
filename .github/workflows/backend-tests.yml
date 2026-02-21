@@ -1,0 +1,52 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        ports:
+          - 5434:5432
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      integresql:
+        image: allaboutapps/integresql:1.0.0
+        ports:
+          - 5000:5000
+        env:
+          PGHOST: postgres
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          INTEGRESQL_TEST_MAX_POOL_SIZE: 100
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore webapi/Team13.HitsClass.slnx
+
+      - name: Run tests
+        run: dotnet test webapi/Team13.HitsClass.slnx --no-restore
+        env:
+          DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: false
