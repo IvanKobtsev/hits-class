@@ -45,11 +45,11 @@
 }
 
 .appName {
+  color: white;
+  font-family: Roboto, Sans-Serif;
   margin-bottom: 32px;
-  margin-top: auto;
   font-size: 64px;
   font-weight: 600;
-  /*font-family: Inter;*/
   width: 288px;
   height: 94px;
   line-height: 96px;
@@ -140,6 +140,8 @@
 .gridContainer {
   display: flex;
   flex-direction: row;
+  justify-content: center;
+  align-items: center;
   width: fit-content;
   z-index: 2;
 }
