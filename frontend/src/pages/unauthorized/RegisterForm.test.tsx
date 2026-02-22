@@ -24,6 +24,14 @@ function renderRegisterForm() {
   );
 }
 
+function getPasswordInput() {
+  return screen.getByTestId('Password').querySelector('input')!;
+}
+
+function makeFieldValidationError(fieldName: string, message: string) {
+  return { response: { data: { errors: { [fieldName]: [message] } } } };
+}
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -96,22 +104,19 @@ describe('RegisterForm', () => {
     mockedRegister.mockResolvedValueOnce(undefined);
     renderRegisterForm();
 
-    const emailInput = within(screen.getByTestId('Email')).getByRole('textbox');
-    const legalNameInput = within(screen.getByTestId('LegalName')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
     );
-    const groupNumberInput = within(
-      screen.getByTestId('GroupNumber'),
-    ).getByRole('textbox');
-
-    const password = within(screen.getByTestId('Password')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
     );
-
-    await user.type(emailInput, 'john@example.com');
-    await user.type(legalNameInput, 'John Doe');
-    await user.type(groupNumberInput, '871021');
-    await user.type(password, 'i1mc91mzc');
+    await user.type(
+      within(screen.getByTestId('GroupNumber')).getByRole('textbox'),
+      '871021',
+    );
+    await user.type(getPasswordInput(), 'i1mc91mzc');
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
@@ -129,17 +134,15 @@ describe('RegisterForm', () => {
     mockedRegister.mockResolvedValueOnce(undefined);
     renderRegisterForm();
 
-    const emailInput = within(screen.getByTestId('Email')).getByRole('textbox');
-    const legalNameInput = within(screen.getByTestId('LegalName')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
     );
-    const password = within(screen.getByTestId('Password')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
     );
-
-    await user.type(emailInput, 'john@example.com');
-    await user.type(legalNameInput, 'John Doe');
-    await user.type(password, 'i1mc91mzc');
+    await user.type(getPasswordInput(), 'i1mc91mzc');
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     await waitFor(() => {
@@ -157,17 +160,15 @@ describe('RegisterForm', () => {
     mockedRegister.mockResolvedValueOnce(undefined);
     renderRegisterForm();
 
-    const emailInput = within(screen.getByTestId('Email')).getByRole('textbox');
-    const legalNameInput = within(screen.getByTestId('LegalName')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
     );
-    const password = within(screen.getByTestId('Password')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
     );
-
-    await user.type(emailInput, 'john@example.com');
-    await user.type(legalNameInput, 'John Doe');
-    await user.type(password, 'i1mc91mzc');
+    await user.type(getPasswordInput(), 'i1mc91mzc');
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(await screen.findByTestId('register-success')).toBeInTheDocument();
@@ -183,17 +184,15 @@ describe('RegisterForm', () => {
     );
     renderRegisterForm();
 
-    const emailInput = within(screen.getByTestId('Email')).getByRole('textbox');
-    const legalNameInput = within(screen.getByTestId('LegalName')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
     );
-    const password = within(screen.getByTestId('Password')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
     );
-
-    await user.type(emailInput, 'john@example.com');
-    await user.type(legalNameInput, 'John Doe');
-    await user.type(password, 'i1mc91mzc');
+    await user.type(getPasswordInput(), 'i1mc91mzc');
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(await screen.findByTestId('loading')).toBeInTheDocument();
@@ -204,6 +203,120 @@ describe('RegisterForm', () => {
     );
   });
 
+  // --- Server-side field validation errors ---
+
+  test('shows email format error when invalid email is submitted', async () => {
+    const user = userEvent.setup();
+    mockedRegister.mockRejectedValueOnce(
+      makeFieldValidationError(
+        'Email',
+        'The Email field is not a valid e-mail address.',
+      ),
+    );
+    renderRegisterForm();
+
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'invalidmail.com',
+    );
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
+    );
+    await user.type(getPasswordInput(), 'validPass1');
+    await user.click(screen.getByRole('button', { name: /register/i }));
+
+    expect(
+      await within(screen.getByTestId('Email')).findByText(
+        'The Email field is not a valid e-mail address.',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('shows minimum length error when password is too short (2 characters)', async () => {
+    const user = userEvent.setup();
+    mockedRegister.mockRejectedValueOnce(
+      makeFieldValidationError(
+        'Password',
+        'Field must have minimum of 5 character',
+      ),
+    );
+    renderRegisterForm();
+
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
+    );
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
+    );
+    await user.type(getPasswordInput(), 'ab');
+    await user.click(screen.getByRole('button', { name: /register/i }));
+
+    expect(
+      await within(screen.getByTestId('Password')).findByText(
+        'Field must have minimum of 5 character',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('shows maximum length error when password is too long (65 characters)', async () => {
+    const user = userEvent.setup();
+    mockedRegister.mockRejectedValueOnce(
+      makeFieldValidationError(
+        'Password',
+        'Field can have maximum of 64 characters',
+      ),
+    );
+    renderRegisterForm();
+
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
+    );
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
+    );
+    await user.type(getPasswordInput(), 'a'.repeat(65));
+    await user.click(screen.getByRole('button', { name: /register/i }));
+
+    expect(
+      await within(screen.getByTestId('Password')).findByText(
+        'Field can have maximum of 64 characters',
+      ),
+    ).toBeInTheDocument();
+  });
+
+  test('shows invalid characters error when password contains "?"', async () => {
+    const user = userEvent.setup();
+    mockedRegister.mockRejectedValueOnce(
+      makeFieldValidationError(
+        'Password',
+        'Allowed password characters are: A-Z, a-z, 0-9 and !@#$%^&*.()',
+      ),
+    );
+    renderRegisterForm();
+
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
+    );
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
+    );
+    await user.type(getPasswordInput(), 'valid?Pass');
+    await user.click(screen.getByRole('button', { name: /register/i }));
+
+    expect(
+      await within(screen.getByTestId('Password')).findByText(
+        'Allowed password characters are: A-Z, a-z, 0-9 and !@#$%^&*.()',
+      ),
+    ).toBeInTheDocument();
+  });
+
   // --- Error scenarios ---
 
   test('shows error message when registration fails', async () => {
@@ -211,17 +324,15 @@ describe('RegisterForm', () => {
     mockedRegister.mockRejectedValueOnce(new Error('Registration_Failed'));
     renderRegisterForm();
 
-    const emailInput = within(screen.getByTestId('Email')).getByRole('textbox');
-    const legalNameInput = within(screen.getByTestId('LegalName')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('Email')).getByRole('textbox'),
+      'john@example.com',
     );
-    const password = within(screen.getByTestId('Password')).getByRole(
-      'textbox',
+    await user.type(
+      within(screen.getByTestId('LegalName')).getByRole('textbox'),
+      'John Doe',
     );
-
-    await user.type(emailInput, 'john@example.com');
-    await user.type(legalNameInput, 'John Doe');
-    await user.type(password, 'i1mc91mzc');
+    await user.type(getPasswordInput(), 'i1mc91mzc');
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(await screen.findByText('Registration_Failed')).toBeInTheDocument();
