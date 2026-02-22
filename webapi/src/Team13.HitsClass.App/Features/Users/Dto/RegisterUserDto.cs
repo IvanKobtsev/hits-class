@@ -13,7 +13,7 @@ public class RegisterUserDto
     [MaxLength(150)]
     public string LegalName { get; set; }
 
-    [Length(6, 6)]
+    [GroupNumber]
     public string? GroupNumber { get; set; }
 
     [Required]
