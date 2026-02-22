@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Team13.HitsClass.App.Features.Announcement;
-using Team13.HitsClass.App.Features.Announcement.Dto;
 using Team13.HitsClass.App.Features.Submission.Dto;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Submission
 {
@@ -29,7 +27,7 @@ namespace Team13.HitsClass.App.Features.Submission
         /// Gets all submissions for an assignment (check permission)
         /// </summary>
         [HttpGet("assignments/{id:int}/submissions")]
-        public async Task<List<SubmissionListItem>> GetSubmissions([FromRoute] int id)
+        public async Task<PagedResult<SubmissionListItem>> GetSubmissions([FromRoute] int id)
         {
             throw new NotImplementedException();
         }

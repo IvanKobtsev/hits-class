@@ -58,6 +58,7 @@ SetupLocalization.UseLocalization(app);
 SetupHangfire.UseHangfire(app);
 
 SetupAuth.UseAuth(app);
+await SetupRoles.AddRoles(app);
 SetupSwagger.UseSwagger(app);
 
 SetupAspNet.UseEndpoints(app);

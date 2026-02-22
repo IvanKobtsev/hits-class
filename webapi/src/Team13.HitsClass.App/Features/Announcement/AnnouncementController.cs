@@ -1,8 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Announcement.Dto;
-using Team13.HitsClass.App.Features.Users;
 
 namespace Team13.HitsClass.App.Features.Announcement
 {
