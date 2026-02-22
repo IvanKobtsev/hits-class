@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
-import { LoginPage } from './LoginPage';
+import { LoginForm } from './LoginForm.tsx';
 
 vi.mock('helpers/auth/auth-client', () => ({
   sendLoginRequest: vi.fn(),
@@ -25,15 +25,15 @@ import { queryClient } from 'services/api/query-client-helper';
 const mockedSendLogin = vi.mocked(sendLoginRequest);
 const mockedHandleLoginErrors = vi.mocked(handleLoginErrors);
 
-function renderLoginPage() {
+function renderLoginForm(onSwitchToRegister = vi.fn()) {
   return render(
     <MemoryRouter>
-      <LoginPage />
+      <LoginForm onSwitchToRegister={onSwitchToRegister} />
     </MemoryRouter>,
   );
 }
 
-describe('LoginPage', () => {
+describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedHandleLoginErrors.mockImplementation((e: unknown) => {
@@ -43,8 +43,29 @@ describe('LoginPage', () => {
 
   // --- Rendering ---
 
+  test('renders "Don\'t have an account?" text and "Create an account" button', () => {
+    renderLoginForm();
+
+    expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /create an account/i }),
+    ).toBeInTheDocument();
+  });
+
+  test('calls onSwitchToRegister when "Create an account" button is clicked', async () => {
+    const user = userEvent.setup();
+    const onSwitchToRegister = vi.fn();
+    renderLoginForm(onSwitchToRegister);
+
+    await user.click(
+      screen.getByRole('button', { name: /create an account/i }),
+    );
+
+    expect(onSwitchToRegister).toHaveBeenCalledOnce();
+  });
+
   test('renders login field, password field, and login button', () => {
-    renderLoginPage();
+    renderLoginForm();
 
     expect(screen.getByTestId('Login')).toBeInTheDocument();
     expect(screen.getByTestId('Password')).toBeInTheDocument();
@@ -55,7 +76,7 @@ describe('LoginPage', () => {
 
   test('shows required error under login field when submitted empty', async () => {
     const user = userEvent.setup();
-    renderLoginPage();
+    renderLoginForm();
 
     await user.click(screen.getByRole('button', { name: /login/i }));
 
@@ -66,7 +87,7 @@ describe('LoginPage', () => {
 
   test('shows required error under password field when submitted empty', async () => {
     const user = userEvent.setup();
-    renderLoginPage();
+    renderLoginForm();
 
     await user.click(screen.getByRole('button', { name: /login/i }));
 
@@ -84,7 +105,7 @@ describe('LoginPage', () => {
       refresh_token: 'ref',
       expires_in: 3600,
     });
-    renderLoginPage();
+    renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
     const passwordInput = screen
@@ -107,7 +128,7 @@ describe('LoginPage', () => {
       refresh_token: 'ref',
       expires_in: 3600,
     });
-    renderLoginPage();
+    renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
     const passwordInput = screen
@@ -135,7 +156,7 @@ describe('LoginPage', () => {
         resolveLogin = resolve;
       }),
     );
-    renderLoginPage();
+    renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
     const passwordInput = screen
@@ -163,7 +184,7 @@ describe('LoginPage', () => {
   test('shows "Invalid login or password" when login fails', async () => {
     const user = userEvent.setup();
     mockedSendLogin.mockRejectedValueOnce(new Error('Login_Failed'));
-    renderLoginPage();
+    renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
     const passwordInput = screen
@@ -182,7 +203,7 @@ describe('LoginPage', () => {
   test('shows "Authentication failed" on unknown error', async () => {
     const user = userEvent.setup();
     mockedSendLogin.mockRejectedValueOnce(new Error('Login_Unknown_Failure'));
-    renderLoginPage();
+    renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
     const passwordInput = screen

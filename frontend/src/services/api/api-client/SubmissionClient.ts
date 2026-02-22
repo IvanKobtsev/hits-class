@@ -14,19 +14,89 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Returns list of configured Webhooks
+ * Create submission
  */
-export function getSubscriptions(config?: AxiosRequestConfig | undefined): Promise<Types.WebhookSubscriptionDto[]> {
-    let url_ = getBaseUrl() + "/api/webhooks/subscriptions";
+export function createSubmission(id: number, dto: Types.CreateSubmissionDto, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/submission";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeCreateSubmissionDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigCreateSubmission,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigCreateSubmission?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processCreateSubmission(_response);
+    });
+}
+
+function processCreateSubmission(response: AxiosResponse): Promise<Types.SubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+
+/**
+ * Gets all submissions for an assignment (check permission)
+ */
+export function getSubmissions(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfSubmissionListItem> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/submissions";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigGetSubscriptions,
+        ..._requestConfigGetSubmissions,
         ...config,
         method: "GET",
         url: url_,
         headers: {
-            ..._requestConfigGetSubscriptions?.headers,
+            ..._requestConfigGetSubmissions?.headers,
             "Accept": "application/json"
         }
     };
@@ -38,11 +108,11 @@ export function getSubscriptions(config?: AxiosRequestConfig | undefined): Promi
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processGetSubscriptions(_response);
+        return processGetSubmissions(_response);
     });
 }
 
-function processGetSubscriptions(response: AxiosResponse): Promise<Types.WebhookSubscriptionDto[]> {
+function processGetSubmissions(response: AxiosResponse): Promise<Types.PagedResultOfSubmissionListItem> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -63,39 +133,162 @@ function processGetSubscriptions(response: AxiosResponse): Promise<Types.Webhook
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        if (Array.isArray(resultData200)) {
-              result200 = resultData200.map(item => 
-                Types.initWebhookSubscriptionDto(item)
-              );
-            }
-        return Promise.resolve<Types.WebhookSubscriptionDto[]>(result200);
+        result200 = Types.initPagedResultOfSubmissionListItem(resultData200);
+        return Promise.resolve<Types.PagedResultOfSubmissionListItem>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.WebhookSubscriptionDto[]>(null as any);
+    return Promise.resolve<Types.PagedResultOfSubmissionListItem>(null as any);
 }
 
 /**
- * Subscribes to a new webhook event.
- * @param dto The subscription request containing event type and target URL.
- * @return Subscription created successfully.
+ * Gets student's submission for an assignment
  */
-export function subscribeToEvent(dto: Types.CreateWebHookDto, config?: AxiosRequestConfig | undefined): Promise<Types.WebHookSubscribedDto> {
-    let url_ = getBaseUrl() + "/api/webhooks/subscriptions/subscribe";
+export function getMySubmission(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/my-submission";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializeCreateWebHookDto(dto);
-
     let options_: AxiosRequestConfig = {
-        ..._requestConfigSubscribeToEvent,
+        ..._requestConfigGetMySubmission,
         ...config,
-        data: content_,
-        method: "POST",
+        method: "GET",
         url: url_,
         headers: {
-            ..._requestConfigSubscribeToEvent?.headers,
+            ..._requestConfigGetMySubmission?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetMySubmission(_response);
+    });
+}
+
+function processGetMySubmission(response: AxiosResponse): Promise<Types.SubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+
+/**
+ * Gets full information for specific submission (check permission)
+ */
+export function getSubmission(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/submissions/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetSubmission,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetSubmission?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetSubmission(_response);
+    });
+}
+
+function processGetSubmission(response: AxiosResponse): Promise<Types.SubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+
+/**
+ * Mark submission (check permission)
+ */
+export function markSubmission(id: number, dto: Types.MarkDto, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/submissions/{id}/mark";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeMarkDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigMarkSubmission,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigMarkSubmission?.headers,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -108,81 +301,11 @@ export function subscribeToEvent(dto: Types.CreateWebHookDto, config?: AxiosRequ
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processSubscribeToEvent(_response);
+        return processMarkSubmission(_response);
     });
 }
 
-function processSubscribeToEvent(response: AxiosResponse): Promise<Types.WebHookSubscribedDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("Invalid subscription data.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initWebHookSubscribedDto(resultData200);
-        return Promise.resolve<Types.WebHookSubscribedDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.WebHookSubscribedDto>(null as any);
-}
-
-/**
- * Updates an existing webhook subscription.
- * @param id The ID of the subscription to update.
- * @param dto The updated subscription data.
- * @return Subscription updated successfully.
- */
-export function updateSubscription(id: string, dto: Types.UpdateWebHookSubscriptionDto, config?: AxiosRequestConfig | undefined): Promise<Types.WebhookSubscriptionDto> {
-    let url_ = getBaseUrl() + "/api/webhooks/subscriptions/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = Types.serializeUpdateWebHookSubscriptionDto(dto);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigUpdateSubscription,
-        ...config,
-        data: content_,
-        method: "PATCH",
-        url: url_,
-        headers: {
-            ..._requestConfigUpdateSubscription?.headers,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processUpdateSubscription(_response);
-    });
-}
-
-function processUpdateSubscription(response: AxiosResponse): Promise<Types.WebhookSubscriptionDto> {
+function processMarkSubmission(response: AxiosResponse): Promise<Types.SubmissionDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -203,194 +326,66 @@ function processUpdateSubscription(response: AxiosResponse): Promise<Types.Webho
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initWebhookSubscriptionDto(resultData200);
-        return Promise.resolve<Types.WebhookSubscriptionDto>(result200);
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.WebhookSubscriptionDto>(null as any);
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+let _requestConfigCreateSubmission: Partial<AxiosRequestConfig> | null;
+export function getCreateSubmissionRequestConfig() {
+  return _requestConfigCreateSubmission;
+}
+export function setCreateSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateSubmission = value;
+}
+export function patchCreateSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateSubmission = patch(_requestConfigCreateSubmission ?? {});
 }
 
-/**
- * Unsubscribes from a webhook event.
- * @param subscriptionId (optional) The ID of the subscription to remove.
- * @return Unsubscribed successfully.
- */
-export function unsubscribe(subscriptionId?: string | undefined, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/webhooks/subscriptions/unsubscribe?";
-    if (subscriptionId === null)
-        throw new Error("The parameter 'subscriptionId' cannot be null.");
-    else if (subscriptionId !== undefined)
-        url_ += "subscriptionId=" + encodeURIComponent("" + subscriptionId) + "&";
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigUnsubscribe,
-        ...config,
-        method: "DELETE",
-        url: url_,
-        headers: {
-            ..._requestConfigUnsubscribe?.headers,
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processUnsubscribe(_response);
-    });
+let _requestConfigGetSubmissions: Partial<AxiosRequestConfig> | null;
+export function getGetSubmissionsRequestConfig() {
+  return _requestConfigGetSubmissions;
+}
+export function setGetSubmissionsRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetSubmissions = value;
+}
+export function patchGetSubmissionsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetSubmissions = patch(_requestConfigGetSubmissions ?? {});
 }
 
-function processUnsubscribe(response: AxiosResponse): Promise<void> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<void>(null as any);
+let _requestConfigGetMySubmission: Partial<AxiosRequestConfig> | null;
+export function getGetMySubmissionRequestConfig() {
+  return _requestConfigGetMySubmission;
+}
+export function setGetMySubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetMySubmission = value;
+}
+export function patchGetMySubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetMySubmission = patch(_requestConfigGetMySubmission ?? {});
 }
 
-/**
- * Rotate already generated signature secret.
- * @param id Subscription Id
- */
-export function rotateSecret(id: string, config?: AxiosRequestConfig | undefined): Promise<string> {
-    let url_ = getBaseUrl() + "/api/webhooks/subscriptions/{id}/rotate-secret";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigRotateSecret,
-        ...config,
-        method: "POST",
-        url: url_,
-        headers: {
-            ..._requestConfigRotateSecret?.headers,
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processRotateSecret(_response);
-    });
+let _requestConfigGetSubmission: Partial<AxiosRequestConfig> | null;
+export function getGetSubmissionRequestConfig() {
+  return _requestConfigGetSubmission;
+}
+export function setGetSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetSubmission = value;
+}
+export function patchGetSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetSubmission = patch(_requestConfigGetSubmission ?? {});
 }
 
-function processRotateSecret(response: AxiosResponse): Promise<string> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-    
-        result200 = resultData200;
-    
-        return Promise.resolve<string>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<string>(null as any);
+let _requestConfigMarkSubmission: Partial<AxiosRequestConfig> | null;
+export function getMarkSubmissionRequestConfig() {
+  return _requestConfigMarkSubmission;
 }
-let _requestConfigGetSubscriptions: Partial<AxiosRequestConfig> | null;
-export function getGetSubscriptionsRequestConfig() {
-  return _requestConfigGetSubscriptions;
+export function setMarkSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigMarkSubmission = value;
 }
-export function setGetSubscriptionsRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGetSubscriptions = value;
-}
-export function patchGetSubscriptionsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGetSubscriptions = patch(_requestConfigGetSubscriptions ?? {});
-}
-
-let _requestConfigSubscribeToEvent: Partial<AxiosRequestConfig> | null;
-export function getSubscribeToEventRequestConfig() {
-  return _requestConfigSubscribeToEvent;
-}
-export function setSubscribeToEventRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigSubscribeToEvent = value;
-}
-export function patchSubscribeToEventRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigSubscribeToEvent = patch(_requestConfigSubscribeToEvent ?? {});
-}
-
-let _requestConfigUpdateSubscription: Partial<AxiosRequestConfig> | null;
-export function getUpdateSubscriptionRequestConfig() {
-  return _requestConfigUpdateSubscription;
-}
-export function setUpdateSubscriptionRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigUpdateSubscription = value;
-}
-export function patchUpdateSubscriptionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigUpdateSubscription = patch(_requestConfigUpdateSubscription ?? {});
-}
-
-let _requestConfigUnsubscribe: Partial<AxiosRequestConfig> | null;
-export function getUnsubscribeRequestConfig() {
-  return _requestConfigUnsubscribe;
-}
-export function setUnsubscribeRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigUnsubscribe = value;
-}
-export function patchUnsubscribeRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigUnsubscribe = patch(_requestConfigUnsubscribe ?? {});
-}
-
-let _requestConfigRotateSecret: Partial<AxiosRequestConfig> | null;
-export function getRotateSecretRequestConfig() {
-  return _requestConfigRotateSecret;
-}
-export function setRotateSecretRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigRotateSecret = value;
-}
-export function patchRotateSecretRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigRotateSecret = patch(_requestConfigRotateSecret ?? {});
+export function patchMarkSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigMarkSubmission = patch(_requestConfigMarkSubmission ?? {});
 }

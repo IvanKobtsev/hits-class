@@ -14,33 +14,45 @@ export * from './api-client.types';
 import type { AxiosError } from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 
-export * as WebHookClient from './api-client/WebHookClient';
-
-export * as WebHookQuery from './api-client/WebHookQuery';
-
-
-
 export * as UserClient from './api-client/UserClient';
 
 export * as UserQuery from './api-client/UserQuery';
 
 
 
-export * as TestApiClient from './api-client/TestApiClient';
+export * as SubmissionClient from './api-client/SubmissionClient';
 
-export * as TestApiQuery from './api-client/TestApiQuery';
-
-
-
-export * as ProductClient from './api-client/ProductClient';
-
-export * as ProductQuery from './api-client/ProductQuery';
+export * as SubmissionQuery from './api-client/SubmissionQuery';
 
 
 
 export * as FilesClient from './api-client/FilesClient';
 
 export * as FilesQuery from './api-client/FilesQuery';
+
+
+
+export * as CourseClient from './api-client/CourseClient';
+
+export * as CourseQuery from './api-client/CourseQuery';
+
+
+
+export * as CommentClient from './api-client/CommentClient';
+
+export * as CommentQuery from './api-client/CommentQuery';
+
+
+
+export * as AssignmentClient from './api-client/AssignmentClient';
+
+export * as AssignmentQuery from './api-client/AssignmentQuery';
+
+
+
+export * as AnnouncementClient from './api-client/AnnouncementClient';
+
+export * as AnnouncementQuery from './api-client/AnnouncementQuery';
 
 
 
@@ -153,20 +165,32 @@ export function getResultTypeClassKey(queryKey: QueryKey): string {
 
 export function initPersister() {
   
-  addResultTypeFactory('WebHookClient___getSubscriptions', (data: any) => Types.initWebhookSubscriptionDto(data));
-
-
   addResultTypeFactory('UserClient___getCurrentUserInfo', (data: any) => Types.initCurrentUserDto(data));
+  addResultTypeFactory('UserClient___getUsers', (data: any) => Types.initPagedResultOfUserDto(data));
+
+
+  addResultTypeFactory('SubmissionClient___getSubmissions', (data: any) => Types.initPagedResultOfSubmissionListItem(data));
+  addResultTypeFactory('SubmissionClient___getMySubmission', (data: any) => Types.initSubmissionDto(data));
+  addResultTypeFactory('SubmissionClient___getSubmission', (data: any) => Types.initSubmissionDto(data));
 
 
 
 
-  addResultTypeFactory('ProductClient___search', (data: any) => Types.initPagedResultOfProductListItemDto(data));
-  addResultTypeFactory('ProductClient___get', (data: any) => Types.initProductDto(data));
+  addResultTypeFactory('CourseClient___getCourses', (data: any) => Types.initPagedResultOfCourseListItemDto(data));
+  addResultTypeFactory('CourseClient___getMyCourses', (data: any) => Types.initPagedResultOfCourseListItemDto(data));
+  addResultTypeFactory('CourseClient___getCourse', (data: any) => Types.initCourseDto(data));
+  addResultTypeFactory('CourseClient___getCourseMembers', (data: any) => Types.initPagedResultOfCourseMemberDto(data));
 
 
-  addResultTypeFactory('FilesClient___get', (data: any) => Types.initPagedResultOfFileInfoDto(data));
-  addResultTypeFactory('FilesClient___get2', (data: any) => Types.initFileInfoDto(data));
+  addResultTypeFactory('CommentClient___getAssignmentComments', (data: any) => Types.initPagedResultOfCommentDto(data));
+  addResultTypeFactory('CommentClient___getPublicationComments', (data: any) => Types.initPagedResultOfCommentDto(data));
+
+
+  addResultTypeFactory('AssignmentClient___getAssignment', (data: any) => Types.initAssignmentDto(data));
+  addResultTypeFactory('AssignmentClient___getAssignmentStatistics', (data: any) => Types.initAssignmentStatisticDto(data));
+
+
+  addResultTypeFactory('AnnouncementClient___getAnnouncement', (data: any) => Types.initAnnouncementDto(data));
 
 
 
