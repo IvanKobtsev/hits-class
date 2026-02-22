@@ -162,7 +162,7 @@ describe('LoginForm', () => {
 
   test('shows "Invalid login or password" when login fails', async () => {
     const user = userEvent.setup();
-    mockedSendLogin.mockRejectedValueOnce(new Error('Login_Failed'));
+    mockedSendLogin.mockRejectedValueOnce(new Error('Invalid login or password'));
     renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
@@ -181,7 +181,7 @@ describe('LoginForm', () => {
 
   test('shows "Authentication failed" on unknown error', async () => {
     const user = userEvent.setup();
-    mockedSendLogin.mockRejectedValueOnce(new Error('Login_Unknown_Failure'));
+    mockedSendLogin.mockRejectedValueOnce(new Error('Authentication failed'));
     renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');

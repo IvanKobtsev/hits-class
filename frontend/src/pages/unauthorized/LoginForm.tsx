@@ -55,13 +55,7 @@ export const LoginForm: React.FC = () => {
             errorText={form.formState.errors.password?.message}
           />
         </Field>
-        <FormError>
-          {form.overallError
-            ? i18n.t(form.overallError.toLowerCase() as any, {
-                defaultValue: form.overallError,
-              })
-            : null}
-        </FormError>
+        <FormError>{form.overallError ? form.overallError : null}</FormError>
         <div className={styles.buttonContainer}>
           <Button title={i18n.t('login_button')} type="submit" />
         </div>
