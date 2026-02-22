@@ -5,6 +5,7 @@ namespace Team13.WebApi.Domain.Helpers;
 
 public class GroupNumberAttribute : ValidationAttribute
 {
+    // TODO: Add error message translation
     protected override ValidationResult IsValid(object value, ValidationContext validationContext)
     {
         if (value == null)
