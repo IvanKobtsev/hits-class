@@ -1,76 +1,36 @@
 import React, { useState } from 'react';
+import { Button } from 'components/uikit/buttons/Button';
 import styles from './LoginPage.module.scss';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation';
-import { Button } from 'components/uikit/buttons/Button';
-import { Field } from 'components/uikit/Field';
-import { Input } from 'components/uikit/inputs/Input';
-import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
-import { requiredRule } from 'helpers/form/react-hook-form-helper';
-import { FormError } from 'components/uikit/FormError';
-import { Loading } from 'components/uikit/suspense/Loading';
-import { handleLoginErrors, sendLoginRequest } from 'helpers/auth/auth-client';
-import { queryClient } from 'services/api/query-client-helper';
+import { LoginForm } from './LoginForm';
+import { RegisterForm } from './RegisterForm';
 
-type Form = {
-  login: string;
-  password: string;
-};
-
-export const LoginPage: React.FC = (props) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const i18n = useScopedTranslation('Page.Login');
-  const form = useAdvancedForm<Form>(async (data) => {
-    setIsLoading(true);
-    try {
-      await sendLoginRequest(data.login, data.password.trim());
-      await queryClient.resetQueries();
-    } catch (e) {
-      handleLoginErrors(e);
-    } finally {
-      setIsLoading(false);
-    }
-  });
+export const LoginPage: React.FC = () => {
+  const [isRegistration, setIsRegistration] = useState(false);
+  const i18n = useScopedTranslation('Page.LoginPage');
   return (
     <div className={styles.root}>
       <div className={styles.gridContainer}>
         <div className={styles.mainBackground}></div>
         <div className={styles.appName}>{i18n.t('app_name')}</div>
         <div className={styles.loginContainer} data-test-id={'login-container'}>
-          <Loading loading={isLoading}>
-            <form onSubmit={form.handleSubmitDefault}>
-              <Field
-                title={i18n.t('login_field')}
-                className={styles.inputField}
-                testId="Login"
-              >
-                <Input
-                  {...form.register('login', { ...requiredRule() })}
-                  errorText={form.formState.errors.login?.message}
-                />
-              </Field>
-              <Field
-                title={i18n.t('password_field')}
-                className={styles.inputField}
-                testId="Password"
-              >
-                <Input
-                  {...form.register('password', { ...requiredRule() })}
-                  type="password"
-                  errorText={form.formState.errors.password?.message}
-                />
-              </Field>
-              <FormError>
-                {form.overallError
-                  ? i18n.t(form.overallError.toLowerCase() as any, {
-                      defaultValue: form.overallError,
-                    })
-                  : null}
-              </FormError>
-              <div className={styles.buttonContainer}>
-                <Button title={i18n.t('login_button')} type="submit" />
-              </div>
-            </form>
-          </Loading>
+          {isRegistration ? <RegisterForm /> : <LoginForm />}
+          <div className={styles.switchSection}>
+            <span className={styles.switchText}>
+              {isRegistration
+                ? i18n.t('have_account_text')
+                : i18n.t('no_account_text')}
+            </span>
+            <Button
+              className={styles.switchButton}
+              title={
+                isRegistration
+                  ? i18n.t('go_to_login_button')
+                  : i18n.t('create_account_button')
+              }
+              onClick={() => setIsRegistration(!isRegistration)}
+            />
+          </div>
         </div>
       </div>
     </div>

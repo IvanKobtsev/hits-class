@@ -7,7 +7,7 @@
 }
 
 .helperText[data-error='true'] {
-  color: rgba($danger, 0.5);
+  color: $danger;
 }
 
 .input {

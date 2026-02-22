@@ -14,6 +14,131 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
+ * Registers a new user. After registration, the user receives an email with a confirmation link.
+The user must click the link to confirm their email address and activate their account.
+ */
+export function register(dto: Types.RegisterUserDto, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/users/register";
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeRegisterUserDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigRegister,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigRegister?.headers,
+            "Content-Type": "application/json",
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processRegister(_response);
+    });
+}
+
+function processRegister(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
+/**
+ * Confirms user's email address.
+This endpoint is called when the user clicks the confirmation link in the email.
+ */
+export function confirmEmail(userId: string, config?: AxiosRequestConfig | undefined): Promise<Types.UserDto> {
+    let url_ = getBaseUrl() + "/api/users/confirm-email/{userId}";
+    if (userId === undefined || userId === null)
+      throw new Error("The parameter 'userId' must be defined.");
+    url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigConfirmEmail,
+        ...config,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigConfirmEmail?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processConfirmEmail(_response);
+    });
+}
+
+function processConfirmEmail(response: AxiosResponse): Promise<Types.UserDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initUserDto(resultData200);
+        return Promise.resolve<Types.UserDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.UserDto>(null as any);
+}
+
+/**
  * Gets permissions for the current user
  */
 export function getCurrentUserInfo(config?: AxiosRequestConfig | undefined): Promise<Types.CurrentUserDto> {
@@ -193,6 +318,169 @@ function processChangePassword(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
+
+/**
+ * Gets a list of all users. Only accessible by admins.
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ */
+export function getUsers(offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfUserDto> {
+    let url_ = getBaseUrl() + "/api/users?";
+    if (offset !== undefined && offset !== null)
+        url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
+    if (limit !== undefined && limit !== null)
+        url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
+    if (sortBy !== undefined && sortBy !== null)
+        url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
+    if (sortOrder === null)
+        throw new Error("The parameter 'sortOrder' cannot be null.");
+    else if (sortOrder !== undefined)
+        url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetUsers,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetUsers?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetUsers(_response);
+    });
+}
+
+function processGetUsers(response: AxiosResponse): Promise<Types.PagedResultOfUserDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPagedResultOfUserDto(resultData200);
+        return Promise.resolve<Types.PagedResultOfUserDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PagedResultOfUserDto>(null as any);
+}
+
+/**
+ * Changes roles for a user. Only accessible by admins.
+ */
+export function changeRolesForUser(userId: string, roles: string[], config?: AxiosRequestConfig | undefined): Promise<Types.UserDto> {
+    let url_ = getBaseUrl() + "/api/users/{userId}/roles";
+    if (userId === undefined || userId === null)
+      throw new Error("The parameter 'userId' must be defined.");
+    url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(roles);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigChangeRolesForUser,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigChangeRolesForUser?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processChangeRolesForUser(_response);
+    });
+}
+
+function processChangeRolesForUser(response: AxiosResponse): Promise<Types.UserDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initUserDto(resultData200);
+        return Promise.resolve<Types.UserDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.UserDto>(null as any);
+}
+let _requestConfigRegister: Partial<AxiosRequestConfig> | null;
+export function getRegisterRequestConfig() {
+  return _requestConfigRegister;
+}
+export function setRegisterRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigRegister = value;
+}
+export function patchRegisterRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigRegister = patch(_requestConfigRegister ?? {});
+}
+
+let _requestConfigConfirmEmail: Partial<AxiosRequestConfig> | null;
+export function getConfirmEmailRequestConfig() {
+  return _requestConfigConfirmEmail;
+}
+export function setConfirmEmailRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigConfirmEmail = value;
+}
+export function patchConfirmEmailRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigConfirmEmail = patch(_requestConfigConfirmEmail ?? {});
+}
+
 let _requestConfigGetCurrentUserInfo: Partial<AxiosRequestConfig> | null;
 export function getGetCurrentUserInfoRequestConfig() {
   return _requestConfigGetCurrentUserInfo;
@@ -224,4 +512,26 @@ export function setChangePasswordRequestConfig(value: Partial<AxiosRequestConfig
 }
 export function patchChangePasswordRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigChangePassword = patch(_requestConfigChangePassword ?? {});
+}
+
+let _requestConfigGetUsers: Partial<AxiosRequestConfig> | null;
+export function getGetUsersRequestConfig() {
+  return _requestConfigGetUsers;
+}
+export function setGetUsersRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetUsers = value;
+}
+export function patchGetUsersRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetUsers = patch(_requestConfigGetUsers ?? {});
+}
+
+let _requestConfigChangeRolesForUser: Partial<AxiosRequestConfig> | null;
+export function getChangeRolesForUserRequestConfig() {
+  return _requestConfigChangeRolesForUser;
+}
+export function setChangeRolesForUserRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigChangeRolesForUser = value;
+}
+export function patchChangeRolesForUserRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigChangeRolesForUser = patch(_requestConfigChangeRolesForUser ?? {});
 }

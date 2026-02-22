@@ -1,16 +1,33 @@
 {
   "Common_App": "HitsClass",
   "Page": {
-    "Login": {
+    "LoginPage": {
+      "app_name": "HitsClass",
+      "no_account_text": "Don't have an account?",
+      "create_account_button": "Create an account",
+      "have_account_text": "Already have an account?",
+      "go_to_login_button": "Login"
+    },
+    "RegisterForm": {
+      "email_field": "Email",
+      "legal_name_field": "Full name",
+      "group_number_field": "Group number (optional)",
+      "password_filed": "Password",
+      "register_button": "Register",
+      "success_title": "Registration successful",
+      "success_message": "Please check your email to confirm your account."
+    },
+    "LoginForm": {
       "login_field": "Login",
       "password_field": "Password",
       "login_button": "Login",
-      "app_name": "HitsClass",
       "login_unknown_failure": "Authentication failed",
       "login_failed": "Invalid login or password",
       "login_user_locked": "User is locked",
       "login_failed_or_user_is_locked": "Invalid login attempt or user is locked",
-      "network_error": "Network error"
+      "network_error": "Network error",
+      "no_account_text": "Don't have an account?",
+      "create_account_button": "Create an account"
     },
     "Products": {
       "Create": {
