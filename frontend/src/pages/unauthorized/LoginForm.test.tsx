@@ -25,10 +25,10 @@ import { queryClient } from 'services/api/query-client-helper';
 const mockedSendLogin = vi.mocked(sendLoginRequest);
 const mockedHandleLoginErrors = vi.mocked(handleLoginErrors);
 
-function renderLoginForm(onSwitchToRegister = vi.fn()) {
+function renderLoginForm() {
   return render(
     <MemoryRouter>
-      <LoginForm onSwitchToRegister={onSwitchToRegister} />
+      <LoginForm />
     </MemoryRouter>,
   );
 }
@@ -42,27 +42,6 @@ describe('LoginForm', () => {
   });
 
   // --- Rendering ---
-
-  test('renders "Don\'t have an account?" text and "Create an account" button', () => {
-    renderLoginForm();
-
-    expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /create an account/i }),
-    ).toBeInTheDocument();
-  });
-
-  test('calls onSwitchToRegister when "Create an account" button is clicked', async () => {
-    const user = userEvent.setup();
-    const onSwitchToRegister = vi.fn();
-    renderLoginForm(onSwitchToRegister);
-
-    await user.click(
-      screen.getByRole('button', { name: /create an account/i }),
-    );
-
-    expect(onSwitchToRegister).toHaveBeenCalledOnce();
-  });
 
   test('renders login field, password field, and login button', () => {
     renderLoginForm();

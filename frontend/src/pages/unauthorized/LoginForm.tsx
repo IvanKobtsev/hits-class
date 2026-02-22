@@ -16,13 +16,9 @@ type Form = {
   password: string;
 };
 
-type LoginFormProps = {
-  onSwitchToRegister?: () => void;
-};
-
-export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
+export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const i18n = useScopedTranslation('Page.Login');
+  const i18n = useScopedTranslation('Page.LoginForm');
   const form = useAdvancedForm<Form>(async (data) => {
     setIsLoading(true);
     try {
@@ -70,13 +66,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           <Button title={i18n.t('login_button')} type="submit" />
         </div>
       </form>
-      <div className={styles.switchSection}>
-        <span className={styles.switchText}>{i18n.t('no_account_text')}</span>
-        <Button
-          title={i18n.t('create_account_button')}
-          onClick={onSwitchToRegister}
-        />
-      </div>
     </Loading>
   );
 };

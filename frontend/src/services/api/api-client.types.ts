@@ -75,6 +75,7 @@ export interface RegisterUserDto  {
   email: string;
   legalName: string;
   groupNumber: string | null;
+  password: string;
 }
 export function deserializeRegisterUserDto(json: string): RegisterUserDto {
   const data = JSON.parse(json) as RegisterUserDto;
