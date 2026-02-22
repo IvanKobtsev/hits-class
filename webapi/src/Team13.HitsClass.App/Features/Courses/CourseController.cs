@@ -50,7 +50,7 @@ public class CourseController
     /// The user must be teaching in it to access this endpoint.
     /// </summary>
     [HttpGet("{courseId:int}/members")]
-    public async Task<List<CourseMemberDto>> GetCourseMembers([FromRoute] int courseId)
+    public async Task<PagedResult<CourseMemberDto>> GetCourseMembers([FromRoute] int courseId)
     {
         throw new NotImplementedException();
     }

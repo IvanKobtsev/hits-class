@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Comments.Dto;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Comments;
 
@@ -10,7 +11,7 @@ public class CommentController
     /// Retrieves all Comments of the specified Assignment.
     /// </summary>
     [HttpGet("assignments/{assignmentId:int}/comments")]
-    public Task<List<CommentDto>> GetAssignmentComments(int assignmentId)
+    public Task<PagedResult<CommentDto>> GetAssignmentComments(int assignmentId)
     {
         throw new NotImplementedException();
     }
@@ -31,7 +32,7 @@ public class CommentController
     /// Retrieves all Comments of the specified Publication.
     /// </summary>
     [HttpGet("publication/{publicationId:int}/comments")]
-    public Task<List<CommentDto>> GetPublicationComments(int publicationId)
+    public Task<PagedResult<CommentDto>> GetPublicationComments(int publicationId)
     {
         throw new NotImplementedException();
     }

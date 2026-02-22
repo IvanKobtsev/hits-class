@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Users.Dto;
 using Team13.HitsClass.Common;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Users;
 
@@ -72,7 +73,7 @@ public class UserController
     /// </summary>
     [Authorize(Roles = UserRoles.Admin)]
     [HttpGet]
-    public async Task<List<UserDto>> GetUsers([FromQuery] SearchUsersDto searchDto)
+    public async Task<PagedResult<UserDto>> GetUsers([FromQuery] SearchUsersDto searchDto)
     {
         throw new NotImplementedException();
     }
