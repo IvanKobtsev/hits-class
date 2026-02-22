@@ -37,25 +37,6 @@ public class FilesController
     }
 
     /// <summary>
-    /// Gets metadata of a file by its ID. The metadata includes file name, size, creation date, and other relevant information.
-    /// </summary>
-    [HttpGet("{fileId:guid}/info")]
-    public async Task<FileInfoDto> Get(Guid fileId)
-    {
-        return await _fileService.Get(fileId);
-    }
-
-    /// <summary>
-    /// Searches for files based on various criteria such as file name, ID, or metadata.
-    /// Returns a paginated list of file metadata that matches the search criteria.
-    /// </summary>
-    [HttpGet]
-    public async Task<PagedResult<FileInfoDto>> Get([FromQuery] SearchFileDto searchDto)
-    {
-        return await _fileService.Get(searchDto);
-    }
-
-    /// <summary>
     /// Deletes a file by its ID. This operation removes the file from both the disk and the database.
     /// </summary>
     [HttpDelete("{fileId:guid}")]
