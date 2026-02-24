@@ -1,0 +1,11 @@
+@use '../../styles/base' as *;
+
+.inputField {
+  padding-bottom: 15px;
+}
+
+.buttonContainer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}

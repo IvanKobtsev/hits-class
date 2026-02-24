@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Users.Dto;
+using Team13.HitsClass.Common;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Users;
 
@@ -15,20 +17,24 @@ public class UserController
         _userService = userService;
     }
 
+    /// <summary>
+    /// Registers a new user. After registration, the user receives an email with a confirmation link.
+    /// The user must click the link to confirm their email address and activate their account.
+    /// </summary>
+    [AllowAnonymous]
     [HttpPost("register")]
     public async Task Register([FromBody] RegisterUserDto dto)
     {
         throw new NotImplementedException();
     }
 
-    [HttpPost("confirm-email/{id}")]
-    public async Task<UserDto> ConfirmEmail([FromRoute] string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpGet]
-    public async Task<List<CourseMemberDto>> GetMembersOfClass(int classId)
+    /// <summary>
+    /// Confirms user's email address.
+    /// This endpoint is called when the user clicks the confirmation link in the email.
+    /// </summary>
+    [AllowAnonymous]
+    [HttpPost("confirm-email/{userId}")]
+    public async Task<UserDto> ConfirmEmail([FromRoute] string userId)
     {
         throw new NotImplementedException();
     }
@@ -60,5 +66,28 @@ public class UserController
     public async Task ChangePassword(ChangePasswordDto dto)
     {
         await _userService.ChangePassword(dto);
+    }
+
+    /// <summary>
+    /// Gets a list of all users. Only accessible by admins.
+    /// </summary>
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpGet]
+    public async Task<PagedResult<UserDto>> GetUsers([FromQuery] SearchUsersDto searchDto)
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Changes roles for a user. Only accessible by admins.
+    /// </summary>
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpPut("{userId}/roles")]
+    public async Task<UserDto> ChangeRolesForUser(
+        [FromRoute] string userId,
+        [FromBody] List<string> roles
+    )
+    {
+        throw new NotImplementedException();
     }
 }

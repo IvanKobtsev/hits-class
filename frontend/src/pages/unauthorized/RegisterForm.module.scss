@@ -1,0 +1,52 @@
+@use '../../styles/base' as *;
+
+.inputField {
+  padding-bottom: 15px;
+}
+
+.buttonContainer {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.switchSection {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.switchText {
+  font-size: 12px;
+  color: #7e8b8b;
+}
+
+.successContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.successTitle {
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0;
+}
+
+.successMessage {
+  font-size: 14px;
+  color: #555;
+  margin: 0;
+}
+
+.switchButton {
+  background-color: transparent;
+  color: blue;
+  text-decoration: underline;
+
+  &:hover {
+    background-color: transparent;
+  }
+}

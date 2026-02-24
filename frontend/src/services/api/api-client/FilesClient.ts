@@ -14,7 +14,7 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * returns a file id
+ * Uploads a file and returns its metadata. The file is expected to be sent as form data with the key "file".
  * @param file (optional) 
  */
 export function uploadFile(file?: Types.FileParameter | null | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.FileInfoDto> {
@@ -80,92 +80,13 @@ function processUploadFile(response: AxiosResponse): Promise<Types.FileInfoDto> 
 }
 
 /**
- * @param id (optional) 
- * @param fileName (optional) 
- * @param metadata_ExternalId (optional) 
- * @param offset (optional) Offset of list.
- * @param limit (optional) Number of requested records.
- * @param sortBy (optional) Field name for sorting in DB.
- * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ * Downloads a file by its ID. The file is returned as a stream with the appropriate content type and file name.
  */
-export function get(id?: string | null | undefined, fileName?: string | null | undefined, metadata_ExternalId?: string | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfFileInfoDto> {
-    let url_ = getBaseUrl() + "/api/files?";
-    if (id !== undefined && id !== null)
-        url_ += "Id=" + encodeURIComponent("" + id) + "&";
-    if (fileName !== undefined && fileName !== null)
-        url_ += "FileName=" + encodeURIComponent("" + fileName) + "&";
-    if (metadata_ExternalId !== undefined && metadata_ExternalId !== null)
-        url_ += "Metadata.ExternalId=" + encodeURIComponent("" + metadata_ExternalId) + "&";
-    if (offset !== undefined && offset !== null)
-        url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
-    if (limit !== undefined && limit !== null)
-        url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
-    if (sortBy !== undefined && sortBy !== null)
-        url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
-    if (sortOrder === null)
-        throw new Error("The parameter 'sortOrder' cannot be null.");
-    else if (sortOrder !== undefined)
-        url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigGet,
-        ...config,
-        method: "GET",
-        url: url_,
-        headers: {
-            ..._requestConfigGet?.headers,
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processGet(_response);
-    });
-}
-
-function processGet(response: AxiosResponse): Promise<Types.PagedResultOfFileInfoDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfFileInfoDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfFileInfoDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.PagedResultOfFileInfoDto>(null as any);
-}
-
-export function downloadFile(id: string, config?: AxiosRequestConfig | undefined): Promise<Types.FileResponse> {
-    let url_ = getBaseUrl() + "/api/files/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function downloadFile(fileId: string, config?: AxiosRequestConfig | undefined): Promise<Types.FileResponse> {
+    let url_ = getBaseUrl() + "/api/files/{fileId}";
+    if (fileId === undefined || fileId === null)
+      throw new Error("The parameter 'fileId' must be defined.");
+    url_ = url_.replace("{fileId}", encodeURIComponent("" + fileId));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
@@ -226,11 +147,14 @@ function processDownloadFile(response: AxiosResponse): Promise<Types.FileRespons
     return Promise.resolve<Types.FileResponse>(null as any);
 }
 
-export function delete_(id: string, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/files/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+/**
+ * Deletes a file by its ID. This operation removes the file from both the disk and the database.
+ */
+export function delete_(fileId: string, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/files/{fileId}";
+    if (fileId === undefined || fileId === null)
+      throw new Error("The parameter 'fileId' must be defined.");
+    url_ = url_.replace("{fileId}", encodeURIComponent("" + fileId));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
@@ -281,66 +205,6 @@ function processDelete(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
-
-export function get2(id: string, config?: AxiosRequestConfig | undefined): Promise<Types.FileInfoDto> {
-    let url_ = getBaseUrl() + "/api/files/{id}/info";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigGet2,
-        ...config,
-        method: "GET",
-        url: url_,
-        headers: {
-            ..._requestConfigGet2?.headers,
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processGet2(_response);
-    });
-}
-
-function processGet2(response: AxiosResponse): Promise<Types.FileInfoDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initFileInfoDto(resultData200);
-        return Promise.resolve<Types.FileInfoDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.FileInfoDto>(null as any);
-}
 let _requestConfigUploadFile: Partial<AxiosRequestConfig> | null;
 export function getUploadFileRequestConfig() {
   return _requestConfigUploadFile;
@@ -350,17 +214,6 @@ export function setUploadFileRequestConfig(value: Partial<AxiosRequestConfig>) {
 }
 export function patchUploadFileRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigUploadFile = patch(_requestConfigUploadFile ?? {});
-}
-
-let _requestConfigGet: Partial<AxiosRequestConfig> | null;
-export function getGetRequestConfig() {
-  return _requestConfigGet;
-}
-export function setGetRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGet = value;
-}
-export function patchGetRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGet = patch(_requestConfigGet ?? {});
 }
 
 let _requestConfigDownloadFile: Partial<AxiosRequestConfig> | null;
@@ -383,15 +236,4 @@ export function setDeleteRequestConfig(value: Partial<AxiosRequestConfig>) {
 }
 export function patchDeleteRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigDelete = patch(_requestConfigDelete ?? {});
-}
-
-let _requestConfigGet2: Partial<AxiosRequestConfig> | null;
-export function getGet2RequestConfig() {
-  return _requestConfigGet2;
-}
-export function setGet2RequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGet2 = value;
-}
-export function patchGet2RequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGet2 = patch(_requestConfigGet2 ?? {});
 }

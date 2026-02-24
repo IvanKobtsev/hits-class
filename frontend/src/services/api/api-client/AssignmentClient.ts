@@ -13,21 +13,23 @@ import type { AxiosRequestConfig, AxiosResponse, CancelToken } from 'axios';
 import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
-export function create(dto: Types.CreateProductDto, config?: AxiosRequestConfig | undefined): Promise<Types.ProductDto> {
-    let url_ = getBaseUrl() + "/api/products";
+/**
+ * Gets full information for specific assignment
+ */
+export function getAssignment(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializeCreateProductDto(dto);
-
     let options_: AxiosRequestConfig = {
-        ..._requestConfigCreate,
+        ..._requestConfigGetAssignment,
         ...config,
-        data: content_,
-        method: "POST",
+        method: "GET",
         url: url_,
         headers: {
-            ..._requestConfigCreate?.headers,
-            "Content-Type": "application/json",
+            ..._requestConfigGetAssignment?.headers,
             "Accept": "application/json"
         }
     };
@@ -39,11 +41,11 @@ export function create(dto: Types.CreateProductDto, config?: AxiosRequestConfig 
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processCreate(_response);
+        return processGetAssignment(_response);
     });
 }
 
-function processCreate(response: AxiosResponse): Promise<Types.ProductDto> {
+function processGetAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -64,31 +66,37 @@ function processCreate(response: AxiosResponse): Promise<Types.ProductDto> {
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initProductDto(resultData200);
-        return Promise.resolve<Types.ProductDto>(result200);
+        result200 = Types.initAssignmentDto(resultData200);
+        return Promise.resolve<Types.AssignmentDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.ProductDto>(null as any);
+    return Promise.resolve<Types.AssignmentDto>(null as any);
 }
 
-export function delete_(id?: number | undefined, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/products?";
-    if (id === null)
-        throw new Error("The parameter 'id' cannot be null.");
-    else if (id !== undefined)
-        url_ += "id=" + encodeURIComponent("" + id) + "&";
+/**
+ * Update specific assignment (check permission)
+ */
+export function updateAssignment(id: number, dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
+    const content_ = Types.serializeCreateAssignmentDto(dto);
+
     let options_: AxiosRequestConfig = {
-        ..._requestConfigDelete,
+        ..._requestConfigUpdateAssignment,
         ...config,
-        method: "DELETE",
+        data: content_,
+        method: "PUT",
         url: url_,
         headers: {
-            ..._requestConfigDelete?.headers,
+            ..._requestConfigUpdateAssignment?.headers,
+            "Content-Type": "application/json",
         }
     };
 
@@ -99,11 +107,11 @@ export function delete_(id?: number | undefined, config?: AxiosRequestConfig | u
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processDelete(_response);
+        return processUpdateAssignment(_response);
     });
 }
 
-function processDelete(response: AxiosResponse): Promise<void> {
+function processUpdateAssignment(response: AxiosResponse): Promise<void> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -132,41 +140,81 @@ function processDelete(response: AxiosResponse): Promise<void> {
 }
 
 /**
- * @param search (optional) 
- * @param productType (optional) 
- * @param lastStockUpdatedAt (optional) 
- * @param offset (optional) Offset of list.
- * @param limit (optional) Number of requested records.
- * @param sortBy (optional) Field name for sorting in DB.
- * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ * Delete specific assignment (check permission)
  */
-export function search(search?: string | null | undefined, productType?: Types.ProductType | null | undefined, lastStockUpdatedAt?: Date | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfProductListItemDto> {
-    let url_ = getBaseUrl() + "/api/products?";
-    if (search !== undefined && search !== null)
-        url_ += "Search=" + encodeURIComponent("" + search) + "&";
-    if (productType !== undefined && productType !== null)
-        url_ += "ProductType=" + encodeURIComponent("" + productType) + "&";
-    if (lastStockUpdatedAt !== undefined && lastStockUpdatedAt !== null)
-        url_ += "LastStockUpdatedAt=" + encodeURIComponent(lastStockUpdatedAt ? "" + Types.formatDate(lastStockUpdatedAt) : "") + "&";
-    if (offset !== undefined && offset !== null)
-        url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
-    if (limit !== undefined && limit !== null)
-        url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
-    if (sortBy !== undefined && sortBy !== null)
-        url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
-    if (sortOrder === null)
-        throw new Error("The parameter 'sortOrder' cannot be null.");
-    else if (sortOrder !== undefined)
-        url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
+export function deleteAssignment(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigSearch,
+        ..._requestConfigDeleteAssignment,
+        ...config,
+        method: "DELETE",
+        url: url_,
+        headers: {
+            ..._requestConfigDeleteAssignment?.headers,
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processDeleteAssignment(_response);
+    });
+}
+
+function processDeleteAssignment(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
+/**
+ * Gets statistics for specific assignment
+ */
+export function getAssignmentStatistics(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentStatisticDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/statistics";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetAssignmentStatistics,
         ...config,
         method: "GET",
         url: url_,
         headers: {
-            ..._requestConfigSearch?.headers,
+            ..._requestConfigGetAssignmentStatistics?.headers,
             "Accept": "application/json"
         }
     };
@@ -178,11 +226,11 @@ export function search(search?: string | null | undefined, productType?: Types.P
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processSearch(_response);
+        return processGetAssignmentStatistics(_response);
     });
 }
 
-function processSearch(response: AxiosResponse): Promise<Types.PagedResultOfProductListItemDto> {
+function processGetAssignmentStatistics(response: AxiosResponse): Promise<Types.AssignmentStatisticDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -203,33 +251,33 @@ function processSearch(response: AxiosResponse): Promise<Types.PagedResultOfProd
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfProductListItemDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfProductListItemDto>(result200);
+        result200 = Types.initAssignmentStatisticDto(resultData200);
+        return Promise.resolve<Types.AssignmentStatisticDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PagedResultOfProductListItemDto>(null as any);
+    return Promise.resolve<Types.AssignmentStatisticDto>(null as any);
 }
 
-export function patch(id: number, dto: Types.PatchProductDto, config?: AxiosRequestConfig | undefined): Promise<Types.ProductDto> {
-    let url_ = getBaseUrl() + "/api/products/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+/**
+ * Create assignment (check permission)
+ */
+export function createAssignment(dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
+    let url_ = getBaseUrl() + "/api/assignments";
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializePatchProductDto(dto);
+    const content_ = Types.serializeCreateAssignmentDto(dto);
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigPatch,
+        ..._requestConfigCreateAssignment,
         ...config,
         data: content_,
-        method: "PATCH",
+        method: "POST",
         url: url_,
         headers: {
-            ..._requestConfigPatch?.headers,
+            ..._requestConfigCreateAssignment?.headers,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -242,11 +290,11 @@ export function patch(id: number, dto: Types.PatchProductDto, config?: AxiosRequ
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processPatch(_response);
+        return processCreateAssignment(_response);
     });
 }
 
-function processPatch(response: AxiosResponse): Promise<Types.ProductDto> {
+function processCreateAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -267,126 +315,66 @@ function processPatch(response: AxiosResponse): Promise<Types.ProductDto> {
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initProductDto(resultData200);
-        return Promise.resolve<Types.ProductDto>(result200);
+        result200 = Types.initAssignmentDto(resultData200);
+        return Promise.resolve<Types.AssignmentDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.ProductDto>(null as any);
+    return Promise.resolve<Types.AssignmentDto>(null as any);
+}
+let _requestConfigGetAssignment: Partial<AxiosRequestConfig> | null;
+export function getGetAssignmentRequestConfig() {
+  return _requestConfigGetAssignment;
+}
+export function setGetAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignment = value;
+}
+export function patchGetAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignment = patch(_requestConfigGetAssignment ?? {});
 }
 
-export function get(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.ProductDto> {
-    let url_ = getBaseUrl() + "/api/products/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigGet,
-        ...config,
-        method: "GET",
-        url: url_,
-        headers: {
-            ..._requestConfigGet?.headers,
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processGet(_response);
-    });
+let _requestConfigUpdateAssignment: Partial<AxiosRequestConfig> | null;
+export function getUpdateAssignmentRequestConfig() {
+  return _requestConfigUpdateAssignment;
+}
+export function setUpdateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigUpdateAssignment = value;
+}
+export function patchUpdateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigUpdateAssignment = patch(_requestConfigUpdateAssignment ?? {});
 }
 
-function processGet(response: AxiosResponse): Promise<Types.ProductDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initProductDto(resultData200);
-        return Promise.resolve<Types.ProductDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.ProductDto>(null as any);
+let _requestConfigDeleteAssignment: Partial<AxiosRequestConfig> | null;
+export function getDeleteAssignmentRequestConfig() {
+  return _requestConfigDeleteAssignment;
 }
-let _requestConfigCreate: Partial<AxiosRequestConfig> | null;
-export function getCreateRequestConfig() {
-  return _requestConfigCreate;
+export function setDeleteAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigDeleteAssignment = value;
 }
-export function setCreateRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigCreate = value;
-}
-export function patchCreateRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigCreate = patch(_requestConfigCreate ?? {});
+export function patchDeleteAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigDeleteAssignment = patch(_requestConfigDeleteAssignment ?? {});
 }
 
-let _requestConfigDelete: Partial<AxiosRequestConfig> | null;
-export function getDeleteRequestConfig() {
-  return _requestConfigDelete;
+let _requestConfigGetAssignmentStatistics: Partial<AxiosRequestConfig> | null;
+export function getGetAssignmentStatisticsRequestConfig() {
+  return _requestConfigGetAssignmentStatistics;
 }
-export function setDeleteRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigDelete = value;
+export function setGetAssignmentStatisticsRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignmentStatistics = value;
 }
-export function patchDeleteRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigDelete = patch(_requestConfigDelete ?? {});
-}
-
-let _requestConfigSearch: Partial<AxiosRequestConfig> | null;
-export function getSearchRequestConfig() {
-  return _requestConfigSearch;
-}
-export function setSearchRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigSearch = value;
-}
-export function patchSearchRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigSearch = patch(_requestConfigSearch ?? {});
+export function patchGetAssignmentStatisticsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignmentStatistics = patch(_requestConfigGetAssignmentStatistics ?? {});
 }
 
-let _requestConfigPatch: Partial<AxiosRequestConfig> | null;
-export function getPatchRequestConfig() {
-  return _requestConfigPatch;
+let _requestConfigCreateAssignment: Partial<AxiosRequestConfig> | null;
+export function getCreateAssignmentRequestConfig() {
+  return _requestConfigCreateAssignment;
 }
-export function setPatchRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigPatch = value;
+export function setCreateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAssignment = value;
 }
-export function patchPatchRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigPatch = patch(_requestConfigPatch ?? {});
-}
-
-let _requestConfigGet: Partial<AxiosRequestConfig> | null;
-export function getGetRequestConfig() {
-  return _requestConfigGet;
-}
-export function setGetRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGet = value;
-}
-export function patchGetRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGet = patch(_requestConfigGet ?? {});
+export function patchCreateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAssignment = patch(_requestConfigCreateAssignment ?? {});
 }

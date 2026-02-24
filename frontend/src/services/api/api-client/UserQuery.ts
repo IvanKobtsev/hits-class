@@ -18,8 +18,105 @@ import * as Client from './UserClient'
 export { Client };
 import type { AxiosRequestConfig } from 'axios';
 
+export type ConfirmEmailUserQueryParameters = {
+  userId: string ;
+}
 
 
+export type GetUsersUserQueryParameters = {
+  offset?: number | null | undefined ;
+  limit?: number | null | undefined ;
+  sortBy?: string | null | undefined ;
+  sortOrder?: Types.SortOrder | undefined ;
+}
+
+export type ChangeRolesForUserUserQueryParameters = {
+  userId: string ;
+}
+
+export function registerUrl(): string {
+  let url_ = getBaseUrl() + "/api/users/register";
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function registerMutationKey(): MutationKey {
+  return trimArrayEnd([
+      'UserClient',
+      'register',
+    ]);
+}
+
+/**
+ * Registers a new user. After registration, the user receives an email with a confirmation link.
+The user must click the link to confirm their email address and activate their account.
+ */
+export function useRegisterMutation<TContext>(options?: Omit<UseMutationOptions<void, unknown, Types.RegisterUserDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.RegisterUserDto, TContext> {
+  const key = registerMutationKey();
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.RegisterUserDto) => Client.register(dto),
+    mutationKey: key,
+  });
+}
+  
+export function confirmEmailUrl(userId: string): string {
+  let url_ = getBaseUrl() + "/api/users/confirm-email/{userId}";
+if (userId === undefined || userId === null)
+  throw new Error("The parameter 'userId' must be defined.");
+url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function confirmEmailMutationKey(userId: string): MutationKey {
+  return trimArrayEnd([
+      'UserClient',
+      'confirmEmail',
+      userId as any,
+    ]);
+}
+
+/**
+ * Confirms user's email address.
+This endpoint is called when the user clicks the confirmation link in the email.
+ */
+export function useConfirmEmailMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<Types.UserDto, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.UserDto, unknown, void, TContext> {
+  const key = confirmEmailMutationKey(userId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.confirmEmail(userId),
+    mutationKey: key,
+  });
+}
+  
+type ConfirmEmail__MutationParameters = ConfirmEmailUserQueryParameters
+
+/**
+ * Confirms user's email address.
+This endpoint is called when the user clicks the confirmation link in the email.
+ */
+export function useConfirmEmailMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.UserDto, unknown, ConfirmEmail__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: ConfirmEmailUserQueryParameters}): UseMutationResult<Types.UserDto, unknown, ConfirmEmail__MutationParameters, TContext> {
+  const key = confirmEmailMutationKey(options?.parameters?.userId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: ConfirmEmail__MutationParameters) => Client.confirmEmail(data.userId ?? options?.parameters?.userId!),
+  mutationKey: key,
+});
+}
+  
 export function getCurrentUserInfoUrl(): string {
   let url_ = getBaseUrl() + "/api/users/me";
   url_ = url_.replace(/[?&]$/, "");
@@ -147,4 +244,175 @@ export function useChangePasswordMutation<TContext>(options?: Omit<UseMutationOp
     mutationFn: (dto: Types.ChangePasswordDto) => Client.changePassword(dto),
     mutationKey: key,
   });
+}
+  
+export function getUsersUrl(offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
+  let url_ = getBaseUrl() + "/api/users?";
+if (offset !== undefined && offset !== null)
+    url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
+if (limit !== undefined && limit !== null)
+    url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
+if (sortBy !== undefined && sortBy !== null)
+    url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
+if (sortOrder === null)
+    throw new Error("The parameter 'sortOrder' cannot be null.");
+else if (sortOrder !== undefined)
+    url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getUsersDefaultOptions: Omit<UseQueryOptions<Types.PagedResultOfUserDto, unknown, Types.PagedResultOfUserDto>, 'queryKey'> = {
+  queryFn: __getUsers,
+};
+export function getGetUsersDefaultOptions() {
+  return getUsersDefaultOptions;
+};
+export function setGetUsersDefaultOptions(options: typeof getUsersDefaultOptions) {
+  getUsersDefaultOptions = options;
+}
+
+export function getUsersQueryKey(dto: GetUsersUserQueryParameters): QueryKey;
+export function getUsersQueryKey(offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): QueryKey;
+export function getUsersQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { offset, limit, sortBy, sortOrder,  } = params[0] as GetUsersUserQueryParameters;
+
+    return trimArrayEnd([
+        'UserClient',
+        'getUsers',
+        offset as any,
+        limit as any,
+        sortBy as any,
+        sortOrder as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'UserClient',
+        'getUsers',
+        ...params
+      ]);
+  }
+}
+function __getUsers(context: QueryFunctionContext) {
+  return Client.getUsers(
+      context.queryKey[2] as number | null | undefined,       context.queryKey[3] as number | null | undefined,       context.queryKey[4] as string | null | undefined,       context.queryKey[5] as Types.SortOrder | undefined    );
+}
+
+export function useGetUsersQuery<TSelectData = Types.PagedResultOfUserDto, TError = unknown>(dto: GetUsersUserQueryParameters, options?: Omit<UseQueryOptions<Types.PagedResultOfUserDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Gets a list of all users. Only accessible by admins.
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ */
+export function useGetUsersQuery<TSelectData = Types.PagedResultOfUserDto, TError = unknown>(offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, options?: Omit<UseQueryOptions<Types.PagedResultOfUserDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetUsersQuery<TSelectData = Types.PagedResultOfUserDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.PagedResultOfUserDto, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let offset: any = undefined;
+  let limit: any = undefined;
+  let sortBy: any = undefined;
+  let sortOrder: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ offset, limit, sortBy, sortOrder,  } = params[0] as GetUsersUserQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [offset, limit, sortBy, sortOrder, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.PagedResultOfUserDto, TError, TSelectData>({
+    queryFn: __getUsers,
+    queryKey: getUsersQueryKey(offset, limit, sortBy, sortOrder),
+    ...getUsersDefaultOptions as unknown as Omit<UseQueryOptions<Types.PagedResultOfUserDto, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Gets a list of all users. Only accessible by admins.
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ */
+export function setGetUsersData(queryClient: QueryClient, updater: (data: Types.PagedResultOfUserDto | undefined) => Types.PagedResultOfUserDto, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined) {
+  queryClient.setQueryData(getUsersQueryKey(offset, limit, sortBy, sortOrder),
+    updater
+  );
+}
+
+/**
+ * Gets a list of all users. Only accessible by admins.
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
+ */
+export function setGetUsersDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PagedResultOfUserDto | undefined) => Types.PagedResultOfUserDto) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function changeRolesForUserUrl(userId: string): string {
+  let url_ = getBaseUrl() + "/api/users/{userId}/roles";
+if (userId === undefined || userId === null)
+  throw new Error("The parameter 'userId' must be defined.");
+url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function changeRolesForUserMutationKey(userId: string): MutationKey {
+  return trimArrayEnd([
+      'UserClient',
+      'changeRolesForUser',
+      userId as any,
+    ]);
+}
+
+/**
+ * Changes roles for a user. Only accessible by admins.
+ */
+export function useChangeRolesForUserMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<Types.UserDto, unknown, string[], TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.UserDto, unknown, string[], TContext> {
+  const key = changeRolesForUserMutationKey(userId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (roles: string[]) => Client.changeRolesForUser(userId, roles),
+    mutationKey: key,
+  });
+}
+  
+type ChangeRolesForUser__MutationParameters = ChangeRolesForUserUserQueryParameters & {
+  roles: string[];
+}
+
+/**
+ * Changes roles for a user. Only accessible by admins.
+ */
+export function useChangeRolesForUserMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.UserDto, unknown, ChangeRolesForUser__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: ChangeRolesForUserUserQueryParameters}): UseMutationResult<Types.UserDto, unknown, ChangeRolesForUser__MutationParameters, TContext> {
+  const key = changeRolesForUserMutationKey(options?.parameters?.userId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: ChangeRolesForUser__MutationParameters) => Client.changeRolesForUser(data.userId ?? options?.parameters?.userId!, data.roles),
+  mutationKey: key,
+});
 }

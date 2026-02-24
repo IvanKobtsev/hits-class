@@ -71,134 +71,57 @@ export function prepareSerializeValidationProblemDetails(_data: ValidationProble
   const data = prepareSerializeHttpValidationProblemDetails(_data as ValidationProblemDetails) as Record<string, any>;
   return data as ValidationProblemDetails;
 }
-/** Webhook subscription DTO */
-export interface WebhookSubscriptionDto  {
-  id: string;
-  /** Human-readable name of integration */
-  name: string;
-  /** URL for integration */
-  url: string;
-  eventType: WebHookEventType;
-  isSignatureGenerated: boolean;
-  method: string | null;
-  headers: { [key: string]: string; } | null;
+export interface RegisterUserDto  {
+  email: string;
+  legalName: string;
+  groupNumber: string | null;
+  password: string;
 }
-export function deserializeWebhookSubscriptionDto(json: string): WebhookSubscriptionDto {
-  const data = JSON.parse(json) as WebhookSubscriptionDto;
-  initWebhookSubscriptionDto(data);
+export function deserializeRegisterUserDto(json: string): RegisterUserDto {
+  const data = JSON.parse(json) as RegisterUserDto;
+  initRegisterUserDto(data);
   return data;
 }
-export function initWebhookSubscriptionDto(_data: WebhookSubscriptionDto) {
-  if (_data) {
-    _data.eventType = _data["eventType"];
-  }
-  return _data;
-}
-export function serializeWebhookSubscriptionDto(_data: WebhookSubscriptionDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeWebhookSubscriptionDto(_data as WebhookSubscriptionDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeWebhookSubscriptionDto(_data: WebhookSubscriptionDto): WebhookSubscriptionDto {
-  const data: Record<string, any> = { ..._data };
-  return data as WebhookSubscriptionDto;
-}
-export enum WebHookEventType {
-    NewProduct = "NewProduct",
-    ProductDeleted = "ProductDeleted",
-}
-/** Webhook subscription DTO */
-export interface WebHookSubscribedDto extends WebhookSubscriptionDto  {
-  signatureSecret: string;
-}
-export function deserializeWebHookSubscribedDto(json: string): WebHookSubscribedDto {
-  const data = JSON.parse(json) as WebHookSubscribedDto;
-  initWebHookSubscribedDto(data);
-  return data;
-}
-export function initWebHookSubscribedDto(_data: WebHookSubscribedDto) {
-  initWebhookSubscriptionDto(_data);
+export function initRegisterUserDto(_data: RegisterUserDto) {
     return _data;
 }
-export function serializeWebHookSubscribedDto(_data: WebHookSubscribedDto | undefined) {
+export function serializeRegisterUserDto(_data: RegisterUserDto | undefined) {
   if (_data) {
-    _data = prepareSerializeWebHookSubscribedDto(_data as WebHookSubscribedDto);
+    _data = prepareSerializeRegisterUserDto(_data as RegisterUserDto);
   }
   return JSON.stringify(_data);
 }
-export function prepareSerializeWebHookSubscribedDto(_data: WebHookSubscribedDto): WebHookSubscribedDto {
-  const data = prepareSerializeWebhookSubscriptionDto(_data as WebHookSubscribedDto) as Record<string, any>;
-  return data as WebHookSubscribedDto;
+export function prepareSerializeRegisterUserDto(_data: RegisterUserDto): RegisterUserDto {
+  const data: Record<string, any> = { ..._data };
+  return data as RegisterUserDto;
 }
-/** Webhook subscription DTO */
-export interface CreateWebHookDto  {
-  /** Human-readable name of integration */
-  name: string;
-  /** URL for integration */
-  url: string;
-  eventType: WebHookEventType;
-  method: string | null;
-  headers: { [key: string]: string; } | null;
+export interface UserDto  {
+  id: string;
+  email: string;
+  legalName: string;
+  groupNumber: string | null;
 }
-export function deserializeCreateWebHookDto(json: string): CreateWebHookDto {
-  const data = JSON.parse(json) as CreateWebHookDto;
-  initCreateWebHookDto(data);
+export function deserializeUserDto(json: string): UserDto {
+  const data = JSON.parse(json) as UserDto;
+  initUserDto(data);
   return data;
 }
-export function initCreateWebHookDto(_data: CreateWebHookDto) {
-  if (_data) {
-    _data.eventType = _data["eventType"];
-  }
-  return _data;
+export function initUserDto(_data: UserDto) {
+    return _data;
 }
-export function serializeCreateWebHookDto(_data: CreateWebHookDto | undefined) {
+export function serializeUserDto(_data: UserDto | undefined) {
   if (_data) {
-    _data = prepareSerializeCreateWebHookDto(_data as CreateWebHookDto);
+    _data = prepareSerializeUserDto(_data as UserDto);
   }
   return JSON.stringify(_data);
 }
-export function prepareSerializeCreateWebHookDto(_data: CreateWebHookDto): CreateWebHookDto {
+export function prepareSerializeUserDto(_data: UserDto): UserDto {
   const data: Record<string, any> = { ..._data };
-  return data as CreateWebHookDto;
-}
-/** Webhook subscription DTO */
-export interface UpdateWebHookSubscriptionDto  {
-  /** Webhook name (Human readable name of integration). */
-  name?: string;
-  /** Webhook URL for integration. */
-  url?: string;
-  /** HTTP method for accessing URL via specified http method. */
-  method?: string;
-  eventType?: WebHookEventType;
-  headers?: { [key: string]: string; };
-}
-export function deserializeUpdateWebHookSubscriptionDto(json: string): UpdateWebHookSubscriptionDto {
-  const data = JSON.parse(json) as UpdateWebHookSubscriptionDto;
-  initUpdateWebHookSubscriptionDto(data);
-  return data;
-}
-export function initUpdateWebHookSubscriptionDto(_data: UpdateWebHookSubscriptionDto) {
-  if (_data) {
-    _data.eventType = _data["eventType"];
-  }
-  return _data;
-}
-export function serializeUpdateWebHookSubscriptionDto(_data: UpdateWebHookSubscriptionDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeUpdateWebHookSubscriptionDto(_data as UpdateWebHookSubscriptionDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeUpdateWebHookSubscriptionDto(_data: UpdateWebHookSubscriptionDto): UpdateWebHookSubscriptionDto {
-  const data: Record<string, any> = { ..._data };
-  return data as UpdateWebHookSubscriptionDto;
+  return data as UserDto;
 }
 export interface CurrentUserDto  {
   id: string;
   username: string;
-  nickname: string;
-  permissions: string[];
 }
 export function deserializeCurrentUserDto(json: string): CurrentUserDto {
   const data = JSON.parse(json) as CurrentUserDto;
@@ -206,10 +129,7 @@ export function deserializeCurrentUserDto(json: string): CurrentUserDto {
   return data;
 }
 export function initCurrentUserDto(_data: CurrentUserDto) {
-  if (_data) {
-    _data.permissions = _data["permissions"];
-  }
-  return _data;
+    return _data;
 }
 export function serializeCurrentUserDto(_data: CurrentUserDto | undefined) {
   if (_data) {
@@ -266,185 +186,105 @@ export function prepareSerializeChangePasswordDto(_data: ChangePasswordDto): Cha
   const data: Record<string, any> = { ..._data };
   return data as ChangePasswordDto;
 }
-export interface CreateTestTenantDto  {
-  userEmail: string;
-  userPassword: string;
-}
-export function deserializeCreateTestTenantDto(json: string): CreateTestTenantDto {
-  const data = JSON.parse(json) as CreateTestTenantDto;
-  initCreateTestTenantDto(data);
-  return data;
-}
-export function initCreateTestTenantDto(_data: CreateTestTenantDto) {
-    return _data;
-}
-export function serializeCreateTestTenantDto(_data: CreateTestTenantDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeCreateTestTenantDto(_data as CreateTestTenantDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeCreateTestTenantDto(_data: CreateTestTenantDto): CreateTestTenantDto {
-  const data: Record<string, any> = { ..._data };
-  return data as CreateTestTenantDto;
-}
-export interface ProductDto  {
-  id: number;
-  title: string;
-  productType: ProductType;
-  lastStockUpdatedAt: Date;
-}
-export function deserializeProductDto(json: string): ProductDto {
-  const data = JSON.parse(json) as ProductDto;
-  initProductDto(data);
-  return data;
-}
-export function initProductDto(_data: ProductDto) {
-  if (_data) {
-    _data.productType = _data["productType"];
-    _data.lastStockUpdatedAt = _data["lastStockUpdatedAt"] ? parseDateOnly(_data["lastStockUpdatedAt"].toString()) : <any>null;
-  }
-  return _data;
-}
-export function serializeProductDto(_data: ProductDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeProductDto(_data as ProductDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeProductDto(_data: ProductDto): ProductDto {
-  const data: Record<string, any> = { ..._data };
-  data["lastStockUpdatedAt"] = _data.lastStockUpdatedAt && formatDate(_data.lastStockUpdatedAt);
-  return data as ProductDto;
-}
-export enum ProductType {
-    Undefined = "Undefined",
-    Auto = "Auto",
-    Electronic = "Electronic",
-    Other = "Other",
-}
-export interface CreateProductDto  {
-  title: string;
-  productType: ProductType;
-  lastStockUpdatedAt: Date;
-}
-export function deserializeCreateProductDto(json: string): CreateProductDto {
-  const data = JSON.parse(json) as CreateProductDto;
-  initCreateProductDto(data);
-  return data;
-}
-export function initCreateProductDto(_data: CreateProductDto) {
-  if (_data) {
-    _data.productType = _data["productType"];
-    _data.lastStockUpdatedAt = _data["lastStockUpdatedAt"] ? parseDateOnly(_data["lastStockUpdatedAt"].toString()) : <any>null;
-  }
-  return _data;
-}
-export function serializeCreateProductDto(_data: CreateProductDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeCreateProductDto(_data as CreateProductDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeCreateProductDto(_data: CreateProductDto): CreateProductDto {
-  const data: Record<string, any> = { ..._data };
-  data["lastStockUpdatedAt"] = _data.lastStockUpdatedAt && formatDate(_data.lastStockUpdatedAt);
-  return data as CreateProductDto;
-}
-export interface PatchProductDto  {
-  title?: string;
-  productType?: ProductType;
-  lastStockUpdatedAt?: Date;
-}
-export function deserializePatchProductDto(json: string): PatchProductDto {
-  const data = JSON.parse(json) as PatchProductDto;
-  initPatchProductDto(data);
-  return data;
-}
-export function initPatchProductDto(_data: PatchProductDto) {
-  if (_data) {
-    _data.productType = _data["productType"];
-    _data.lastStockUpdatedAt = _data["lastStockUpdatedAt"] ? parseDateOnly(_data["lastStockUpdatedAt"].toString()) : <any>null;
-  }
-  return _data;
-}
-export function serializePatchProductDto(_data: PatchProductDto | undefined) {
-  if (_data) {
-    _data = prepareSerializePatchProductDto(_data as PatchProductDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializePatchProductDto(_data: PatchProductDto): PatchProductDto {
-  const data: Record<string, any> = { ..._data };
-  data["lastStockUpdatedAt"] = _data.lastStockUpdatedAt && formatDate(_data.lastStockUpdatedAt);
-  return data as PatchProductDto;
-}
-export interface PagedResultOfProductListItemDto  {
-  data: ProductListItemDto[];
+export interface PagedResultOfUserDto  {
+  data: UserDto[];
   totalCount: number;
 }
-export function deserializePagedResultOfProductListItemDto(json: string): PagedResultOfProductListItemDto {
-  const data = JSON.parse(json) as PagedResultOfProductListItemDto;
-  initPagedResultOfProductListItemDto(data);
+export function deserializePagedResultOfUserDto(json: string): PagedResultOfUserDto {
+  const data = JSON.parse(json) as PagedResultOfUserDto;
+  initPagedResultOfUserDto(data);
   return data;
 }
-export function initPagedResultOfProductListItemDto(_data: PagedResultOfProductListItemDto) {
+export function initPagedResultOfUserDto(_data: PagedResultOfUserDto) {
   if (_data) {
     if (Array.isArray(_data["data"])) {
       _data.data = _data["data"].map(item => 
-        initProductListItemDto(item)
+        initUserDto(item)
       );
     }
   }
   return _data;
 }
-export function serializePagedResultOfProductListItemDto(_data: PagedResultOfProductListItemDto | undefined) {
+export function serializePagedResultOfUserDto(_data: PagedResultOfUserDto | undefined) {
   if (_data) {
-    _data = prepareSerializePagedResultOfProductListItemDto(_data as PagedResultOfProductListItemDto);
+    _data = prepareSerializePagedResultOfUserDto(_data as PagedResultOfUserDto);
   }
   return JSON.stringify(_data);
 }
-export function prepareSerializePagedResultOfProductListItemDto(_data: PagedResultOfProductListItemDto): PagedResultOfProductListItemDto {
+export function prepareSerializePagedResultOfUserDto(_data: PagedResultOfUserDto): PagedResultOfUserDto {
   const data: Record<string, any> = { ..._data };
   if (Array.isArray(_data.data)) {
     data["data"] = _data.data.map(item => 
-        prepareSerializeProductListItemDto(item)
+        prepareSerializeUserDto(item)
     );
   }
-  return data as PagedResultOfProductListItemDto;
-}
-export interface ProductListItemDto  {
-  id: number;
-  title: string;
-  productType: ProductType;
-  lastStockUpdatedAt: Date;
-}
-export function deserializeProductListItemDto(json: string): ProductListItemDto {
-  const data = JSON.parse(json) as ProductListItemDto;
-  initProductListItemDto(data);
-  return data;
-}
-export function initProductListItemDto(_data: ProductListItemDto) {
-  if (_data) {
-    _data.productType = _data["productType"];
-    _data.lastStockUpdatedAt = _data["lastStockUpdatedAt"] ? parseDateOnly(_data["lastStockUpdatedAt"].toString()) : <any>null;
-  }
-  return _data;
-}
-export function serializeProductListItemDto(_data: ProductListItemDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeProductListItemDto(_data as ProductListItemDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeProductListItemDto(_data: ProductListItemDto): ProductListItemDto {
-  const data: Record<string, any> = { ..._data };
-  data["lastStockUpdatedAt"] = _data.lastStockUpdatedAt && formatDate(_data.lastStockUpdatedAt);
-  return data as ProductListItemDto;
+  return data as PagedResultOfUserDto;
 }
 export enum SortOrder {
     Asc = "Asc",
     Desc = "Desc",
+}
+export interface SubmissionDto  {
+  id: number;
+  state: SubmissionState;
+  mark: string | null;
+  lastSubmittedAtUTC: Date | null;
+  lastMarkedAtUTC: Date | null;
+  attachments: FileInfoDto[];
+  author: UserDto;
+  comments: CommentDto[];
+}
+export function deserializeSubmissionDto(json: string): SubmissionDto {
+  const data = JSON.parse(json) as SubmissionDto;
+  initSubmissionDto(data);
+  return data;
+}
+export function initSubmissionDto(_data: SubmissionDto) {
+  if (_data) {
+    _data.state = _data["state"];
+    _data.lastSubmittedAtUTC = _data["lastSubmittedAtUTC"] ? new Date(_data["lastSubmittedAtUTC"].toString()) : <any>null;
+    _data.lastMarkedAtUTC = _data["lastMarkedAtUTC"] ? new Date(_data["lastMarkedAtUTC"].toString()) : <any>null;
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initFileInfoDto(item)
+      );
+    }
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+    if (Array.isArray(_data["comments"])) {
+      _data.comments = _data["comments"].map(item => 
+        initCommentDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeSubmissionDto(_data: SubmissionDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeSubmissionDto(_data as SubmissionDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeSubmissionDto(_data: SubmissionDto): SubmissionDto {
+  const data: Record<string, any> = { ..._data };
+  data["lastSubmittedAtUTC"] = _data.lastSubmittedAtUTC && _data.lastSubmittedAtUTC.toISOString();
+  data["lastMarkedAtUTC"] = _data.lastMarkedAtUTC && _data.lastMarkedAtUTC.toISOString();
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeFileInfoDto(item)
+    );
+  }
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  if (Array.isArray(_data.comments)) {
+    data["comments"] = _data.comments.map(item => 
+        prepareSerializeCommentDto(item)
+    );
+  }
+  return data as SubmissionDto;
+}
+export enum SubmissionState {
+    Draft = "Draft",
+    Submitted = "Submitted",
+    Accepted = "Accepted",
 }
 export interface FileInfoDto  {
   id: string;
@@ -498,49 +338,653 @@ export function prepareSerializeFileMetadataDto(_data: FileMetadataDto): FileMet
   const data: Record<string, any> = { ..._data };
   return data as FileMetadataDto;
 }
-export interface PagedResultOfFileInfoDto  {
-  data: FileInfoDto[];
-  totalCount: number;
+export interface CommentDto  {
+  id: number;
+  createdAt: Date;
+  lastEditedAt: Date | null;
+  author: UserDto;
+  textLexical: string;
 }
-export function deserializePagedResultOfFileInfoDto(json: string): PagedResultOfFileInfoDto {
-  const data = JSON.parse(json) as PagedResultOfFileInfoDto;
-  initPagedResultOfFileInfoDto(data);
+export function deserializeCommentDto(json: string): CommentDto {
+  const data = JSON.parse(json) as CommentDto;
+  initCommentDto(data);
   return data;
 }
-export function initPagedResultOfFileInfoDto(_data: PagedResultOfFileInfoDto) {
+export function initCommentDto(_data: CommentDto) {
   if (_data) {
-    if (Array.isArray(_data["data"])) {
-      _data.data = _data["data"].map(item => 
+    _data.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>null;
+    _data.lastEditedAt = _data["lastEditedAt"] ? new Date(_data["lastEditedAt"].toString()) : <any>null;
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+  }
+  return _data;
+}
+export function serializeCommentDto(_data: CommentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCommentDto(_data as CommentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCommentDto(_data: CommentDto): CommentDto {
+  const data: Record<string, any> = { ..._data };
+  data["createdAt"] = _data.createdAt && _data.createdAt.toISOString();
+  data["lastEditedAt"] = _data.lastEditedAt && _data.lastEditedAt.toISOString();
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  return data as CommentDto;
+}
+export interface CreateSubmissionDto  {
+  attachments: FileInfoDto[];
+}
+export function deserializeCreateSubmissionDto(json: string): CreateSubmissionDto {
+  const data = JSON.parse(json) as CreateSubmissionDto;
+  initCreateSubmissionDto(data);
+  return data;
+}
+export function initCreateSubmissionDto(_data: CreateSubmissionDto) {
+  if (_data) {
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
         initFileInfoDto(item)
       );
     }
   }
   return _data;
 }
-export function serializePagedResultOfFileInfoDto(_data: PagedResultOfFileInfoDto | undefined) {
+export function serializeCreateSubmissionDto(_data: CreateSubmissionDto | undefined) {
   if (_data) {
-    _data = prepareSerializePagedResultOfFileInfoDto(_data as PagedResultOfFileInfoDto);
+    _data = prepareSerializeCreateSubmissionDto(_data as CreateSubmissionDto);
   }
   return JSON.stringify(_data);
 }
-export function prepareSerializePagedResultOfFileInfoDto(_data: PagedResultOfFileInfoDto): PagedResultOfFileInfoDto {
+export function prepareSerializeCreateSubmissionDto(_data: CreateSubmissionDto): CreateSubmissionDto {
   const data: Record<string, any> = { ..._data };
-  if (Array.isArray(_data.data)) {
-    data["data"] = _data.data.map(item => 
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
         prepareSerializeFileInfoDto(item)
     );
   }
-  return data as PagedResultOfFileInfoDto;
+  return data as CreateSubmissionDto;
 }
-export function formatDate(d: Date) {
-    return d.getFullYear() + '-' + 
-        (d.getMonth() < 9 ? ('0' + (d.getMonth()+1)) : (d.getMonth()+1)) + '-' +
-        (d.getDate() < 10 ? ('0' + d.getDate()) : d.getDate());
+export interface PagedResultOfSubmissionListItem  {
+  data: SubmissionListItem[];
+  totalCount: number;
 }
-export function parseDateOnly(s: string) {
-    const date = new Date(s);
-    return new Date(date.getTime() + 
-        date.getTimezoneOffset() * 60000);
+export function deserializePagedResultOfSubmissionListItem(json: string): PagedResultOfSubmissionListItem {
+  const data = JSON.parse(json) as PagedResultOfSubmissionListItem;
+  initPagedResultOfSubmissionListItem(data);
+  return data;
+}
+export function initPagedResultOfSubmissionListItem(_data: PagedResultOfSubmissionListItem) {
+  if (_data) {
+    if (Array.isArray(_data["data"])) {
+      _data.data = _data["data"].map(item => 
+        initSubmissionListItem(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializePagedResultOfSubmissionListItem(_data: PagedResultOfSubmissionListItem | undefined) {
+  if (_data) {
+    _data = prepareSerializePagedResultOfSubmissionListItem(_data as PagedResultOfSubmissionListItem);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePagedResultOfSubmissionListItem(_data: PagedResultOfSubmissionListItem): PagedResultOfSubmissionListItem {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.data)) {
+    data["data"] = _data.data.map(item => 
+        prepareSerializeSubmissionListItem(item)
+    );
+  }
+  return data as PagedResultOfSubmissionListItem;
+}
+export interface SubmissionListItem  {
+  id: number;
+  state: SubmissionState;
+  mark: string | null;
+  author: UserDto;
+}
+export function deserializeSubmissionListItem(json: string): SubmissionListItem {
+  const data = JSON.parse(json) as SubmissionListItem;
+  initSubmissionListItem(data);
+  return data;
+}
+export function initSubmissionListItem(_data: SubmissionListItem) {
+  if (_data) {
+    _data.state = _data["state"];
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+  }
+  return _data;
+}
+export function serializeSubmissionListItem(_data: SubmissionListItem | undefined) {
+  if (_data) {
+    _data = prepareSerializeSubmissionListItem(_data as SubmissionListItem);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeSubmissionListItem(_data: SubmissionListItem): SubmissionListItem {
+  const data: Record<string, any> = { ..._data };
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  return data as SubmissionListItem;
+}
+export interface MarkDto  {
+  mark: string | null;
+  markComment: string | null;
+}
+export function deserializeMarkDto(json: string): MarkDto {
+  const data = JSON.parse(json) as MarkDto;
+  initMarkDto(data);
+  return data;
+}
+export function initMarkDto(_data: MarkDto) {
+    return _data;
+}
+export function serializeMarkDto(_data: MarkDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeMarkDto(_data as MarkDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeMarkDto(_data: MarkDto): MarkDto {
+  const data: Record<string, any> = { ..._data };
+  return data as MarkDto;
+}
+export interface PagedResultOfCourseListItemDto  {
+  data: CourseListItemDto[];
+  totalCount: number;
+}
+export function deserializePagedResultOfCourseListItemDto(json: string): PagedResultOfCourseListItemDto {
+  const data = JSON.parse(json) as PagedResultOfCourseListItemDto;
+  initPagedResultOfCourseListItemDto(data);
+  return data;
+}
+export function initPagedResultOfCourseListItemDto(_data: PagedResultOfCourseListItemDto) {
+  if (_data) {
+    if (Array.isArray(_data["data"])) {
+      _data.data = _data["data"].map(item => 
+        initCourseListItemDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializePagedResultOfCourseListItemDto(_data: PagedResultOfCourseListItemDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePagedResultOfCourseListItemDto(_data as PagedResultOfCourseListItemDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePagedResultOfCourseListItemDto(_data: PagedResultOfCourseListItemDto): PagedResultOfCourseListItemDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.data)) {
+    data["data"] = _data.data.map(item => 
+        prepareSerializeCourseListItemDto(item)
+    );
+  }
+  return data as PagedResultOfCourseListItemDto;
+}
+export interface CourseListItemDto  {
+  id: number;
+  createdAt: Date;
+  title: string;
+  description: string;
+}
+export function deserializeCourseListItemDto(json: string): CourseListItemDto {
+  const data = JSON.parse(json) as CourseListItemDto;
+  initCourseListItemDto(data);
+  return data;
+}
+export function initCourseListItemDto(_data: CourseListItemDto) {
+  if (_data) {
+    _data.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>null;
+  }
+  return _data;
+}
+export function serializeCourseListItemDto(_data: CourseListItemDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCourseListItemDto(_data as CourseListItemDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCourseListItemDto(_data: CourseListItemDto): CourseListItemDto {
+  const data: Record<string, any> = { ..._data };
+  data["createdAt"] = _data.createdAt && _data.createdAt.toISOString();
+  return data as CourseListItemDto;
+}
+export interface CourseDto  {
+  id: number;
+  createdAt: Date;
+  owner: UserDto;
+  teachers: UserDto[];
+  inviteCode: string;
+  title: string;
+  description: string;
+}
+export function deserializeCourseDto(json: string): CourseDto {
+  const data = JSON.parse(json) as CourseDto;
+  initCourseDto(data);
+  return data;
+}
+export function initCourseDto(_data: CourseDto) {
+  if (_data) {
+    _data.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>null;
+    _data.owner = _data["owner"] && initUserDto(_data["owner"]);
+    if (Array.isArray(_data["teachers"])) {
+      _data.teachers = _data["teachers"].map(item => 
+        initUserDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeCourseDto(_data: CourseDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCourseDto(_data as CourseDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCourseDto(_data: CourseDto): CourseDto {
+  const data: Record<string, any> = { ..._data };
+  data["createdAt"] = _data.createdAt && _data.createdAt.toISOString();
+  data["owner"] = _data.owner && prepareSerializeUserDto(_data.owner);
+  if (Array.isArray(_data.teachers)) {
+    data["teachers"] = _data.teachers.map(item => 
+        prepareSerializeUserDto(item)
+    );
+  }
+  return data as CourseDto;
+}
+export interface PagedResultOfCourseMemberDto  {
+  data: CourseMemberDto[];
+  totalCount: number;
+}
+export function deserializePagedResultOfCourseMemberDto(json: string): PagedResultOfCourseMemberDto {
+  const data = JSON.parse(json) as PagedResultOfCourseMemberDto;
+  initPagedResultOfCourseMemberDto(data);
+  return data;
+}
+export function initPagedResultOfCourseMemberDto(_data: PagedResultOfCourseMemberDto) {
+  if (_data) {
+    if (Array.isArray(_data["data"])) {
+      _data.data = _data["data"].map(item => 
+        initCourseMemberDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializePagedResultOfCourseMemberDto(_data: PagedResultOfCourseMemberDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePagedResultOfCourseMemberDto(_data as PagedResultOfCourseMemberDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePagedResultOfCourseMemberDto(_data: PagedResultOfCourseMemberDto): PagedResultOfCourseMemberDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.data)) {
+    data["data"] = _data.data.map(item => 
+        prepareSerializeCourseMemberDto(item)
+    );
+  }
+  return data as PagedResultOfCourseMemberDto;
+}
+export interface CourseMemberDto  {
+  id: string;
+  email: string;
+  legalName: string;
+  groupNumber: string | null;
+  isTeacher: boolean;
+  isOwner: boolean;
+}
+export function deserializeCourseMemberDto(json: string): CourseMemberDto {
+  const data = JSON.parse(json) as CourseMemberDto;
+  initCourseMemberDto(data);
+  return data;
+}
+export function initCourseMemberDto(_data: CourseMemberDto) {
+    return _data;
+}
+export function serializeCourseMemberDto(_data: CourseMemberDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCourseMemberDto(_data as CourseMemberDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCourseMemberDto(_data: CourseMemberDto): CourseMemberDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CourseMemberDto;
+}
+export interface CreateCourseDto  {
+  title: string;
+  description: string;
+}
+export function deserializeCreateCourseDto(json: string): CreateCourseDto {
+  const data = JSON.parse(json) as CreateCourseDto;
+  initCreateCourseDto(data);
+  return data;
+}
+export function initCreateCourseDto(_data: CreateCourseDto) {
+    return _data;
+}
+export function serializeCreateCourseDto(_data: CreateCourseDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateCourseDto(_data as CreateCourseDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateCourseDto(_data: CreateCourseDto): CreateCourseDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateCourseDto;
+}
+export interface PatchCourseDto  {
+  title: string;
+  description: string;
+}
+export function deserializePatchCourseDto(json: string): PatchCourseDto {
+  const data = JSON.parse(json) as PatchCourseDto;
+  initPatchCourseDto(data);
+  return data;
+}
+export function initPatchCourseDto(_data: PatchCourseDto) {
+    return _data;
+}
+export function serializePatchCourseDto(_data: PatchCourseDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePatchCourseDto(_data as PatchCourseDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePatchCourseDto(_data: PatchCourseDto): PatchCourseDto {
+  const data: Record<string, any> = { ..._data };
+  return data as PatchCourseDto;
+}
+export interface PagedResultOfCommentDto  {
+  data: CommentDto[];
+  totalCount: number;
+}
+export function deserializePagedResultOfCommentDto(json: string): PagedResultOfCommentDto {
+  const data = JSON.parse(json) as PagedResultOfCommentDto;
+  initPagedResultOfCommentDto(data);
+  return data;
+}
+export function initPagedResultOfCommentDto(_data: PagedResultOfCommentDto) {
+  if (_data) {
+    if (Array.isArray(_data["data"])) {
+      _data.data = _data["data"].map(item => 
+        initCommentDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializePagedResultOfCommentDto(_data: PagedResultOfCommentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePagedResultOfCommentDto(_data as PagedResultOfCommentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePagedResultOfCommentDto(_data: PagedResultOfCommentDto): PagedResultOfCommentDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.data)) {
+    data["data"] = _data.data.map(item => 
+        prepareSerializeCommentDto(item)
+    );
+  }
+  return data as PagedResultOfCommentDto;
+}
+export interface CreateCommentDto  {
+  textLexical: string;
+}
+export function deserializeCreateCommentDto(json: string): CreateCommentDto {
+  const data = JSON.parse(json) as CreateCommentDto;
+  initCreateCommentDto(data);
+  return data;
+}
+export function initCreateCommentDto(_data: CreateCommentDto) {
+    return _data;
+}
+export function serializeCreateCommentDto(_data: CreateCommentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateCommentDto(_data as CreateCommentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateCommentDto(_data: CreateCommentDto): CreateCommentDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateCommentDto;
+}
+export interface PatchCommentDto  {
+  textLexical: string;
+}
+export function deserializePatchCommentDto(json: string): PatchCommentDto {
+  const data = JSON.parse(json) as PatchCommentDto;
+  initPatchCommentDto(data);
+  return data;
+}
+export function initPatchCommentDto(_data: PatchCommentDto) {
+    return _data;
+}
+export function serializePatchCommentDto(_data: PatchCommentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePatchCommentDto(_data as PatchCommentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePatchCommentDto(_data: PatchCommentDto): PatchCommentDto {
+  const data: Record<string, any> = { ..._data };
+  return data as PatchCommentDto;
+}
+export interface AssignmentDto  {
+  id: number;
+  title: string;
+  description: string | null;
+  author: UserDto;
+  deadlineUTC: Date | null;
+  createdAtUTC: Date;
+  lastUpdatedAtUTC: Date | null;
+  attachments: FileInfoDto[];
+  comments: CommentDto[];
+}
+export function deserializeAssignmentDto(json: string): AssignmentDto {
+  const data = JSON.parse(json) as AssignmentDto;
+  initAssignmentDto(data);
+  return data;
+}
+export function initAssignmentDto(_data: AssignmentDto) {
+  if (_data) {
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+    _data.deadlineUTC = _data["deadlineUTC"] ? new Date(_data["deadlineUTC"].toString()) : <any>null;
+    _data.createdAtUTC = _data["createdAtUTC"] ? new Date(_data["createdAtUTC"].toString()) : <any>null;
+    _data.lastUpdatedAtUTC = _data["lastUpdatedAtUTC"] ? new Date(_data["lastUpdatedAtUTC"].toString()) : <any>null;
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initFileInfoDto(item)
+      );
+    }
+    if (Array.isArray(_data["comments"])) {
+      _data.comments = _data["comments"].map(item => 
+        initCommentDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeAssignmentDto(_data: AssignmentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeAssignmentDto(_data as AssignmentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAssignmentDto(_data: AssignmentDto): AssignmentDto {
+  const data: Record<string, any> = { ..._data };
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  data["deadlineUTC"] = _data.deadlineUTC && _data.deadlineUTC.toISOString();
+  data["createdAtUTC"] = _data.createdAtUTC && _data.createdAtUTC.toISOString();
+  data["lastUpdatedAtUTC"] = _data.lastUpdatedAtUTC && _data.lastUpdatedAtUTC.toISOString();
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeFileInfoDto(item)
+    );
+  }
+  if (Array.isArray(_data.comments)) {
+    data["comments"] = _data.comments.map(item => 
+        prepareSerializeCommentDto(item)
+    );
+  }
+  return data as AssignmentDto;
+}
+export interface AssignmentStatisticDto  {
+  submitted: number;
+  notSubmitted: number;
+  marked: number;
+  total: number;
+}
+export function deserializeAssignmentStatisticDto(json: string): AssignmentStatisticDto {
+  const data = JSON.parse(json) as AssignmentStatisticDto;
+  initAssignmentStatisticDto(data);
+  return data;
+}
+export function initAssignmentStatisticDto(_data: AssignmentStatisticDto) {
+    return _data;
+}
+export function serializeAssignmentStatisticDto(_data: AssignmentStatisticDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeAssignmentStatisticDto(_data as AssignmentStatisticDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAssignmentStatisticDto(_data: AssignmentStatisticDto): AssignmentStatisticDto {
+  const data: Record<string, any> = { ..._data };
+  return data as AssignmentStatisticDto;
+}
+export interface CreateAssignmentDto  {
+  title: string;
+  description: string | null;
+  deadlineUTC: Date | null;
+  attachments: FileInfoDto[];
+}
+export function deserializeCreateAssignmentDto(json: string): CreateAssignmentDto {
+  const data = JSON.parse(json) as CreateAssignmentDto;
+  initCreateAssignmentDto(data);
+  return data;
+}
+export function initCreateAssignmentDto(_data: CreateAssignmentDto) {
+  if (_data) {
+    _data.deadlineUTC = _data["deadlineUTC"] ? new Date(_data["deadlineUTC"].toString()) : <any>null;
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initFileInfoDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeCreateAssignmentDto(_data: CreateAssignmentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateAssignmentDto(_data as CreateAssignmentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateAssignmentDto(_data: CreateAssignmentDto): CreateAssignmentDto {
+  const data: Record<string, any> = { ..._data };
+  data["deadlineUTC"] = _data.deadlineUTC && _data.deadlineUTC.toISOString();
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeFileInfoDto(item)
+    );
+  }
+  return data as CreateAssignmentDto;
+}
+export interface AnnouncementDto  {
+  id: number;
+  title: string;
+  description: string | null;
+  author: UserDto;
+  createdAtUTC: Date;
+  lastUpdatedAtUTC: Date | null;
+  attachments: FileInfoDto[];
+  comments: CommentDto[];
+}
+export function deserializeAnnouncementDto(json: string): AnnouncementDto {
+  const data = JSON.parse(json) as AnnouncementDto;
+  initAnnouncementDto(data);
+  return data;
+}
+export function initAnnouncementDto(_data: AnnouncementDto) {
+  if (_data) {
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+    _data.createdAtUTC = _data["createdAtUTC"] ? new Date(_data["createdAtUTC"].toString()) : <any>null;
+    _data.lastUpdatedAtUTC = _data["lastUpdatedAtUTC"] ? new Date(_data["lastUpdatedAtUTC"].toString()) : <any>null;
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initFileInfoDto(item)
+      );
+    }
+    if (Array.isArray(_data["comments"])) {
+      _data.comments = _data["comments"].map(item => 
+        initCommentDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeAnnouncementDto(_data: AnnouncementDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeAnnouncementDto(_data as AnnouncementDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAnnouncementDto(_data: AnnouncementDto): AnnouncementDto {
+  const data: Record<string, any> = { ..._data };
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  data["createdAtUTC"] = _data.createdAtUTC && _data.createdAtUTC.toISOString();
+  data["lastUpdatedAtUTC"] = _data.lastUpdatedAtUTC && _data.lastUpdatedAtUTC.toISOString();
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeFileInfoDto(item)
+    );
+  }
+  if (Array.isArray(_data.comments)) {
+    data["comments"] = _data.comments.map(item => 
+        prepareSerializeCommentDto(item)
+    );
+  }
+  return data as AnnouncementDto;
+}
+export interface CreateAnnouncementDto  {
+  title: string;
+  description: string | null;
+  attachments: FileInfoDto[];
+}
+export function deserializeCreateAnnouncementDto(json: string): CreateAnnouncementDto {
+  const data = JSON.parse(json) as CreateAnnouncementDto;
+  initCreateAnnouncementDto(data);
+  return data;
+}
+export function initCreateAnnouncementDto(_data: CreateAnnouncementDto) {
+  if (_data) {
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initFileInfoDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeCreateAnnouncementDto(_data: CreateAnnouncementDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateAnnouncementDto(_data as CreateAnnouncementDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateAnnouncementDto(_data: CreateAnnouncementDto): CreateAnnouncementDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeFileInfoDto(item)
+    );
+  }
+  return data as CreateAnnouncementDto;
 }
 import type { AxiosError } from 'axios'
 export interface FileParameter {
