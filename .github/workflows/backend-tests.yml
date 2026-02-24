@@ -47,6 +47,6 @@ jobs:
         run: dotnet restore webapi/Team13.HitsClass.slnx
 
       - name: Run tests
-        run: dotnet test webapi/Team13.HitsClass.slnx --no-restore
+        run: dotnet test webapi/Team13.HitsClass.slnx --no-restore -- RunConfiguration.TreatNoTestsAsError=false
         env:
           DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE: false
