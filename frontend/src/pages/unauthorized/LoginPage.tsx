@@ -11,7 +11,6 @@ export const LoginPage: React.FC = () => {
   return (
     <div className={styles.root}>
       <div className={styles.gridContainer}>
-        <div className={styles.mainBackground}></div>
         <div className={styles.appName}>{i18n.t('app_name')}</div>
         <div className={styles.loginContainer} data-test-id={'login-container'}>
           {isRegistration ? <RegisterForm /> : <LoginForm />}
