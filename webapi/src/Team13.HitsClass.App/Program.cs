@@ -48,7 +48,11 @@ var app = builder.Build();
 app.UseSerilog(app.Environment);
 app.Logger.LogSentryTestError("HitsClass");
 
-await SetupDatabase.RunMigration(app);
+if (!app.Configuration.GetValue<bool>(SetupDatabase.DisableMigrationOptionName))
+{
+    await SetupDatabase.RunMigration(app);
+    await SetupRoles.AddRoles(app);
+}
 
 app.UseHttpsRedirection();
 
@@ -58,7 +62,6 @@ SetupLocalization.UseLocalization(app);
 SetupHangfire.UseHangfire(app);
 
 SetupAuth.UseAuth(app);
-await SetupRoles.AddRoles(app);
 SetupSwagger.UseSwagger(app);
 
 SetupAspNet.UseEndpoints(app);
