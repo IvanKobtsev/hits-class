@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Comments.Dto;
 using Team13.HitsClass.App.Features.Courses.Dto;
@@ -12,6 +12,12 @@ namespace Team13.HitsClass.App.Features.Courses;
 [Route("api/courses")]
 public class CourseController
 {
+    private readonly CourseService _courseService;
+    public CourseController(CourseService courseService)
+    {
+        _courseService = courseService;
+    }
+
     /// <summary>
     /// Returns all courses. Admin only.
     /// </summary>
@@ -21,7 +27,7 @@ public class CourseController
         [FromQuery] CoursesSearchDto searchDto
     )
     {
-        throw new NotImplementedException();
+        return await _courseService.GetAllCoursesForAdmin(searchDto);
     }
 
     /// <summary>
@@ -32,7 +38,7 @@ public class CourseController
         [FromQuery] CoursesSearchDto searchDto
     )
     {
-        throw new NotImplementedException();
+        return await _courseService.GetAllCoursesForUser(searchDto);
     }
 
     /// <summary>

@@ -17,6 +17,8 @@ public class HitsClassDbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<DbFile> Files { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Course> Courses { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -55,6 +57,11 @@ public class HitsClassDbContext
                 }
             );
         });
+
+        builder.Entity<Course>().HasMany(c => c.Teachers).WithMany();
+        builder.Entity<Course>().HasMany(c => c.Students).WithMany();
+        builder.Entity<Course>().HasMany(c => c.BannedStudent).WithMany();
+        builder.Entity<Course>().HasOne(c => c.Owner);
     }
 
     private void SetupQueryFilters(ModelBuilder builder) { }
