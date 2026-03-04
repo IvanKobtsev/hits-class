@@ -16,7 +16,7 @@ export const CourseListItem: React.FC<Props> = ({
   title,
   description,
 }) => {
-  const date = new Date(createdAt);
+  const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
   const formattedDate = isNaN(date.getTime())
     ? ''
     : new Intl.DateTimeFormat('ru-RU', {
@@ -32,14 +32,14 @@ export const CourseListItem: React.FC<Props> = ({
           <Typography
             variant="h6"
             fontWeight={600}
-            data-test-id="CourseListItem-title"
+            data-test-id={`CourseListItem-title-${id}`}
           >
             {title}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
-            data-test-id="CourseListItem-description"
+            data-test-id={`CourseListItem-description-${id}`}
             data-clamp="true"
             className={styles.description}
           >
@@ -48,7 +48,7 @@ export const CourseListItem: React.FC<Props> = ({
           <Typography
             variant="caption"
             color="text.disabled"
-            data-test-id="CourseListItem-date"
+            data-test-id={`CourseListItem-date-${id}`}
           >
             {formattedDate}
           </Typography>

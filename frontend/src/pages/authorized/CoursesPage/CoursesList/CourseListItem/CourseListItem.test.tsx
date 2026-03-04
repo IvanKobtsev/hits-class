@@ -10,7 +10,7 @@ vi.mock('react-router', async () => {
 
 const mockCourse = {
   id: 1,
-  createdAt: '2024-03-15T10:00:00Z',
+  createdAt: new Date('2024-03-15T10:00:00Z'),
   title: 'Введение в программирование',
   description: 'Базовый курс по основам программирования',
 };
@@ -29,7 +29,7 @@ describe('CourseListItem', () => {
   test('renders course title', () => {
     renderCourseListItem();
 
-    expect(screen.getByTestId('CourseListItem-title')).toHaveTextContent(
+    expect(screen.getByTestId('CourseListItem-title-1')).toHaveTextContent(
       'Введение в программирование',
     );
   });
@@ -37,7 +37,7 @@ describe('CourseListItem', () => {
   test('renders course description', () => {
     renderCourseListItem();
 
-    expect(screen.getByTestId('CourseListItem-description')).toHaveTextContent(
+    expect(screen.getByTestId('CourseListItem-description-1')).toHaveTextContent(
       'Базовый курс по основам программирования',
     );
   });
@@ -45,7 +45,7 @@ describe('CourseListItem', () => {
   test('renders formatted creation date', () => {
     renderCourseListItem();
 
-    const dateEl = screen.getByTestId('CourseListItem-date');
+    const dateEl = screen.getByTestId('CourseListItem-date-1');
     expect(dateEl).toBeInTheDocument();
     expect(dateEl.textContent).not.toBe('2024-03-15T10:00:00Z');
     expect(dateEl.textContent?.trim()).not.toBe('');
@@ -54,7 +54,8 @@ describe('CourseListItem', () => {
   test('renders a link to the course page', () => {
     renderCourseListItem();
 
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/1');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', `/courses/${mockCourse.id}`);
   });
 
   // --- Edge cases ---
@@ -63,22 +64,28 @@ describe('CourseListItem', () => {
     renderCourseListItem({ ...mockCourse, description: '' });
 
     expect(
-      screen.getByTestId('CourseListItem-description'),
+      screen.getByTestId('CourseListItem-description-1'),
     ).toBeInTheDocument();
   });
 
   test('marks long description for line clamping', () => {
     renderCourseListItem({ ...mockCourse, description: 'A'.repeat(300) });
 
-    expect(screen.getByTestId('CourseListItem-description')).toHaveAttribute(
+    expect(screen.getByTestId('CourseListItem-description-1')).toHaveAttribute(
       'data-clamp',
       'true',
     );
   });
 
   test('renders without crashing when createdAt is invalid', () => {
-    renderCourseListItem({ ...mockCourse, createdAt: '' });
+    renderCourseListItem({ ...mockCourse, createdAt: new Date('invalid') });
 
-    expect(screen.getByTestId('CourseListItem-date')).toBeInTheDocument();
+    expect(screen.getByTestId('CourseListItem-date-1')).toBeInTheDocument();
+  });
+
+  test('link href changes when different id is passed', () => {
+    renderCourseListItem({ ...mockCourse, id: 42 });
+
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/42');
   });
 });
