@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router';
 import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
+import styles from './CourseListItem.module.scss';
 
 type Props = {
   id: number;
@@ -25,24 +26,9 @@ export const CourseListItem: React.FC<Props> = ({
       }).format(date);
 
   return (
-    <Card
-      variant="outlined"
-      sx={{
-        borderRadius: 3,
-        width: 300,
-        height: 200,
-      }}
-    >
+    <Card variant="outlined" className={styles.card}>
       <CardActionArea component={Link} to={`/courses/${id}`}>
-        <CardContent
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 1,
-            width: 300,
-            height: 200,
-          }}
-        >
+        <CardContent className={styles.content}>
           <Typography
             variant="h6"
             fontWeight={600}
@@ -55,12 +41,7 @@ export const CourseListItem: React.FC<Props> = ({
             color="text.secondary"
             data-test-id="CourseListItem-description"
             data-clamp="true"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
+            className={styles.description}
           >
             {description}
           </Typography>
