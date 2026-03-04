@@ -60,7 +60,7 @@ public class HitsClassDbContext
 
         builder.Entity<Course>().HasMany(c => c.Teachers).WithMany();
         builder.Entity<Course>().HasMany(c => c.Students).WithMany();
-        builder.Entity<Course>().HasMany(c => c.BannedStudent).WithMany();
+        builder.Entity<Course>().HasMany(c => c.BannedStudents).WithMany();
         builder.Entity<Course>().HasOne(c => c.Owner);
     }
 

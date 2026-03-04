@@ -1,5 +1,9 @@
+using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Comments.Dto;
 using Team13.HitsClass.App.Features.Courses.Dto;
+using Team13.HitsClass.Persistence;
+using Team13.LowLevelPrimitives;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Courses
 {
@@ -7,6 +11,7 @@ namespace Team13.HitsClass.App.Features.Courses
     {
         private readonly IUserAccessor _userAccessor;
         private readonly HitsClassDbContext _dbContext;
+
         public CourseService(IUserAccessor userAccessor, HitsClassDbContext dbContext)
         {
             _userAccessor = userAccessor;
@@ -18,26 +23,39 @@ namespace Team13.HitsClass.App.Features.Courses
             var course = _dbContext.Courses.FirstOrDefault(c => c.Id == courseId);
         }
 
-        public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForAdmin(CoursesSearchDto searchDto)
+        public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForAdmin(
+            CoursesSearchDto searchDto
+        )
         {
-            return GetAllCourses(searchDto, _userAccessor.GetId(), false);
+            var userId = _userAccessor.GetUserId();
+            return await GetAllCourses(searchDto, userId, false);
         }
 
-        public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForUser(CoursesSearchDto searchDto)
+        public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForUser(
+            CoursesSearchDto searchDto
+        )
         {
-            return GetAllCourses(searchDto, _userAccessor.GetId(), true);
+            var userId = _userAccessor.GetUserId();
+            return await GetAllCourses(searchDto, userId, true);
         }
 
-        private async Task<PagedResult<CourseListItemDto>> GetAllCourses(CoursesSearchDto searchDto, string currentUserId, bool restrictToCurrentUser)
+        private async Task<PagedResult<CourseListItemDto>> GetAllCourses(
+            CoursesSearchDto searchDto,
+            string currentUserId,
+            bool restrictToCurrentUser
+        )
         {
             var query = _dbContext.Courses.AsQueryable();
 
             if (restrictToCurrentUser)
             {
                 query = query.Where(c =>
-                    (c.OwnerId == currentUserId ||
-                    c.Teachers.Any(t => t.Id == currentUserId) ||
-                    c.Students.Any(s => s.Id == currentUserId)) && !c.BannedStudents.Any(b => b.Id == currentUserId));
+                    (
+                        c.OwnerId == currentUserId
+                        || c.Teachers.Any(t => t.Id == currentUserId)
+                        || c.Students.Any(s => s.Id == currentUserId)
+                    ) && !c.BannedStudents.Any(b => b.Id == currentUserId)
+                );
             }
 
             if (!string.IsNullOrWhiteSpace(searchDto.Title))
@@ -67,15 +85,15 @@ namespace Team13.HitsClass.App.Features.Courses
             {
                 query = searchDto.SortBy switch
                 {
-                    nameof(Course.Title) => searchDto.SortOrder == SortOrder.Descending
+                    nameof(Course.Title) => searchDto.SortOrder == SortOrder.Desc
                         ? query.OrderByDescending(c => c.Title)
                         : query.OrderBy(c => c.Title),
 
-                    nameof(Course.CreatedAt) => searchDto.SortOrder == SortOrder.Descending
+                    nameof(Course.CreatedAt) => searchDto.SortOrder == SortOrder.Asc
                         ? query.OrderByDescending(c => c.CreatedAt)
                         : query.OrderBy(c => c.CreatedAt),
 
-                    _ => query.OrderByDescending(c => c.CreatedAt)
+                    _ => query.OrderByDescending(c => c.CreatedAt),
                 };
             }
             else
@@ -99,7 +117,7 @@ namespace Team13.HitsClass.App.Features.Courses
                     Id = c.Id,
                     CreatedAt = c.CreatedAt,
                     Title = c.Title,
-                    Description = c.Description
+                    Description = c.Description,
                 })
                 .ToListAsync();
 
