@@ -1,5 +1,8 @@
 {
   "Common_App": "HitsClass",
+  "AppHeader": {
+    "hitsclass_button": "HitsClass"
+  },
   "Page": {
     "LoginPage": {
       "app_name": "HitsClass",
