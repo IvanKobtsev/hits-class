@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Team13.HitsClass.Domain
@@ -16,5 +17,39 @@ namespace Team13.HitsClass.Domain
         public List<User> Teachers { get; set; }
         public List<User> Students { get; set; }
         public List<User> BannedStudents { get; set; }
+
+        public Course() { }
+
+        public Course(string title, string description, string ownerId)
+        {
+            Title = title;
+            Description = description;
+            OwnerId = ownerId;
+
+            CreatedAt = DateTime.UtcNow;
+            InviteCode = GenerateInviteCode();
+
+            Teachers = new List<User>();
+            Students = new List<User>();
+            BannedStudents = new List<User>();
+        }
+
+        private static string GenerateInviteCode(int length = 8)
+        {
+            const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var result = new char[length];
+
+            using var rng = RandomNumberGenerator.Create();
+            var buffer = new byte[length];
+
+            rng.GetBytes(buffer);
+
+            for (int i = 0; i < length; i++)
+            {
+                result[i] = chars[buffer[i] % chars.Length];
+            }
+
+            return new string(result);
+        }
     }
 }

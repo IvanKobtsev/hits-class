@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Comments.Dto;
 using Team13.HitsClass.App.Features.Courses.Dto;
+using Team13.HitsClass.App.Features.Users.Dto;
+using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.WebApi.Pagination;
@@ -18,9 +20,29 @@ namespace Team13.HitsClass.App.Features.Courses
             _dbContext = dbContext;
         }
 
-        public async Task<CourseDto> GetCourse(int courseId)
+        public async Task<CourseDto> GetCourseById(int courseId)
         {
-            var course = _dbContext.Courses.FirstOrDefault(c => c.Id == courseId);
+            throw new NotImplementedException();
+        }
+
+        public async Task<PagedResult<CourseMemberDto>> GetCourseMembers(int courseId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<CourseDto> CreateCourse(CreateCourseDto courseDto, string ownerId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<CourseDto> PatchCourse(int courseId, PatchCourseDto patchDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task DeleteCourse(int courseId)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForAdmin(

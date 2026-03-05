@@ -62,6 +62,7 @@ public class HitsClassDbContext
         builder.Entity<Course>().HasMany(c => c.Students).WithMany();
         builder.Entity<Course>().HasMany(c => c.BannedStudents).WithMany();
         builder.Entity<Course>().HasOne(c => c.Owner);
+        builder.Entity<Course>().HasIndex(c => c.InviteCode).IsUnique();
     }
 
     private void SetupQueryFilters(ModelBuilder builder) { }
