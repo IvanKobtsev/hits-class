@@ -1,1 +1,1 @@
-export const AppHeader = () => <div data-testid="app-header">AppHeader</div>;
+export const AppHeader = () => <div data-test-id="app-header">AppHeader</div>;
