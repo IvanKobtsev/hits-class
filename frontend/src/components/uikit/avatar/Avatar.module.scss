@@ -20,12 +20,6 @@ $round-cover: 2px;
   }
 }
 
-.responsible {
-  z-index: 1 !important;
-  position: absolute;
-  top: -20px;
-}
-
 .avatar {
   display: flex;
   align-items: center;
@@ -45,27 +39,6 @@ $round-cover: 2px;
     object-fit: cover;
     color: transparent;
     text-indent: 10000px;
-  }
-}
-
-.groupWrapper {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-
-  span {
-    @include p1;
-    color: $grey-500;
-  }
-}
-
-.group {
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-
-  .avatar {
-    margin-right: -$avatar-margin;
   }
 }
 
