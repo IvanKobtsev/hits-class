@@ -1,0 +1,101 @@
+@use 'sass:list';
+@use 'sass:math';
+@use 'src/styles/variables' as *;
+@use 'src/styles/mixins' as *;
+
+$avatar-size: 32px;
+$avatar-margin: 8px;
+$round-cover: 2px;
+
+.wrapper {
+  position: relative;
+  $elementsInWrapper: 2;
+
+  * {
+    @for $i from 1 through $elementsInWrapper {
+      &:nth-child(#{$i}) {
+        z-index: #{$elementsInWrapper - $i};
+      }
+    }
+  }
+}
+
+.responsible {
+  z-index: 1 !important;
+  position: absolute;
+  top: -20px;
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  user-select: none;
+
+  width: $avatar-size;
+  height: $avatar-size;
+  border-radius: 50%;
+
+  img {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    object-fit: cover;
+    color: transparent;
+    text-indent: 10000px;
+  }
+}
+
+.groupWrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  span {
+    @include p1;
+    color: $grey-500;
+  }
+}
+
+.group {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+
+  .avatar {
+    margin-right: -$avatar-margin;
+  }
+}
+
+.round {
+  position: absolute;
+  background: white;
+
+  top: math.div(-$round-cover, 2);
+  left: math.div(-$round-cover, 2);
+
+  width: calc($avatar-size + $round-cover);
+  height: calc($avatar-size + $round-cover);
+  border-radius: 50%;
+}
+
+.initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @include p1sb;
+  color: white;
+  text-transform: uppercase;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  background: $additional-orange;
+
+  @for $i from 1 through list.length($additional) {
+    &[data-color='#{$i}'] {
+      background: list.nth($additional, $i);
+    }
+  }
+}
