@@ -3,19 +3,23 @@ import { Link, useLocation } from 'react-router';
 import { useMediaQuery } from '@mui/material';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation';
 import { useSidebar } from './SidebarContext';
-import { useCurrentUser } from 'helpers/auth/useCurrentUser';
 import styles from './AppHeader.module.scss';
+import { QueryFactory } from 'services/api';
+
+// TODO: Extract strings to translation file
 
 export const AppHeader: React.FC = () => {
   const i18n = useScopedTranslation('AppHeader');
   const { isExpanded, toggle } = useSidebar();
-  const { name } = useCurrentUser();
   const location = useLocation();
   const isMobile = useMediaQuery('(max-width: 600px)');
 
   const isCoursesPage = location.pathname === '/courses';
   const showBreadcrumbs = !isMobile || isCoursesPage;
   const showAvatar = !isMobile || isCoursesPage;
+
+  const userQuery = QueryFactory.UserQuery.useGetCurrentUserInfoQuery();
+  const name = userQuery.data?.username ?? '';
 
   return (
     <header data-test-id="app-header" className={styles.header}>
