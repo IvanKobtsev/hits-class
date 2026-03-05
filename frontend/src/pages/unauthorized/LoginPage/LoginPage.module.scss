@@ -1,4 +1,4 @@
-@use '../../styles/base' as *;
+@use '../../../styles/base' as *;
 
 .root {
   justify-content: center;
@@ -19,7 +19,7 @@
 
 .appName {
   color: $classroom-text-primary;
-  font-family: 'Google Sans', sans-serif;
+  font-family: 'Nunito Sans', sans-serif;
   font-size: 64px;
   font-weight: 600;
   margin-bottom: 32px;

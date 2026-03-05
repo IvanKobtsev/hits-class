@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Button } from 'components/uikit/buttons/Button';
 import styles from './LoginPage.module.scss';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation';
-import { LoginForm } from './LoginForm';
-import { RegisterForm } from './RegisterForm';
+import { RegisterForm } from '../RegisterForm/RegisterForm';
+import { LoginForm } from '../LoginForm/LoginForm';
 
 export const LoginPage: React.FC = () => {
   const [isRegistration, setIsRegistration] = useState(false);

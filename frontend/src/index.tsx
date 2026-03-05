@@ -8,10 +8,10 @@ import { OpenIdCallback } from 'helpers/auth/openid/OpenIdCallback';
 import { postServerLogOut, setAuthData } from 'helpers/auth/auth-interceptor';
 import { backendUri } from 'helpers/auth/openid/openid-settings';
 import { Loading } from './components/uikit/suspense/Loading';
-import { LoginErrorPage } from 'pages/unauthorized/LoginErrorPage';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from 'services/api/query-client-helper';
 import { UseCookieAuth } from 'helpers/auth/auth-settings';
+import { LoginErrorPage } from 'pages/unauthorized/LoginPage/LoginErrorPage';
 
 //to send dates to backend in local timezone (not in UTC)
 Date.prototype.toISOString = function () {
