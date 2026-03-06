@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Team13.WebApi.Domain.Helpers;
 
 namespace Team13.HitsClass.App.Features.Users.Dto;
@@ -14,6 +15,7 @@ public class RegisterUserDto
     public string LegalName { get; set; }
 
     [GroupNumber]
+    [DefaultValue("000000")]
     public string? GroupNumber { get; set; }
 
     [Required]
