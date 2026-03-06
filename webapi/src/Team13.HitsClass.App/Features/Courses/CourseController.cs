@@ -13,6 +13,7 @@ namespace Team13.HitsClass.App.Features.Courses;
 public class CourseController
 {
     private readonly CourseService _courseService;
+
     public CourseController(CourseService courseService)
     {
         _courseService = courseService;
@@ -48,7 +49,7 @@ public class CourseController
     [HttpGet("{courseId:int}")]
     public async Task<CourseDto> GetCourse([FromRoute] int courseId)
     {
-        throw new NotImplementedException();
+        return await _courseService.GetCourseById(courseId);
     }
 
     /// <summary>
@@ -58,7 +59,7 @@ public class CourseController
     [HttpGet("{courseId:int}/members")]
     public async Task<PagedResult<CourseMemberDto>> GetCourseMembers([FromRoute] int courseId)
     {
-        throw new NotImplementedException();
+        return await _courseService.GetCourseMembers(courseId);
     }
 
     /// <summary>
@@ -68,7 +69,7 @@ public class CourseController
     [HttpPost]
     public async Task<CourseDto> CreateCourse([FromBody] CreateCourseDto courseDto)
     {
-        throw new NotImplementedException();
+        return await _courseService.CreateCourse(courseDto);
     }
 
     /// <summary>
@@ -80,7 +81,7 @@ public class CourseController
         [FromBody] PatchCourseDto patchDto
     )
     {
-        throw new NotImplementedException();
+        return await _courseService.PatchCourse(courseId, patchDto);
     }
 
     /// <summary>
@@ -89,6 +90,15 @@ public class CourseController
     [HttpDelete("{courseId:int}")]
     public async Task DeleteCourse([FromRoute] int courseId)
     {
-        throw new NotImplementedException();
+        await _courseService.DeleteCourse(courseId);
+    }
+
+    /// <summary>
+    /// Join course with invite code
+    /// </summary>
+    [HttpPost("join/{inviteCode}")]
+    public async Task JoinCourse([FromRoute] string inviteCode)
+    {
+        await _courseService.JoinCourseByInviteCode(inviteCode);
     }
 }

@@ -30,7 +30,7 @@ namespace Team13.HitsClass.App.Features.Courses
             throw new NotImplementedException();
         }
 
-        public async Task<CourseDto> CreateCourse(CreateCourseDto courseDto, string ownerId)
+        public async Task<CourseDto> CreateCourse(CreateCourseDto courseDto)
         {
             throw new NotImplementedException();
         }
@@ -41,6 +41,11 @@ namespace Team13.HitsClass.App.Features.Courses
         }
 
         public async Task DeleteCourse(int courseId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task JoinCourseByInviteCode(string inviteCode)
         {
             throw new NotImplementedException();
         }
