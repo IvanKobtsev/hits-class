@@ -23,10 +23,7 @@ public class UserController
     /// </summary>
     [AllowAnonymous]
     [HttpPost("register")]
-    public async Task Register([FromBody] RegisterUserDto dto)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task Register([FromBody] RegisterUserDto dto) => await _userService.Register(dto);
 
     /// <summary>
     /// Confirms user's email address.
@@ -34,60 +31,37 @@ public class UserController
     /// </summary>
     [AllowAnonymous]
     [HttpPost("confirm-email/{userId}")]
-    public async Task<UserDto> ConfirmEmail([FromRoute] string userId)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task ConfirmEmail([FromRoute] string userId) =>
+        await _userService.ConfirmEmail(userId);
 
     /// <summary>
     /// Gets permissions for the current user
     /// </summary>
     [HttpGet("me")]
-    public async Task<CurrentUserDto> GetCurrentUserInfo()
-    {
-        return await _userService.GetCurrentUserInfo();
-    }
-
-    /// <summary>
-    /// Allows user to reset their password using single-use password reset token issued by the backend.
-    /// </summary>
-    [AllowAnonymous]
-    [HttpPost("reset-password")]
-    public async Task ResetPassword([FromBody] ResetPasswordDto dto)
-    {
-        await _userService.ResetPassword(dto);
-    }
-
-    /// <summary>
-    /// Changes password by a user.
-    /// </summary>
-    /// <param name="dto">The dto contains old and new passwords.</param>
-    [HttpPut("password")]
-    public async Task ChangePassword(ChangePasswordDto dto)
-    {
-        await _userService.ChangePassword(dto);
-    }
+    public async Task<CurrentUserDto> GetCurrentUserInfo() =>
+        await _userService.GetCurrentUserInfo();
 
     /// <summary>
     /// Gets a list of all users. Only accessible by admins.
     /// </summary>
     [Authorize(Roles = UserRoles.Admin)]
     [HttpGet]
-    public async Task<PagedResult<UserDto>> GetUsers([FromQuery] SearchUsersDto searchDto)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<PagedResult<UserDto>> GetUsers([FromQuery] SearchUsersDto searchDto) =>
+        await _userService.GetUsers(searchDto);
 
     /// <summary>
-    /// Changes roles for a user. Only accessible by admins.
+    /// Adds a role to user. Only accessible by admins.
     /// </summary>
     [Authorize(Roles = UserRoles.Admin)]
-    [HttpPut("{userId}/roles")]
-    public async Task<UserDto> ChangeRolesForUser(
-        [FromRoute] string userId,
-        [FromBody] List<string> roles
-    )
-    {
-        throw new NotImplementedException();
-    }
+    [HttpPost("{userId}/roles")]
+    public async Task AddRoleToUser([FromRoute] string userId, [FromBody] string role) =>
+        await _userService.AddRoleToUser(userId, role);
+
+    /// <summary>
+    /// Removes a role from user. Only accessible by admins.
+    /// </summary>
+    [Authorize(Roles = UserRoles.Admin)]
+    [HttpDelete("{userId}/roles")]
+    public async Task RemoveRolesFromUser([FromRoute] string userId, [FromBody] string role) =>
+        await _userService.RemoveRoleFromUser(userId, role);
 }
