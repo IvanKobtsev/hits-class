@@ -17,6 +17,7 @@ public class HitsClassDbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<DbFile> Files { get; set; }
+    public DbSet<Publication> Publications { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -29,6 +30,7 @@ public class HitsClassDbContext
 
     public static NpgsqlDbContextOptionsBuilder MapEnums(NpgsqlDbContextOptionsBuilder builder)
     {
+        builder.MapEnum<PublicationType>();
         return builder;
     }
 
@@ -54,6 +56,19 @@ public class HitsClassDbContext
                     ownedNavigationBuilder.ToJson();
                 }
             );
+        });
+
+        builder.Entity<Publication>(b =>
+        {
+            b.Property(p => p.PublicationPayloadJson).HasColumnType("jsonb");
+            b.OwnsMany(
+                p => p.Attachments,
+                ownedNavigationBuilder =>
+                {
+                    ownedNavigationBuilder.ToJson();
+                }
+            );
+            b.HasOne(p => p.Author);
         });
     }
 
