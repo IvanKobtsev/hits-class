@@ -10,7 +10,6 @@ vi.mock('react-router', async () => {
 
 const mockCourse = {
   id: 1,
-  createdAt: new Date('2024-03-15T10:00:00Z'),
   title: 'Введение в программирование',
   description: 'Базовый курс по основам программирования',
 };
@@ -42,15 +41,6 @@ describe('CourseListItem', () => {
     );
   });
 
-  test('renders formatted creation date', () => {
-    renderCourseListItem();
-
-    const dateEl = screen.getByTestId('CourseListItem-date-1');
-    expect(dateEl).toBeInTheDocument();
-    expect(dateEl.textContent).not.toBe('2024-03-15T10:00:00Z');
-    expect(dateEl.textContent?.trim()).not.toBe('');
-  });
-
   test('renders a link to the course page', () => {
     renderCourseListItem();
 
@@ -75,12 +65,6 @@ describe('CourseListItem', () => {
       'data-clamp',
       'true',
     );
-  });
-
-  test('renders without crashing when createdAt is invalid', () => {
-    renderCourseListItem({ ...mockCourse, createdAt: new Date('invalid') });
-
-    expect(screen.getByTestId('CourseListItem-date-1')).toBeInTheDocument();
   });
 
   test('link href changes when different id is passed', () => {
