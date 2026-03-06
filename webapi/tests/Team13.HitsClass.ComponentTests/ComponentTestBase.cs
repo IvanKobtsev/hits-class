@@ -116,6 +116,7 @@ public class ComponentTestBase : TestBase<HitsClassDbContext>, IDisposable
                     dbContext.Database.GetConnectionString()
                 );
                 await SetupDatabase.DoRunMigration(webFactory.Services);
+                await SetupRoles.AddRoles(webFactory.Services);
             }
         )
         {

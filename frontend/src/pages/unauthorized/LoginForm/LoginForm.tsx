@@ -11,7 +11,7 @@ import { Loading } from 'components/uikit/suspense/Loading';
 import { handleLoginErrors, sendLoginRequest } from 'helpers/auth/auth-client';
 import { queryClient } from 'services/api/query-client-helper';
 
-type Form = {
+type LoginFormData = {
   login: string;
   password: string;
 };
@@ -19,7 +19,7 @@ type Form = {
 export const LoginForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const i18n = useScopedTranslation('Page.LoginForm');
-  const form = useAdvancedForm<Form>(async (data) => {
+  const form = useAdvancedForm<LoginFormData>(async (data) => {
     setIsLoading(true);
     try {
       await sendLoginRequest(data.login, data.password.trim());

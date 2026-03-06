@@ -16,7 +16,6 @@
   <Folder Name="/Tests/">
     <Project Path="tests/Team13.HitsClass.App.Tests/Team13.HitsClass.App.Tests.csproj" />
     <Project Path="tests/Team13.HitsClass.ComponentTests/Team13.HitsClass.ComponentTests.csproj" />
-    <Project Path="tests/Team13.HitsClass.Domain.Tests/Team13.HitsClass.Domain.Tests.csproj" />
     <Project Path="tests/Team13.HitsClass.TestUtils/Team13.HitsClass.TestUtils.csproj" />
   </Folder>
   <Project Path="src/Team13.HitsClass.App/Team13.HitsClass.App.csproj" />

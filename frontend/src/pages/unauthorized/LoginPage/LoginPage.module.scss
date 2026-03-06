@@ -1,54 +1,54 @@
-@use '../../styles/base' as *;
+@use '../../../styles/base' as *;
 
 .root {
   justify-content: center;
   align-items: center;
   flex: 1 1;
   display: flex;
-  background: #1a2745 !important;
+  background: $classroom-surface !important;
 }
 
 .gridContainer {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   width: fit-content;
   z-index: 2;
 }
 
-.mainBackground {
-  background: url('/public/assets/login-background.jpg');
-  background-repeat: repeat;
-  background-size: cover;
-  position: absolute;
-  width: 100%;
-  height: calc(50% + 52px);
-  left: 0;
-  top: 0;
-  z-index: -1;
-}
-
 .appName {
-  color: white;
-  font-family: Roboto, Sans-Serif;
-  margin-bottom: 32px;
+  color: $classroom-text-primary;
+  font-family: 'Nunito Sans', sans-serif;
   font-size: 64px;
   font-weight: 600;
-  width: 288px;
-  height: 94px;
-  line-height: 96px;
+  margin-bottom: 32px;
+  text-align: center;
+  opacity: 0;
+  animation: fadeIn 0.8s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .loginContainer {
   box-sizing: border-box;
-  background-color: #ffffff;
+  background-color: $classroom-surface;
   max-width: 320px;
   min-width: 320px;
-  margin-left: 135px;
-  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.08);
   border-radius: 4px;
   padding: 20px 24px 20px 24px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.12),
+    0px 4px 15px rgba(0, 0, 0, 0.08);
 }
 
 .switchSection {
@@ -61,12 +61,12 @@
 
 .switchText {
   font-size: 12px;
-  color: #7e8b8b;
+  color: $classroom-text-secondary;
 }
 
 .switchButton {
   background-color: transparent;
-  color: blue;
+  color: $classroom-blue;
   text-decoration: underline;
 
   &:hover {

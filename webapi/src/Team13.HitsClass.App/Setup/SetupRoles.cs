@@ -8,9 +8,11 @@ namespace Team13.HitsClass.App.Setup;
 
 public static class SetupRoles
 {
-    public static async Task AddRoles(WebApplication app)
+    public static Task AddRoles(WebApplication app) => AddRoles(app.Services);
+
+    public static async Task AddRoles(IServiceProvider serviceProvider)
     {
-        using var scope = app.Services.CreateScope();
+        using var scope = serviceProvider.CreateScope();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
         foreach (var role in UserRoles.All)
