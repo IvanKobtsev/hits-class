@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 
@@ -14,8 +15,8 @@ using Team13.HitsClass.Persistence;
 namespace Team13.HitsClass.Persistence.Migrations
 {
     [DbContext(typeof(HitsClassDbContext))]
-    [Migration("20260306144724_AddedPublicationEntity")]
-    partial class AddedPublicationEntity
+    [Migration("20260307092452_AddedPublicationAndSubmissionTables")]
+    partial class AddedPublicationAndSubmissionTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,6 +27,7 @@ namespace Team13.HitsClass.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "publication_type", new[] { "announcement", "assignment" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "submission_state", new[] { "accepted", "draft", "submitted" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -372,6 +374,21 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.ToTable("OpenIddictTokens", (string)null);
                 });
 
+            modelBuilder.Entity("PublicationUser", b =>
+                {
+                    b.Property<string>("ForWhomId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("PublicationId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ForWhomId", "PublicationId");
+
+                    b.HasIndex("PublicationId");
+
+                    b.ToTable("PublicationUser");
+                });
+
             modelBuilder.Entity("Team13.HitsClass.Domain.Audit.AuditLog", b =>
                 {
                     b.Property<int>("Id")
@@ -450,9 +467,11 @@ namespace Team13.HitsClass.Persistence.Migrations
 
             modelBuilder.Entity("Team13.HitsClass.Domain.Publication", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AuthorId")
                         .IsRequired()
@@ -480,6 +499,43 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.HasIndex("AuthorId");
 
                     b.ToTable("Publications");
+                });
+
+            modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastMarkedAtUTC")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("LastSubmittedAtUTC")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Mark")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("PublicationId")
+                        .HasColumnType("integer");
+
+                    b.Property<SubmissionState>("State")
+                        .HasColumnType("submission_state");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("PublicationId");
+
+                    b.ToTable("Submissions");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.User", b =>
@@ -629,6 +685,21 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("Authorization");
                 });
 
+            modelBuilder.Entity("PublicationUser", b =>
+                {
+                    b.HasOne("Team13.HitsClass.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("ForWhomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Team13.HitsClass.Domain.Publication", null)
+                        .WithMany()
+                        .HasForeignKey("PublicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Team13.HitsClass.Domain.Audit.AuditLog", b =>
                 {
                     b.HasOne("Team13.HitsClass.Domain.User", "User")
@@ -669,7 +740,7 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.OwnsMany("Team13.HitsClass.Domain.Attachment", "Attachments", b1 =>
                         {
-                            b1.Property<Guid>("PublicationId");
+                            b1.Property<int>("PublicationId");
 
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
@@ -697,6 +768,52 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>
+                {
+                    b.HasOne("Team13.HitsClass.Domain.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Team13.HitsClass.Domain.Publication", "Publication")
+                        .WithMany("Submissions")
+                        .HasForeignKey("PublicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsMany("Team13.HitsClass.Domain.Attachment", "Attachments", b1 =>
+                        {
+                            b1.Property<int>("SubmissionId");
+
+                            b1.Property<int>("__synthesizedOrdinal")
+                                .ValueGeneratedOnAdd();
+
+                            b1.Property<string>("FileName")
+                                .IsRequired();
+
+                            b1.Property<long>("Size");
+
+                            b1.Property<string>("Uuid")
+                                .IsRequired();
+
+                            b1.HasKey("SubmissionId", "__synthesizedOrdinal");
+
+                            b1.ToTable("Submissions");
+
+                            b1.ToJson("Attachments");
+
+                            b1.WithOwner()
+                                .HasForeignKey("SubmissionId");
+                        });
+
+                    b.Navigation("Attachments");
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Publication");
+                });
+
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>
                 {
                     b.Navigation("Authorizations");
@@ -707,6 +824,11 @@ namespace Team13.HitsClass.Persistence.Migrations
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreAuthorization", b =>
                 {
                     b.Navigation("Tokens");
+                });
+
+            modelBuilder.Entity("Team13.HitsClass.Domain.Publication", b =>
+                {
+                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

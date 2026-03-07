@@ -14,13 +14,15 @@ namespace Team13.HitsClass.Domain;
 [PrimaryKey(nameof(Id))]
 public class Publication
 {
-    public Guid Id { get; }
+    public int Id { get; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime LastUpdatedAtUtc { get; set; }
     public PublicationType Type { get; set; }
     public string AuthorId { get; set; }
     public User Author { get; set; }
     public string Content { get; set; }
+    public List<User> ForWhom { get; set; }
+    public List<Submission>? Submissions { get; set; }
     public List<Attachment> Attachments { get; set; }
 
     // public List<Comment> Comments { get; set; }
@@ -61,7 +63,7 @@ public class Publication
 
     #region Specifications
 
-    public static Specification<Publication> HasId(Guid id)
+    public static Specification<Publication> HasId(int id)
     {
         return new Specification<Publication>(nameof(HasId), p => p.Id == id, id);
     }
