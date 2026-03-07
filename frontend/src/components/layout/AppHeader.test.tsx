@@ -98,7 +98,7 @@ describe('AppHeader', () => {
   test('renders avatar button', () => {
     renderHeader();
 
-    expect(screen.getByTestId('app-header-avatar')).toBeInTheDocument();
+    expect(screen.getByTestId('user-avatar')).toBeInTheDocument();
   });
 
   // --- Breadcrumbs ---
@@ -184,7 +184,7 @@ describe('AppHeader', () => {
     test('shows avatar button when on /courses page', () => {
       renderHeader('/courses');
 
-      expect(screen.getByTestId('app-header-avatar')).toBeInTheDocument();
+      expect(screen.getByTestId('user-avatar')).toBeInTheDocument();
     });
   });
 });

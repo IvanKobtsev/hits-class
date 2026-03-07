@@ -11,7 +11,7 @@ export const Avatar = (props: AvatarProps) => {
   const colorIndex = user ? (user.legalName ?? 'a').charCodeAt(0) % 7 : 6;
 
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} data-test-id="user-avatar">
       <div className={styles.round} />
       <div className={styles.avatar}>
         <div className={styles.initials} data-color={colorIndex}>
