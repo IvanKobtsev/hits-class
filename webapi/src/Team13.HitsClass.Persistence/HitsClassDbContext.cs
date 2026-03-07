@@ -17,7 +17,6 @@ public class HitsClassDbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<DbFile> Files { get; set; }
-    public DbSet<User> Users { get; set; }
     public DbSet<Course> Courses { get; set; }
 
     public HitsClassDbContext(
