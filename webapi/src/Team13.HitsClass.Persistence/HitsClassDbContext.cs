@@ -62,11 +62,27 @@ public class HitsClassDbContext
             );
         });
 
-        builder.Entity<Course>().HasMany(c => c.Teachers).WithMany();
-        builder.Entity<Course>().HasMany(c => c.Students).WithMany();
-        builder.Entity<Course>().HasMany(c => c.BannedStudents).WithMany();
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.Teachers)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseTeachers"));
+        ;
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.Students)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseStudents"));
+        ;
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.BannedStudents)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseBannedStudents"));
+        ;
         builder.Entity<Course>().HasOne(c => c.Owner);
         builder.Entity<Course>().HasIndex(c => c.InviteCode).IsUnique();
+
         builder.Entity<Publication>(b =>
         {
             b.Property(p => p.PublicationPayloadJson).HasColumnType("jsonb");
