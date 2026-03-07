@@ -11,4 +11,14 @@ export type SidebarExpandableDropdownProps = {
 
 export const SidebarExpandableDropdown: React.FC<
   SidebarExpandableDropdownProps
-> = () => <div></div>;
+> = ({ title, icon: Icon, onClick, isExpandedVertically, isExpandedHorizontally, children }) => (
+  <div>
+    <button type="button" onClick={onClick}>
+      <Icon data-test-id="sidebar-expandable-dropdown-icon" />
+      {isExpandedHorizontally && (
+        <span data-test-id="sidebar-expandable-dropdown-title">{title}</span>
+      )}
+    </button>
+    {isExpandedVertically && isExpandedHorizontally && children}
+  </div>
+);
