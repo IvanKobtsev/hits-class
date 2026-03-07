@@ -7,22 +7,30 @@ vi.mock('components/layout/SidebarContext', () => ({
   useSidebar: vi.fn(),
 }));
 
-vi.mock('helpers/auth/useCurrentUser', () => ({
-  useCurrentUser: vi.fn(),
+vi.mock('services/api', () => ({
+  QueryFactory: {
+    UserQuery: {
+      useGetCurrentUserInfoQuery: vi.fn(),
+    },
+  },
 }));
 
 import { useSidebar } from './SidebarContext';
-import { useCurrentUser } from 'helpers/auth/useCurrentUser';
+import { QueryFactory } from 'services/api';
 import { AppHeader } from './AppHeader';
 
 const mockedUseSidebar = vi.mocked(useSidebar);
-const mockedUseCurrentUser = vi.mocked(useCurrentUser);
+const mockedUseGetCurrentUserInfo = vi.mocked(
+  QueryFactory.UserQuery.useGetCurrentUserInfoQuery,
+);
 
 const mockToggle = vi.fn();
 
 function setupDefaultMocks() {
   mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle: mockToggle });
-  mockedUseCurrentUser.mockReturnValue({ name: 'John Doe' });
+  mockedUseGetCurrentUserInfo.mockReturnValue({
+    data: { id: '1', username: 'John Doe' },
+  } as any);
 }
 
 function mockMatchMedia(mobile: boolean) {
@@ -90,7 +98,7 @@ describe('AppHeader', () => {
   test('renders avatar button', () => {
     renderHeader();
 
-    expect(screen.getByTestId('app-header-avatar')).toBeInTheDocument();
+    expect(screen.getByTestId('user-avatar')).toBeInTheDocument();
   });
 
   // --- Breadcrumbs ---
@@ -176,7 +184,7 @@ describe('AppHeader', () => {
     test('shows avatar button when on /courses page', () => {
       renderHeader('/courses');
 
-      expect(screen.getByTestId('app-header-avatar')).toBeInTheDocument();
+      expect(screen.getByTestId('user-avatar')).toBeInTheDocument();
     });
   });
 });

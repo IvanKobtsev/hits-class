@@ -46,11 +46,8 @@ $round-cover: 2px;
   position: absolute;
   background: white;
 
-  top: math.div(-$round-cover, 2);
-  left: math.div(-$round-cover, 2);
-
-  width: calc($avatar-size + $round-cover);
-  height: calc($avatar-size + $round-cover);
+  width: $avatar-size;
+  height: $avatar-size;
   border-radius: 50%;
 }
 

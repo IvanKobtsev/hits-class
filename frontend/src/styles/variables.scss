@@ -53,3 +53,22 @@ $shrinkCalendarCellWidth: 50px;
 $separator: #e6e8e6;
 $close-button-hover: #a5aaa5;
 $close-button-active: #9ba09b;
+
+$red-300: #ea989d;
+
+// Additional
+$additional-orange: #e5c57d;
+$additional-orange-50: #fff3e0;
+$additional-orange-900: #e65400;
+$additional-red: $red-300;
+$additional-fuchsia: #e28be7;
+$additional-purple: #989dea;
+$additional-blue: #7db7e5;
+$additional-jade: #6eda9d;
+$additional-grass: #73d96b;
+
+$additional:
+  $additional-orange, $additional-red, $additional-fuchsia, $additional-purple,
+  $additional-blue, $additional-jade, $additional-grass;
+
+$transparent: rgba(0, 0, 0, 0);
