@@ -3,6 +3,7 @@ using System;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Team13.HitsClass.Common;
@@ -14,9 +15,11 @@ using Team13.HitsClass.Persistence;
 namespace Team13.HitsClass.Persistence.Migrations
 {
     [DbContext(typeof(HitsClassDbContext))]
-    partial class HitsClassDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260307140324_Courses")]
+    partial class Courses
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,7 +42,7 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.HasIndex("TeachersId");
 
-                    b.ToTable("CourseTeachers", (string)null);
+                    b.ToTable("CourseUser");
                 });
 
             modelBuilder.Entity("CourseUser1", b =>
@@ -54,7 +57,7 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.HasIndex("StudentsId");
 
-                    b.ToTable("CourseStudents", (string)null);
+                    b.ToTable("CourseUser1");
                 });
 
             modelBuilder.Entity("CourseUser2", b =>
@@ -69,7 +72,7 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.HasIndex("Course2Id");
 
-                    b.ToTable("CourseBannedStudents", (string)null);
+                    b.ToTable("CourseUser2");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

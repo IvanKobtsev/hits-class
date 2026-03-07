@@ -1,4 +1,5 @@
-﻿using Team13.HitsClass.App.Features.Files;
+using Team13.HitsClass.App.Features.Courses;
+using Team13.HitsClass.App.Features.Files;
 using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.App.Services.Authentication;
 using Team13.HitsClass.App.Services.Authentication.Seed;
@@ -20,6 +21,7 @@ public static class SetupServices
             .AddTransient<IUserAccessor, UserAccessor>()
             .AddScoped<DefaultUserSeeder>()
             .AddScoped<UserService>()
-            .AddScoped<FileService>();
+            .AddScoped<FileService>()
+            .AddScoped<CourseService>();
     }
 }

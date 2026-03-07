@@ -18,6 +18,7 @@ public class HitsClassDbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
 
     public DbSet<DbFile> Files { get; set; }
+    public DbSet<Course> Courses { get; set; }
     public DbSet<Publication> Publications { get; set; }
     public DbSet<Submission> Submissions { get; set; }
 
@@ -60,6 +61,27 @@ public class HitsClassDbContext
                 }
             );
         });
+
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.Teachers)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseTeachers"));
+        ;
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.Students)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseStudents"));
+        ;
+        builder
+            .Entity<Course>()
+            .HasMany(c => c.BannedStudents)
+            .WithMany()
+            .UsingEntity(j => j.ToTable("CourseBannedStudents"));
+        ;
+        builder.Entity<Course>().HasOne(c => c.Owner);
+        builder.Entity<Course>().HasIndex(c => c.InviteCode).IsUnique();
 
         builder.Entity<Publication>(b =>
         {
