@@ -4,5 +4,4 @@ public enum PublicationType
 {
     Announcement = 0,
     Assignment = 1,
-    // Material = 2,
 }
