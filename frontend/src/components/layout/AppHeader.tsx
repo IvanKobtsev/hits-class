@@ -7,8 +7,6 @@ import styles from './AppHeader.module.scss';
 import { QueryFactory } from 'services/api';
 import { Avatar } from 'components/uikit/avatar/Avatar';
 
-// TODO: Extract strings to translation file
-
 export const AppHeader: React.FC = () => {
   const i18n = useScopedTranslation('AppHeader');
   const { isExpanded, toggle } = useSidebar();
@@ -19,10 +17,8 @@ export const AppHeader: React.FC = () => {
   const showBreadcrumbs = !isMobile || isCoursesPage;
   const showAvatar = !isMobile || isCoursesPage;
 
-  // const userQuery = QueryFactory.UserQuery.useGetCurrentUserInfoQuery();
   const userQuery = QueryFactory.UserQuery.useGetCurrentUserInfoQuery();
   const user = userQuery.data;
-  const name = userQuery.data?.username ?? '';
 
   return (
     <header data-test-id="app-header" className={styles.header}>

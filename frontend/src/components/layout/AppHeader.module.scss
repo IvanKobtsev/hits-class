@@ -31,6 +31,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  font-size: large;
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
@@ -38,7 +39,7 @@
 }
 
 .logoButton {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
   color: #444746;
   text-decoration: none;
