@@ -15,8 +15,8 @@ vi.mock('services/api', () => ({
   },
 }));
 
-import { useSidebar } from './SidebarContext';
 import { QueryFactory } from 'services/api';
+import { useSidebar } from '../Sidebar/SidebarContext';
 import { AppHeader } from './AppHeader';
 
 const mockedUseSidebar = vi.mocked(useSidebar);
