@@ -119,8 +119,7 @@ export function prepareSerializeUserDto(_data: UserDto): UserDto {
   const data: Record<string, any> = { ..._data };
   return data as UserDto;
 }
-export interface CurrentUserDto  {
-  id: string;
+export interface CurrentUserDto extends UserDto  {
   username: string;
 }
 export function deserializeCurrentUserDto(json: string): CurrentUserDto {
@@ -129,6 +128,7 @@ export function deserializeCurrentUserDto(json: string): CurrentUserDto {
   return data;
 }
 export function initCurrentUserDto(_data: CurrentUserDto) {
+  initUserDto(_data);
     return _data;
 }
 export function serializeCurrentUserDto(_data: CurrentUserDto | undefined) {
@@ -138,53 +138,8 @@ export function serializeCurrentUserDto(_data: CurrentUserDto | undefined) {
   return JSON.stringify(_data);
 }
 export function prepareSerializeCurrentUserDto(_data: CurrentUserDto): CurrentUserDto {
-  const data: Record<string, any> = { ..._data };
+  const data = prepareSerializeUserDto(_data as CurrentUserDto) as Record<string, any>;
   return data as CurrentUserDto;
-}
-export interface ResetPasswordDto  {
-  username: string;
-  token: string;
-  newPassword: string;
-}
-export function deserializeResetPasswordDto(json: string): ResetPasswordDto {
-  const data = JSON.parse(json) as ResetPasswordDto;
-  initResetPasswordDto(data);
-  return data;
-}
-export function initResetPasswordDto(_data: ResetPasswordDto) {
-    return _data;
-}
-export function serializeResetPasswordDto(_data: ResetPasswordDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeResetPasswordDto(_data as ResetPasswordDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeResetPasswordDto(_data: ResetPasswordDto): ResetPasswordDto {
-  const data: Record<string, any> = { ..._data };
-  return data as ResetPasswordDto;
-}
-export interface ChangePasswordDto  {
-  oldPassword: string;
-  newPassword: string;
-}
-export function deserializeChangePasswordDto(json: string): ChangePasswordDto {
-  const data = JSON.parse(json) as ChangePasswordDto;
-  initChangePasswordDto(data);
-  return data;
-}
-export function initChangePasswordDto(_data: ChangePasswordDto) {
-    return _data;
-}
-export function serializeChangePasswordDto(_data: ChangePasswordDto | undefined) {
-  if (_data) {
-    _data = prepareSerializeChangePasswordDto(_data as ChangePasswordDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializeChangePasswordDto(_data: ChangePasswordDto): ChangePasswordDto {
-  const data: Record<string, any> = { ..._data };
-  return data as ChangePasswordDto;
 }
 export interface PagedResultOfUserDto  {
   data: UserDto[];

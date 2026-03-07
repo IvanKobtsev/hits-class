@@ -5,6 +5,7 @@ import { useScopedTranslation } from 'application/localization/useScopedTranslat
 import { useSidebar } from './SidebarContext';
 import styles from './AppHeader.module.scss';
 import { QueryFactory } from 'services/api';
+import { Avatar } from 'components/uikit/avatar/Avatar';
 
 // TODO: Extract strings to translation file
 
@@ -18,7 +19,9 @@ export const AppHeader: React.FC = () => {
   const showBreadcrumbs = !isMobile || isCoursesPage;
   const showAvatar = !isMobile || isCoursesPage;
 
+  // const userQuery = QueryFactory.UserQuery.useGetCurrentUserInfoQuery();
   const userQuery = QueryFactory.UserQuery.useGetCurrentUserInfoQuery();
+  const user = userQuery.data;
   const name = userQuery.data?.username ?? '';
 
   return (
@@ -51,16 +54,7 @@ export const AppHeader: React.FC = () => {
         </nav>
       )}
 
-      {showAvatar && (
-        <button
-          data-test-id="app-header-avatar"
-          className={styles.avatar}
-          type="button"
-          aria-label={name}
-        >
-          {name.charAt(0).toUpperCase()}
-        </button>
-      )}
+      {showAvatar && <Avatar user={user} />}
     </header>
   );
 };

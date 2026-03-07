@@ -5,7 +5,7 @@
   align-items: center;
   height: 64px;
   padding: 0 8px 0 16px;
-  background-color: $classroom-blue;
+  background-color:#f8fafd ;
   color: white;
   position: sticky;
   top: 0;
@@ -22,7 +22,7 @@
 .menuButton {
   background: none;
   border: none;
-  color: white;
+  color: #444746;
   cursor: pointer;
   border-radius: 50%;
   width: 40px;
@@ -40,13 +40,13 @@
 .logoButton {
   font-size: 18px;
   font-weight: 500;
-  color: white;
+  color: #444746;
   text-decoration: none;
   white-space: nowrap;
   padding: 0 8px;
 
   &:hover {
-    color: white;
+    color: $classroom-blue;
     text-decoration: none;
   }
 }
