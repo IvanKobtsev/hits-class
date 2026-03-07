@@ -5,6 +5,7 @@ using Team13.HitsClass.App.Features.Users.Dto;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
+using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Courses
@@ -22,32 +23,149 @@ namespace Team13.HitsClass.App.Features.Courses
 
         public async Task<CourseDto> GetCourseById(int courseId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+
+            var userId = _userAccessor.GetUserId();
+            var hasAccess =
+                !course.BannedStudents.Any(b => b.Id == userId)
+                && (
+                    course.OwnerId == userId
+                    || course.Teachers.Any(t => t.Id == userId)
+                    || course.Students.Any(s => s.Id == userId)
+                );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException("User doesn't have access to this course.");
+            }
+
+            return course.ToCourseDto();
         }
 
         public async Task<PagedResult<CourseMemberDto>> GetCourseMembers(int courseId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+
+            var userId = _userAccessor.GetUserId();
+            var hasAccess = course.OwnerId == userId || course.Teachers.Any(t => t.Id == userId);
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "Only course owner or teachers can access members."
+                );
+            }
+
+            var members = new List<CourseMemberDto>();
+            members.Add(
+                new CourseMemberDto
+                {
+                    Id = course.Owner.Id,
+                    Email = course.Owner.Email,
+                    LegalName = course.Owner.LegalName,
+                    GroupNumber = null,
+                    IsTeacher = false,
+                    IsOwner = true,
+                }
+            );
+            members.AddRange(
+                course.Teachers.Select(t => new CourseMemberDto
+                {
+                    Id = t.Id,
+                    Email = t.Email,
+                    LegalName = t.LegalName,
+                    GroupNumber = t.GroupNumber,
+                    IsTeacher = true,
+                    IsOwner = false,
+                })
+            );
+            members.AddRange(
+                course.Students.Select(s => new CourseMemberDto
+                {
+                    Id = s.Id,
+                    Email = s.Email,
+                    LegalName = s.LegalName,
+                    GroupNumber = s.GroupNumber,
+                    IsTeacher = false,
+                    IsOwner = false,
+                })
+            );
+            return new PagedResult<CourseMemberDto>(members, members.Count);
         }
 
         public async Task<CourseDto> CreateCourse(CreateCourseDto courseDto)
         {
-            throw new NotImplementedException();
+            var userId = _userAccessor.GetUserId();
+            var course = new Course(courseDto.Title, courseDto.Description, userId);
+            await _dbContext.Courses.AddAsync(course);
+            await _dbContext.SaveChangesAsync();
+
+            var createdCourse = await _dbContext
+                .Courses.Include(c => c.Owner)
+                .Include(c => c.Teachers)
+                .FirstAsync(c => c.Id == course.Id);
+
+            return createdCourse.ToCourseDto();
         }
 
         public async Task<CourseDto> PatchCourse(int courseId, PatchCourseDto patchDto)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+
+            var userId = _userAccessor.GetUserId();
+            if (course.OwnerId != userId)
+            {
+                throw new AccessDeniedException("Only owner can modify course.");
+            }
+
+            course.Title = patchDto.Title;
+            course.Description = patchDto.Description;
+            _dbContext.Courses.Update(course);
+            await _dbContext.SaveChangesAsync();
+            return course.ToCourseDto();
         }
 
         public async Task DeleteCourse(int courseId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+
+            var userId = _userAccessor.GetUserId();
+            if (course.OwnerId != userId)
+            {
+                throw new AccessDeniedException("Only owner can delete course.");
+            }
+
+            _dbContext.Courses.Remove(course);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task JoinCourseByInviteCode(string inviteCode)
         {
-            throw new NotImplementedException();
+            var course = await _dbContext
+                .Courses.Include(c => c.Students)
+                .Include(c => c.Teachers)
+                .Include(c => c.BannedStudents)
+                .FirstOrDefaultAsync(c => c.InviteCode == inviteCode);
+            if (course == null)
+            {
+                throw new NotFoundException($"Course with inviteCde={inviteCode} not found.");
+            }
+
+            var userId = _userAccessor.GetUserId();
+            var hasAlreadyJoined =
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || course.Students.Any(s => s.Id == userId);
+            if (hasAlreadyJoined)
+            {
+                throw new ConflictException("User is already a member of this course.");
+            }
+            if (course.BannedStudents.Any(b => b.Id == userId))
+            {
+                throw new AccessDeniedException("User is banned from this course.");
+            }
+
+            var user = await _dbContext.Users.FindAsync(userId);
+            course.Students.Add(user);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task<PagedResult<CourseListItemDto>> GetAllCoursesForAdmin(
@@ -149,6 +267,21 @@ namespace Team13.HitsClass.App.Features.Courses
                 .ToListAsync();
 
             return new PagedResult<CourseListItemDto>(data, totalCount);
+        }
+
+        private async Task<Course> FindCourseOrThrow(int id)
+        {
+            var course = await _dbContext
+                .Courses.Include(c => c.Owner)
+                .Include(c => c.Students)
+                .Include(c => c.Teachers)
+                .Include(c => c.BannedStudents)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (course == null)
+            {
+                throw new NotFoundException($"Course with id={id} not found.");
+            }
+            return course;
         }
     }
 }

@@ -22,7 +22,6 @@ export type ConfirmEmailUserQueryParameters = {
   userId: string ;
 }
 
-
 export type GetUsersUserQueryParameters = {
   offset?: number | null | undefined ;
   limit?: number | null | undefined ;
@@ -30,7 +29,11 @@ export type GetUsersUserQueryParameters = {
   sortOrder?: Types.SortOrder | undefined ;
 }
 
-export type ChangeRolesForUserUserQueryParameters = {
+export type AddRoleToUserUserQueryParameters = {
+  userId: string ;
+}
+
+export type RemoveRolesFromUserUserQueryParameters = {
   userId: string ;
 }
 
@@ -85,7 +88,7 @@ export function confirmEmailMutationKey(userId: string): MutationKey {
  * Confirms user's email address.
 This endpoint is called when the user clicks the confirmation link in the email.
  */
-export function useConfirmEmailMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<Types.UserDto, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.UserDto, unknown, void, TContext> {
+export function useConfirmEmailMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
   const key = confirmEmailMutationKey(userId);
   
   const metaContext = useContext(QueryMetaContext);
@@ -104,7 +107,7 @@ type ConfirmEmail__MutationParameters = ConfirmEmailUserQueryParameters
  * Confirms user's email address.
 This endpoint is called when the user clicks the confirmation link in the email.
  */
-export function useConfirmEmailMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.UserDto, unknown, ConfirmEmail__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: ConfirmEmailUserQueryParameters}): UseMutationResult<Types.UserDto, unknown, ConfirmEmail__MutationParameters, TContext> {
+export function useConfirmEmailMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, ConfirmEmail__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: ConfirmEmailUserQueryParameters}): UseMutationResult<void, unknown, ConfirmEmail__MutationParameters, TContext> {
   const key = confirmEmailMutationKey(options?.parameters?.userId!);
   
   const metaContext = useContext(QueryMetaContext);
@@ -187,65 +190,6 @@ export function setGetCurrentUserInfoDataByQueryId(queryClient: QueryClient, que
   queryClient.setQueryData(queryKey, updater);
 }
     
-export function resetPasswordUrl(): string {
-  let url_ = getBaseUrl() + "/api/users/reset-password";
-  url_ = url_.replace(/[?&]$/, "");
-  return url_;
-}
-
-export function resetPasswordMutationKey(): MutationKey {
-  return trimArrayEnd([
-      'UserClient',
-      'resetPassword',
-    ]);
-}
-
-/**
- * Allows user to reset their password using single-use password reset token issued by the backend.
- */
-export function useResetPasswordMutation<TContext>(options?: Omit<UseMutationOptions<void, unknown, Types.ResetPasswordDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.ResetPasswordDto, TContext> {
-  const key = resetPasswordMutationKey();
-  
-  const metaContext = useContext(QueryMetaContext);
-  options = addMetaToOptions(options, metaContext);
-  
-  return useMutation({
-    ...options,
-    mutationFn: (dto: Types.ResetPasswordDto) => Client.resetPassword(dto),
-    mutationKey: key,
-  });
-}
-  
-export function changePasswordUrl(): string {
-  let url_ = getBaseUrl() + "/api/users/password";
-  url_ = url_.replace(/[?&]$/, "");
-  return url_;
-}
-
-export function changePasswordMutationKey(): MutationKey {
-  return trimArrayEnd([
-      'UserClient',
-      'changePassword',
-    ]);
-}
-
-/**
- * Changes password by a user.
- * @param dto The dto contains old and new passwords.
- */
-export function useChangePasswordMutation<TContext>(options?: Omit<UseMutationOptions<void, unknown, Types.ChangePasswordDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.ChangePasswordDto, TContext> {
-  const key = changePasswordMutationKey();
-  
-  const metaContext = useContext(QueryMetaContext);
-  options = addMetaToOptions(options, metaContext);
-  
-  return useMutation({
-    ...options,
-    mutationFn: (dto: Types.ChangePasswordDto) => Client.changePassword(dto),
-    mutationKey: key,
-  });
-}
-  
 export function getUsersUrl(offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
   let url_ = getBaseUrl() + "/api/users?";
 if (offset !== undefined && offset !== null)
@@ -364,7 +308,7 @@ export function setGetUsersDataByQueryId(queryClient: QueryClient, queryKey: Que
   queryClient.setQueryData(queryKey, updater);
 }
     
-export function changeRolesForUserUrl(userId: string): string {
+export function addRoleToUserUrl(userId: string): string {
   let url_ = getBaseUrl() + "/api/users/{userId}/roles";
 if (userId === undefined || userId === null)
   throw new Error("The parameter 'userId' must be defined.");
@@ -373,46 +317,99 @@ url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
   return url_;
 }
 
-export function changeRolesForUserMutationKey(userId: string): MutationKey {
+export function addRoleToUserMutationKey(userId: string): MutationKey {
   return trimArrayEnd([
       'UserClient',
-      'changeRolesForUser',
+      'addRoleToUser',
       userId as any,
     ]);
 }
 
 /**
- * Changes roles for a user. Only accessible by admins.
+ * Adds a role to user. Only accessible by admins.
  */
-export function useChangeRolesForUserMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<Types.UserDto, unknown, string[], TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.UserDto, unknown, string[], TContext> {
-  const key = changeRolesForUserMutationKey(userId);
+export function useAddRoleToUserMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = addRoleToUserMutationKey(userId);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
   return useMutation({
     ...options,
-    mutationFn: (roles: string[]) => Client.changeRolesForUser(userId, roles),
+    mutationFn: (role: string) => Client.addRoleToUser(userId, role),
     mutationKey: key,
   });
 }
   
-type ChangeRolesForUser__MutationParameters = ChangeRolesForUserUserQueryParameters & {
-  roles: string[];
+type AddRoleToUser__MutationParameters = AddRoleToUserUserQueryParameters & {
+  role: string;
 }
 
 /**
- * Changes roles for a user. Only accessible by admins.
+ * Adds a role to user. Only accessible by admins.
  */
-export function useChangeRolesForUserMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.UserDto, unknown, ChangeRolesForUser__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: ChangeRolesForUserUserQueryParameters}): UseMutationResult<Types.UserDto, unknown, ChangeRolesForUser__MutationParameters, TContext> {
-  const key = changeRolesForUserMutationKey(options?.parameters?.userId!);
+export function useAddRoleToUserMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, AddRoleToUser__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddRoleToUserUserQueryParameters}): UseMutationResult<void, unknown, AddRoleToUser__MutationParameters, TContext> {
+  const key = addRoleToUserMutationKey(options?.parameters?.userId!);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
 return useMutation({
   ...options, 
-  mutationFn: (data: ChangeRolesForUser__MutationParameters) => Client.changeRolesForUser(data.userId ?? options?.parameters?.userId!, data.roles),
+  mutationFn: (data: AddRoleToUser__MutationParameters) => Client.addRoleToUser(data.userId ?? options?.parameters?.userId!, data.role),
+  mutationKey: key,
+});
+}
+  
+export function removeRolesFromUserUrl(userId: string): string {
+  let url_ = getBaseUrl() + "/api/users/{userId}/roles";
+if (userId === undefined || userId === null)
+  throw new Error("The parameter 'userId' must be defined.");
+url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function removeRolesFromUserMutationKey(userId: string): MutationKey {
+  return trimArrayEnd([
+      'UserClient',
+      'removeRolesFromUser',
+      userId as any,
+    ]);
+}
+
+/**
+ * Removes a role from user. Only accessible by admins.
+ */
+export function useRemoveRolesFromUserMutation<TContext>(userId: string, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = removeRolesFromUserMutationKey(userId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (role: string) => Client.removeRolesFromUser(userId, role),
+    mutationKey: key,
+  });
+}
+  
+type RemoveRolesFromUser__MutationParameters = RemoveRolesFromUserUserQueryParameters & {
+  role: string;
+}
+
+/**
+ * Removes a role from user. Only accessible by admins.
+ */
+export function useRemoveRolesFromUserMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, RemoveRolesFromUser__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: RemoveRolesFromUserUserQueryParameters}): UseMutationResult<void, unknown, RemoveRolesFromUser__MutationParameters, TContext> {
+  const key = removeRolesFromUserMutationKey(options?.parameters?.userId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: RemoveRolesFromUser__MutationParameters) => Client.removeRolesFromUser(data.userId ?? options?.parameters?.userId!, data.role),
   mutationKey: key,
 });
 }
