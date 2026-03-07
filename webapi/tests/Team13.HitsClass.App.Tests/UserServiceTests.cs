@@ -263,7 +263,7 @@ public class UserServiceTests : AppServiceTestBase
         var users = new List<User>();
         for (int i = 0; i < 15; i++)
         {
-            users.Add(new User($"user{i}@test.com", $"Group{i}", $"User {i}"));
+            users.Add(new User($"user{i}@test.com", $"Group{i % 10}", $"User {i}"));
         }
 
         await WithDbContext(async db =>
