@@ -10,7 +10,6 @@ vi.mock('react-router', async () => {
 
 const mockCourse = {
   id: 1,
-  createdAt: '2024-03-15T10:00:00Z',
   title: 'Введение в программирование',
   description: 'Базовый курс по основам программирования',
 };
@@ -29,7 +28,7 @@ describe('CourseListItem', () => {
   test('renders course title', () => {
     renderCourseListItem();
 
-    expect(screen.getByTestId('CourseListItem-title')).toHaveTextContent(
+    expect(screen.getByTestId('CourseListItem-title-1')).toHaveTextContent(
       'Введение в программирование',
     );
   });
@@ -37,24 +36,16 @@ describe('CourseListItem', () => {
   test('renders course description', () => {
     renderCourseListItem();
 
-    expect(screen.getByTestId('CourseListItem-description')).toHaveTextContent(
-      'Базовый курс по основам программирования',
-    );
-  });
-
-  test('renders formatted creation date', () => {
-    renderCourseListItem();
-
-    const dateEl = screen.getByTestId('CourseListItem-date');
-    expect(dateEl).toBeInTheDocument();
-    expect(dateEl.textContent).not.toBe('2024-03-15T10:00:00Z');
-    expect(dateEl.textContent?.trim()).not.toBe('');
+    expect(
+      screen.getByTestId('CourseListItem-description-1'),
+    ).toHaveTextContent('Базовый курс по основам программирования');
   });
 
   test('renders a link to the course page', () => {
     renderCourseListItem();
 
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/1');
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', `/courses/${mockCourse.id}`);
   });
 
   // --- Edge cases ---
@@ -63,22 +54,35 @@ describe('CourseListItem', () => {
     renderCourseListItem({ ...mockCourse, description: '' });
 
     expect(
-      screen.getByTestId('CourseListItem-description'),
+      screen.getByTestId('CourseListItem-description-1'),
     ).toBeInTheDocument();
   });
 
-  test('marks long description for line clamping', () => {
-    renderCourseListItem({ ...mockCourse, description: 'A'.repeat(300) });
+  test('adds ellipsis to long title', () => {
+    renderCourseListItem({ ...mockCourse, title: 'A'.repeat(200) });
 
-    expect(screen.getByTestId('CourseListItem-description')).toHaveAttribute(
-      'data-clamp',
-      'true',
-    );
+    const el = screen.getByTestId('CourseListItem-title-1');
+    expect(el.className).toMatch(/shortened_title/);
   });
 
-  test('renders without crashing when createdAt is invalid', () => {
-    renderCourseListItem({ ...mockCourse, createdAt: '' });
+  test('adds ellipsis to long description', () => {
+    renderCourseListItem({ ...mockCourse, description: 'A'.repeat(200) });
 
-    expect(screen.getByTestId('CourseListItem-date')).toBeInTheDocument();
+    const el = screen.getByTestId('CourseListItem-description-1');
+    expect(el.className).toMatch(/shortened_description/);
+  });
+
+
+  test('renders a link to the course page', () => {
+    renderCourseListItem();
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', `/courses/${mockCourse.id}`);
+  });
+
+  test('link href changes when different id is passed', () => {
+    renderCourseListItem({ ...mockCourse, id: 42 });
+
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/42');
   });
 });
