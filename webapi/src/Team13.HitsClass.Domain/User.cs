@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Team13.DomainHelpers;
 using Team13.DomainHelpers.DomainEvents;
-using Team13.DomainHelpers.DomainEvents.Events;
 
 namespace Team13.HitsClass.Domain;
 
 public class User : IdentityUser, IDomainEventEntity
 {
-    public string FirstName { get; private set; } = "";
+    [MaxLength(256)]
+    public string LegalName { get; set; } = "";
 
-    public string LastName { get; private set; } = "";
+    [MaxLength(6)]
+    public string? GroupNumber { get; set; }
 
     /// <summary>
     /// Needed for Entity Framework, keep empty.
@@ -20,52 +22,12 @@ public class User : IdentityUser, IDomainEventEntity
     /// <summary>
     /// Constructor to initialize User entity.
     /// </summary>
-    public User(string email)
+    public User(string email, string? groupNumber = null, string legalName = "")
     {
         UserName = email;
         Email = email;
-    }
-
-    /// <summary>
-    /// Constructor to initialize User entity with first and last name.
-    /// </summary>
-    /// <param name="firstName">First name of the user.</param>
-    /// <param name="lastName">Last name of the user.</param>
-    /// <param name="email">Identifier of the user.</param>
-    public User(string firstName, string lastName, string email)
-    {
-        UserName = email;
-        Email = email;
-        FirstName = firstName;
-        LastName = lastName;
-    }
-
-    /// <summary>
-    /// Where it makes sense, we could also use DDD approach (so that Entity properties have only private setters,
-    /// and modification happens via invoking a method on an object).
-    /// </summary>
-    public void ChangeFirstNameAndLastName(string firstName, string lastName)
-    {
-        FirstName = firstName;
-        LastName = lastName;
-
-        // In DDD methods, you could use Domain Events if you need to call some Service from main App project.
-        // E.g. if you want to send an Email, you could create 'SendEmailDomainEvent' class
-        // and add 'SendEmailDomainEventHandler' in the main App (where you have access to IMailSender and everything).
-        // (e.g. you could send an email to the user when his first/last name changes).
-
-        // In this example we are just logging the fact that firstname/lastname changes.
-        // The handler of this domain event (`LogDomainEventHandler`) resides in main App.
-        // You could use this as an example to implement your own events.
-        // This particular example is actually BAD, you should NOT log something from every DDD method unless you really want to.
-        AddEvent(
-            LogDomainEvent.Info(
-                "User '{Id}' FirstName/LastName changed to {firstName}, {lastName}",
-                Id,
-                firstName,
-                lastName
-            )
-        );
+        LegalName = legalName;
+        GroupNumber = groupNumber;
     }
 
     /// <summary>
