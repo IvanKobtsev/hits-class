@@ -88,6 +88,39 @@ describe('SidebarExpandableDropdown', () => {
     expect(screen.queryByText('Course 2')).not.toBeInTheDocument();
   });
 
+  test('preserves vertical expansion state when horizontal expansion changes', () => {
+    const { rerender } = renderDropdown({
+      ...defaultProps,
+      isExpandedVertically: true,
+      isExpandedHorizontally: true,
+    });
+
+    rerender(
+      <SidebarExpandableDropdown
+        {...defaultProps}
+        isExpandedVertically={true}
+        isExpandedHorizontally={false}
+      >
+        <li>Course 1</li>
+        <li>Course 2</li>
+      </SidebarExpandableDropdown>,
+    );
+
+    rerender(
+      <SidebarExpandableDropdown
+        {...defaultProps}
+        isExpandedVertically={true}
+        isExpandedHorizontally={true}
+      >
+        <li>Course 1</li>
+        <li>Course 2</li>
+      </SidebarExpandableDropdown>,
+    );
+
+    expect(screen.getByText('Course 1')).toBeInTheDocument();
+    expect(screen.getByText('Course 2')).toBeInTheDocument();
+  });
+
   // --- Click ---
 
   test('calls onClick when the header is clicked', async () => {
