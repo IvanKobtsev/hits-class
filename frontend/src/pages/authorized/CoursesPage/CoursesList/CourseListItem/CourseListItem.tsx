@@ -1,56 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  Typography,
+} from '@mui/material';
 import styles from './CourseListItem.module.scss';
+import { clsx } from 'clsx';
 
 type Props = {
   id: number;
-  createdAt: string;
   title: string;
   description: string;
 };
 
-export const CourseListItem: React.FC<Props> = ({
-  id,
-  createdAt,
-  title,
-  description,
-}) => {
-  const date = new Date(createdAt);
-  const formattedDate = isNaN(date.getTime())
-    ? ''
-    : new Intl.DateTimeFormat('ru-RU', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric',
-      }).format(date);
+const getColor = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
 
+  const h = Math.abs(hash) % 360;
+
+  return `hsl(${h}, 80%, 80%)`;
+};
+
+export const CourseListItem: React.FC<Props> = ({ id, title, description }) => {
   return (
     <Card variant="outlined" className={styles.card}>
       <CardActionArea component={Link} to={`/courses/${id}`}>
+        <Box
+          sx={{
+            height: 80,
+            bgcolor: getColor(title),
+            position: 'relative',
+          }}
+        />
         <CardContent className={styles.content}>
           <Typography
             variant="h6"
             fontWeight={600}
-            data-test-id="CourseListItem-title"
+            data-test-id={`CourseListItem-title-${id}`}
+            className={clsx(styles.title, styles.shortened_title)}
           >
             {title}
           </Typography>
           <Typography
             variant="body2"
             color="text.secondary"
-            data-test-id="CourseListItem-description"
+            data-test-id={`CourseListItem-description-${id}`}
             data-clamp="true"
-            className={styles.description}
+            className={clsx(styles.description, styles.shortened_description)}
           >
             {description}
-          </Typography>
-          <Typography
-            variant="caption"
-            color="text.disabled"
-            data-test-id="CourseListItem-date"
-          >
-            {formattedDate}
           </Typography>
         </CardContent>
       </CardActionArea>

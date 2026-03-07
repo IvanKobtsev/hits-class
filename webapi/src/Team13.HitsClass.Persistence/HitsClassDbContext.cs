@@ -2,6 +2,7 @@ using Audit.EntityFramework;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.Audit;
 using Team13.LowLevelPrimitives;
@@ -18,6 +19,8 @@ public class HitsClassDbContext
 
     public DbSet<DbFile> Files { get; set; }
     public DbSet<Course> Courses { get; set; }
+    public DbSet<Publication> Publications { get; set; }
+    public DbSet<Submission> Submissions { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -30,6 +33,8 @@ public class HitsClassDbContext
 
     public static NpgsqlDbContextOptionsBuilder MapEnums(NpgsqlDbContextOptionsBuilder builder)
     {
+        builder.MapEnum<PublicationType>();
+        builder.MapEnum<SubmissionState>();
         return builder;
     }
 
@@ -62,6 +67,32 @@ public class HitsClassDbContext
         builder.Entity<Course>().HasMany(c => c.BannedStudents).WithMany();
         builder.Entity<Course>().HasOne(c => c.Owner);
         builder.Entity<Course>().HasIndex(c => c.InviteCode).IsUnique();
+        builder.Entity<Publication>(b =>
+        {
+            b.Property(p => p.PublicationPayloadJson).HasColumnType("jsonb");
+            b.HasOne(p => p.Author);
+            b.HasMany(p => p.ForWhom).WithMany();
+            b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
+            b.OwnsMany(
+                p => p.Attachments,
+                ownedNavigationBuilder =>
+                {
+                    ownedNavigationBuilder.ToJson();
+                }
+            );
+        });
+
+        builder.Entity<Submission>(b =>
+        {
+            b.HasOne(s => s.Author);
+            b.OwnsMany(
+                p => p.Attachments,
+                ownedNavigationBuilder =>
+                {
+                    ownedNavigationBuilder.ToJson();
+                }
+            );
+        });
     }
 
     private void SetupQueryFilters(ModelBuilder builder) { }

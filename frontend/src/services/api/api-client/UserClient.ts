@@ -78,7 +78,7 @@ function processRegister(response: AxiosResponse): Promise<void> {
  * Confirms user's email address.
 This endpoint is called when the user clicks the confirmation link in the email.
  */
-export function confirmEmail(userId: string, config?: AxiosRequestConfig | undefined): Promise<Types.UserDto> {
+export function confirmEmail(userId: string, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/users/confirm-email/{userId}";
     if (userId === undefined || userId === null)
       throw new Error("The parameter 'userId' must be defined.");
@@ -92,7 +92,6 @@ export function confirmEmail(userId: string, config?: AxiosRequestConfig | undef
         url: url_,
         headers: {
             ..._requestConfigConfirmEmail?.headers,
-            "Accept": "application/json"
         }
     };
 
@@ -107,7 +106,7 @@ export function confirmEmail(userId: string, config?: AxiosRequestConfig | undef
     });
 }
 
-function processConfirmEmail(response: AxiosResponse): Promise<Types.UserDto> {
+function processConfirmEmail(response: AxiosResponse): Promise<void> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -126,16 +125,13 @@ function processConfirmEmail(response: AxiosResponse): Promise<Types.UserDto> {
 
     } else if (status === 200) {
         const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initUserDto(resultData200);
-        return Promise.resolve<Types.UserDto>(result200);
+        return Promise.resolve<void>(null as any);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.UserDto>(null as any);
+    return Promise.resolve<void>(null as any);
 }
 
 /**
@@ -196,127 +192,6 @@ function processGetCurrentUserInfo(response: AxiosResponse): Promise<Types.Curre
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
     return Promise.resolve<Types.CurrentUserDto>(null as any);
-}
-
-/**
- * Allows user to reset their password using single-use password reset token issued by the backend.
- */
-export function resetPassword(dto: Types.ResetPasswordDto, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/users/reset-password";
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = Types.serializeResetPasswordDto(dto);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigResetPassword,
-        ...config,
-        data: content_,
-        method: "POST",
-        url: url_,
-        headers: {
-            ..._requestConfigResetPassword?.headers,
-            "Content-Type": "application/json",
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processResetPassword(_response);
-    });
-}
-
-function processResetPassword(response: AxiosResponse): Promise<void> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<void>(null as any);
-}
-
-/**
- * Changes password by a user.
- * @param dto The dto contains old and new passwords.
- */
-export function changePassword(dto: Types.ChangePasswordDto, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/users/password";
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = Types.serializeChangePasswordDto(dto);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigChangePassword,
-        ...config,
-        data: content_,
-        method: "PUT",
-        url: url_,
-        headers: {
-            ..._requestConfigChangePassword?.headers,
-            "Content-Type": "application/json",
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processChangePassword(_response);
-    });
-}
-
-function processChangePassword(response: AxiosResponse): Promise<void> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<void>(null as any);
 }
 
 /**
@@ -394,27 +269,26 @@ function processGetUsers(response: AxiosResponse): Promise<Types.PagedResultOfUs
 }
 
 /**
- * Changes roles for a user. Only accessible by admins.
+ * Adds a role to user. Only accessible by admins.
  */
-export function changeRolesForUser(userId: string, roles: string[], config?: AxiosRequestConfig | undefined): Promise<Types.UserDto> {
+export function addRoleToUser(userId: string, role: string, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/users/{userId}/roles";
     if (userId === undefined || userId === null)
       throw new Error("The parameter 'userId' must be defined.");
     url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = JSON.stringify(roles);
+    const content_ = JSON.stringify(role);
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigChangeRolesForUser,
+        ..._requestConfigAddRoleToUser,
         ...config,
         data: content_,
-        method: "PUT",
+        method: "POST",
         url: url_,
         headers: {
-            ..._requestConfigChangeRolesForUser?.headers,
+            ..._requestConfigAddRoleToUser?.headers,
             "Content-Type": "application/json",
-            "Accept": "application/json"
         }
     };
 
@@ -425,11 +299,11 @@ export function changeRolesForUser(userId: string, roles: string[], config?: Axi
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processChangeRolesForUser(_response);
+        return processAddRoleToUser(_response);
     });
 }
 
-function processChangeRolesForUser(response: AxiosResponse): Promise<Types.UserDto> {
+function processAddRoleToUser(response: AxiosResponse): Promise<void> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -448,16 +322,76 @@ function processChangeRolesForUser(response: AxiosResponse): Promise<Types.UserD
 
     } else if (status === 200) {
         const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initUserDto(resultData200);
-        return Promise.resolve<Types.UserDto>(result200);
+        return Promise.resolve<void>(null as any);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.UserDto>(null as any);
+    return Promise.resolve<void>(null as any);
+}
+
+/**
+ * Removes a role from user. Only accessible by admins.
+ */
+export function removeRolesFromUser(userId: string, role: string, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/users/{userId}/roles";
+    if (userId === undefined || userId === null)
+      throw new Error("The parameter 'userId' must be defined.");
+    url_ = url_.replace("{userId}", encodeURIComponent("" + userId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(role);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigRemoveRolesFromUser,
+        ...config,
+        data: content_,
+        method: "DELETE",
+        url: url_,
+        headers: {
+            ..._requestConfigRemoveRolesFromUser?.headers,
+            "Content-Type": "application/json",
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processRemoveRolesFromUser(_response);
+    });
+}
+
+function processRemoveRolesFromUser(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
 }
 let _requestConfigRegister: Partial<AxiosRequestConfig> | null;
 export function getRegisterRequestConfig() {
@@ -492,28 +426,6 @@ export function patchGetCurrentUserInfoRequestConfig(patch: (value: Partial<Axio
   _requestConfigGetCurrentUserInfo = patch(_requestConfigGetCurrentUserInfo ?? {});
 }
 
-let _requestConfigResetPassword: Partial<AxiosRequestConfig> | null;
-export function getResetPasswordRequestConfig() {
-  return _requestConfigResetPassword;
-}
-export function setResetPasswordRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigResetPassword = value;
-}
-export function patchResetPasswordRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigResetPassword = patch(_requestConfigResetPassword ?? {});
-}
-
-let _requestConfigChangePassword: Partial<AxiosRequestConfig> | null;
-export function getChangePasswordRequestConfig() {
-  return _requestConfigChangePassword;
-}
-export function setChangePasswordRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigChangePassword = value;
-}
-export function patchChangePasswordRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigChangePassword = patch(_requestConfigChangePassword ?? {});
-}
-
 let _requestConfigGetUsers: Partial<AxiosRequestConfig> | null;
 export function getGetUsersRequestConfig() {
   return _requestConfigGetUsers;
@@ -525,13 +437,24 @@ export function patchGetUsersRequestConfig(patch: (value: Partial<AxiosRequestCo
   _requestConfigGetUsers = patch(_requestConfigGetUsers ?? {});
 }
 
-let _requestConfigChangeRolesForUser: Partial<AxiosRequestConfig> | null;
-export function getChangeRolesForUserRequestConfig() {
-  return _requestConfigChangeRolesForUser;
+let _requestConfigAddRoleToUser: Partial<AxiosRequestConfig> | null;
+export function getAddRoleToUserRequestConfig() {
+  return _requestConfigAddRoleToUser;
 }
-export function setChangeRolesForUserRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigChangeRolesForUser = value;
+export function setAddRoleToUserRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigAddRoleToUser = value;
 }
-export function patchChangeRolesForUserRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigChangeRolesForUser = patch(_requestConfigChangeRolesForUser ?? {});
+export function patchAddRoleToUserRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigAddRoleToUser = patch(_requestConfigAddRoleToUser ?? {});
+}
+
+let _requestConfigRemoveRolesFromUser: Partial<AxiosRequestConfig> | null;
+export function getRemoveRolesFromUserRequestConfig() {
+  return _requestConfigRemoveRolesFromUser;
+}
+export function setRemoveRolesFromUserRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigRemoveRolesFromUser = value;
+}
+export function patchRemoveRolesFromUserRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigRemoveRolesFromUser = patch(_requestConfigRemoveRolesFromUser ?? {});
 }
