@@ -84,7 +84,6 @@ namespace Team13.HitsClass.App.Tests
             var createdCourse = await CreateCourse("Course1", "Description");
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(student);
                 var course = await db
                     .Courses.Include(c => c.Students)
                     .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
@@ -152,14 +151,8 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetAllCoursesForAdmin_ShouldReturnAllCourses()
         {
-            var user1 = new User("user1@test.com");
-            var user2 = new User("user2@gmail.com");
-
-            await WithDbContext(async db =>
-            {
-                await db.Users.AddRangeAsync([user1, user2]);
-                await db.SaveChangesAsync();
-            });
+            var user1 = await CreateUser("user1@test.com");
+            var user2 = await CreateUser("user2@gmail.com");
 
             var course1 = await CreateCourse("Course1", "Description1", user1.Id);
             var course2 = await CreateCourse("Course2", "Description2", user2.Id);
@@ -173,12 +166,8 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetAllCoursesForUser_ReturnsCourses()
         {
-            var user = new User("user1@test.com");
-            await WithDbContext(async db =>
-            {
-                await db.Users.AddAsync(user);
-                await db.SaveChangesAsync();
-            });
+            var user = await CreateUser("user1@test.com");
+
             await CreateCourse("MyCourse", "Description1", _defaultUser.Id);
             await CreateCourse("Course2", "Description2", user.Id);
 
@@ -207,12 +196,7 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetAllCoursesForUser_FilterByCreatedByMine_ReturnsOnlyCreatedByMe()
         {
-            var user = new User("user1@test.com");
-            await WithDbContext(async db =>
-            {
-                await db.Users.AddAsync(user);
-                await db.SaveChangesAsync();
-            });
+            var user = await CreateUser("user1@test.com");
             await CreateCourse("My Course", "Description1", _defaultUser.Id);
             await CreateCourse("Computer Science Course", "Description2", user.Id);
 
@@ -318,7 +302,6 @@ namespace Team13.HitsClass.App.Tests
             var student = new User("student@gmail.com");
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(student);
                 var course = await db
                     .Courses.Include(c => c.Students)
                     .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
@@ -342,7 +325,6 @@ namespace Team13.HitsClass.App.Tests
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
             await WithDbContext(async db =>
             {
-                await db.Users.AddRangeAsync([teacher, student]);
                 var course = await db
                     .Courses.Include(c => c.Students)
                     .Include(c => c.Teachers)
@@ -369,7 +351,6 @@ namespace Team13.HitsClass.App.Tests
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(student);
                 var course = await db
                     .Courses.Include(c => c.Students)
                     .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
@@ -394,14 +375,9 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task JoinCourse_InviteCodeValid_AddsStudent()
         {
-            var student = new User("student@gmail.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
 
-            await WithDbContext(async db =>
-            {
-                await db.Users.AddAsync(student);
-                await db.SaveChangesAsync();
-            });
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
             await _courseService.JoinCourseByInviteCode(createdCourse.InviteCode);
 
@@ -430,7 +406,6 @@ namespace Team13.HitsClass.App.Tests
 
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(student);
                 var courseInDb = await db
                     .Courses.Include(c => c.Students)
                     .FirstAsync(c => c.Id == course.Id);
@@ -464,7 +439,6 @@ namespace Team13.HitsClass.App.Tests
 
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(student);
                 var courseInDb = await db
                     .Courses.Include(c => c.BannedStudents)
                     .FirstAsync(c => c.Id == course.Id);
@@ -486,7 +460,6 @@ namespace Team13.HitsClass.App.Tests
 
             await WithDbContext(async db =>
             {
-                await db.Users.AddAsync(teacher);
                 var courseInDb = await db
                     .Courses.Include(c => c.Teachers)
                     .FirstAsync(c => c.Id == course.Id);
