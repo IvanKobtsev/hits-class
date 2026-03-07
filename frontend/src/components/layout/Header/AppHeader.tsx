@@ -2,10 +2,10 @@ import React from 'react';
 import { Link, useLocation } from 'react-router';
 import { useMediaQuery } from '@mui/material';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation';
-import { useSidebar } from './SidebarContext';
 import styles from './AppHeader.module.scss';
 import { QueryFactory } from 'services/api';
 import { Avatar } from 'components/uikit/avatar/Avatar';
+import { useSidebar } from '../Sidebar/SidebarContext';
 
 export const AppHeader: React.FC = () => {
   const i18n = useScopedTranslation('AppHeader');
