@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using NeinLinq;
 using Team13.HitsClass.App.Features.Courses.Dto;
+using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.App.Features.Users.Dto;
 using Team13.HitsClass.Domain;
 
@@ -21,7 +22,6 @@ namespace Team13.HitsClass.App.Features.Courses
 
         private static Expression<Func<Course, CourseDto>> ToCourseDto()
         {
-            // TODO: change to toUserDto() later
             return course => new CourseDto
             {
                 Id = course.Id,
@@ -29,12 +29,8 @@ namespace Team13.HitsClass.App.Features.Courses
                 InviteCode = course.InviteCode,
                 Title = course.Title,
                 Description = course.Description,
-
-                Owner = new UserDto { Id = course.Owner.Id, Email = course.Owner.Email },
-
-                Teachers = course
-                    .Teachers.Select(t => new UserDto { Id = t.Id, Email = t.Email })
-                    .ToList(),
+                Owner = course.Owner.ToUserDto(),
+                Teachers = course.Teachers.Select(t => t.ToUserDto()).ToList(),
             };
         }
     }

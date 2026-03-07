@@ -60,7 +60,7 @@ namespace Team13.HitsClass.App.Features.Courses
                 {
                     Id = course.Owner.Id,
                     Email = course.Owner.Email,
-                    //LegalName = course.Owner.LegalName, fix this later
+                    LegalName = course.Owner.LegalName,
                     GroupNumber = null,
                     IsTeacher = false,
                     IsOwner = true,
@@ -71,8 +71,8 @@ namespace Team13.HitsClass.App.Features.Courses
                 {
                     Id = t.Id,
                     Email = t.Email,
-                    //LegalName = t.LegalName,
-                    //GroupNumber = t.GroupNumber,
+                    LegalName = t.LegalName,
+                    GroupNumber = t.GroupNumber,
                     IsTeacher = true,
                     IsOwner = false,
                 })
@@ -82,8 +82,8 @@ namespace Team13.HitsClass.App.Features.Courses
                 {
                     Id = s.Id,
                     Email = s.Email,
-                    //LegalName = s.LegalName,
-                    //GroupNumber = s.GroupNumber,
+                    LegalName = s.LegalName,
+                    GroupNumber = s.GroupNumber,
                     IsTeacher = false,
                     IsOwner = false,
                 })
@@ -267,16 +267,6 @@ namespace Team13.HitsClass.App.Features.Courses
                 .ToListAsync();
 
             return new PagedResult<CourseListItemDto>(data, totalCount);
-        }
-
-        private async Task<Course?> FindCourse(int id)
-        {
-            return await _dbContext
-                .Courses.Include(c => c.Owner)
-                .Include(c => c.Students)
-                .Include(c => c.Teachers)
-                .Include(c => c.BannedStudents)
-                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         private async Task<Course> FindCourseOrThrow(int id)
