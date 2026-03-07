@@ -36,9 +36,9 @@ describe('CourseListItem', () => {
   test('renders course description', () => {
     renderCourseListItem();
 
-    expect(screen.getByTestId('CourseListItem-description-1')).toHaveTextContent(
-      'Базовый курс по основам программирования',
-    );
+    expect(
+      screen.getByTestId('CourseListItem-description-1'),
+    ).toHaveTextContent('Базовый курс по основам программирования');
   });
 
   test('renders a link to the course page', () => {
@@ -58,13 +58,26 @@ describe('CourseListItem', () => {
     ).toBeInTheDocument();
   });
 
-  test('marks long description for line clamping', () => {
-    renderCourseListItem({ ...mockCourse, description: 'A'.repeat(300) });
+  test('adds ellipsis to long title', () => {
+    renderCourseListItem({ ...mockCourse, title: 'A'.repeat(200) });
 
-    expect(screen.getByTestId('CourseListItem-description-1')).toHaveAttribute(
-      'data-clamp',
-      'true',
-    );
+    const el = screen.getByTestId('CourseListItem-title-1');
+    expect(el.className).toMatch(/shortened_title/);
+  });
+
+  test('adds ellipsis to long description', () => {
+    renderCourseListItem({ ...mockCourse, description: 'A'.repeat(200) });
+
+    const el = screen.getByTestId('CourseListItem-description-1');
+    expect(el.className).toMatch(/shortened_description/);
+  });
+
+
+  test('renders a link to the course page', () => {
+    renderCourseListItem();
+
+    const link = screen.getByRole('link');
+    expect(link).toHaveAttribute('href', `/courses/${mockCourse.id}`);
   });
 
   test('link href changes when different id is passed', () => {

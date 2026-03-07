@@ -23,6 +23,7 @@ export const CourseListItem: React.FC<Props> = ({
             variant="h6"
             fontWeight={600}
             data-test-id={`CourseListItem-title-${id}`}
+            className={clsx(styles.title, styles.shortened_title)}
           >
             {title}
           </Typography>
@@ -31,7 +32,7 @@ export const CourseListItem: React.FC<Props> = ({
             color="text.secondary"
             data-test-id={`CourseListItem-description-${id}`}
             data-clamp="true"
-            className={styles.description}
+            className={clsx(styles.description, styles.shortened_description)}
           >
             {description}
           </Typography>
