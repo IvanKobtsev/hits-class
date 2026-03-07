@@ -1,14 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Identity;
 using Team13.DomainHelpers;
 using Team13.DomainHelpers.DomainEvents;
-using Team13.DomainHelpers.DomainEvents.Events;
 
 namespace Team13.HitsClass.Domain;
 
 public class User : IdentityUser, IDomainEventEntity
 {
-    public string LegalName { get; set; }
+    [MaxLength(256)]
+    public string LegalName { get; set; } = "";
+
+    [MaxLength(6)]
     public string? GroupNumber { get; set; }
 
     /// <summary>
