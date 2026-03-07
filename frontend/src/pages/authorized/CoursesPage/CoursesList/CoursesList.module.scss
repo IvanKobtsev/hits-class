@@ -1,0 +1,19 @@
+@use '../../../../styles/base' as *;
+
+.list {
+  // padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.empty {
+  text-align: center;
+  margin-top: 32px;
+  color: gray;
+}
+
+.error {
+  text-align: center;
+  margin-top: 32px;
+}

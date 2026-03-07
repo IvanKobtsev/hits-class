@@ -1,7 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router';
-import { Card, CardActionArea, CardContent, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  Typography,
+} from '@mui/material';
 import styles from './CourseListItem.module.scss';
+import { clsx } from 'clsx';
 
 type Props = {
   id: number;
@@ -9,15 +16,28 @@ type Props = {
   description: string;
 };
 
-export const CourseListItem: React.FC<Props> = ({
-  id,
-  title,
-  description,
-}) => {
+const getColor = (str: string): string => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
 
+  const h = Math.abs(hash) % 360;
+
+  return `hsl(${h}, 80%, 80%)`;
+};
+
+export const CourseListItem: React.FC<Props> = ({ id, title, description }) => {
   return (
     <Card variant="outlined" className={styles.card}>
       <CardActionArea component={Link} to={`/courses/${id}`}>
+        <Box
+          sx={{
+            height: 80,
+            bgcolor: getColor(title),
+            position: 'relative',
+          }}
+        />
         <CardContent className={styles.content}>
           <Typography
             variant="h6"
@@ -36,7 +56,6 @@ export const CourseListItem: React.FC<Props> = ({
           >
             {description}
           </Typography>
-
         </CardContent>
       </CardActionArea>
     </Card>
