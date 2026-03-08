@@ -68,8 +68,11 @@ jobs:
       - name: Copy frontend to publish
         run: yarn copy-frontend
 
-      - name: Package import-meta-env
-        run: npx pkg ./node_modules/@import-meta-env/cli/bin/import-meta-env.js -t node22-linux -o ./publish/import-meta-env
+      - name: Copy import-meta-env CLI
+        run: |
+          mkdir -p publish/import-meta-env
+          cp node_modules/@import-meta-env/cli/bin/import-meta-env.js publish/import-meta-env/
+          cp -r node_modules/@import-meta-env/cli/dist publish/import-meta-env/dist
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
