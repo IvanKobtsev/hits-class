@@ -1,0 +1,87 @@
+name: Build & Push Docker Image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install JS dependencies
+        run: yarn install --immutable
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Backend: skip build if webapi/ hasn't changed
+      - name: Cache backend publish
+        id: cache-backend
+        uses: actions/cache@v4
+        with:
+          path: publish
+          key: backend-publish-${{ hashFiles('webapi/**') }}
+
+      - name: Build backend
+        if: steps.cache-backend.outputs.cache-hit != 'true'
+        run: yarn build-dotnet
+        env:
+          HUSKY: 0
+
+      # Frontend: skip build if frontend/ hasn't changed
+      - name: Cache frontend build
+        id: cache-frontend
+        uses: actions/cache@v4
+        with:
+          path: frontend/build
+          key: frontend-build-${{ hashFiles('frontend/**', 'tsconfig.json') }}
+
+      - name: Build frontend
+        if: steps.cache-frontend.outputs.cache-hit != 'true'
+        run: |
+          yarn frontend build-scss-for-razor
+          yarn build-frontend
+
+      - name: Copy frontend to publish
+        run: yarn copy-frontend
+
+      - name: Package import-meta-env
+        run: npx pkg ./node_modules/@import-meta-env/cli/bin/import-meta-env.js -t node22-linux -o ./publish/import-meta-env
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./publish
+          file: ./publish/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
