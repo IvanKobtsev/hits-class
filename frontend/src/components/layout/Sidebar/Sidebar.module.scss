@@ -1,0 +1,33 @@
+@use '../../../styles/base' as *;
+
+$sidebar-width-expanded: 256px;
+$sidebar-width-collapsed: 72px;
+$header-height: 64px;
+
+.sidebar {
+  position: sticky;
+  top: $header-height;
+  height: calc(100vh - $header-height);
+  width: $sidebar-width-collapsed;
+  flex-shrink: 0;
+  background-color: #f8fafd;
+  border-right: 1px solid $classroom-surface-alt;
+  overflow: hidden;
+  transition: width 200ms ease;
+  display: flex;
+  flex-direction: column;
+  --sidebar-padding-x: 26px; // (sidebar-width-collapsed - icon-width) / 2 = (72 - 20) / 2
+
+  &.expanded {
+    width: $sidebar-width-expanded;
+  }
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  padding-top: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
