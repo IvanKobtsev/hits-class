@@ -1,0 +1,59 @@
+@use '../../../../styles/base' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0 var(--sidebar-padding-x, 16px);
+  height: 48px;
+  background: none;
+  border: none;
+  border-radius: 0 24px 24px 0;
+  cursor: pointer;
+  color: $classroom-text-primary;
+  text-align: left;
+
+  &:hover {
+    background-color: $classroom-surface-alt;
+  }
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  color: #444746;
+}
+
+.title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #444746;
+  transition: transform 200ms ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.children {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 4px;
+}
