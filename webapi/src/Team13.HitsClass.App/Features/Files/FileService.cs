@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Files.Dto;
 using Team13.HitsClass.Domain;
@@ -37,6 +37,33 @@ public class FileService
         await _dbContext.SaveChangesAsync();
 
         return await Get(dbFile.Id);
+    }
+
+    public async Task<IReadOnlyList<FileInfoDto>> UploadBulk(IReadOnlyList<IFormFile> files)
+    {
+        var uploads = files.Select(file => (id: Guid.NewGuid(), file)).ToList();
+
+        var filePaths = await Task.WhenAll(uploads.Select(u => UploadFileToDisk(u.id, u.file)));
+
+        var dbFiles = uploads
+            .Zip(
+                filePaths,
+                (u, filePath) =>
+                    new DbFile(
+                        u.id,
+                        u.file.FileName,
+                        filePath,
+                        ComputeSha2(filePath),
+                        new FileInfo(filePath).Length,
+                        DateTimeHelper.UtcNow
+                    )
+            )
+            .ToList();
+
+        _dbContext.Files.AddRange(dbFiles);
+        await _dbContext.SaveChangesAsync();
+
+        return await Task.WhenAll(dbFiles.Select(f => Get(f.Id)));
     }
 
     public async Task<PagedResult<FileInfoDto>> Get(SearchFileDto searchDto)
