@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Text;
+using Team13.DomainHelpers;
 
 namespace Team13.HitsClass.Domain
 {
@@ -29,9 +29,9 @@ namespace Team13.HitsClass.Domain
             CreatedAt = DateTime.UtcNow;
             InviteCode = GenerateInviteCode();
 
-            Teachers = new List<User>();
-            Students = new List<User>();
-            BannedStudents = new List<User>();
+            Teachers = [];
+            Students = [];
+            BannedStudents = [];
         }
 
         private static string GenerateInviteCode(int length = 8)
@@ -51,5 +51,14 @@ namespace Team13.HitsClass.Domain
 
             return new string(result);
         }
+
+        #region Specifications
+
+        public static Specification<Course> HasId(int id)
+        {
+            return new Specification<Course>(nameof(HasId), p => p.Id == id, id);
+        }
+
+        #endregion
     }
 }
