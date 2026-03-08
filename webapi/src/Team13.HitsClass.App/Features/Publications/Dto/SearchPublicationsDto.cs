@@ -1,5 +1,9 @@
-﻿using Team13.WebApi.Pagination;
+﻿using Team13.HitsClass.Domain;
+using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Publications.Dto;
 
-public class SearchPublicationsDto : PagedRequestDto { }
+public class SearchPublicationsDto : PagedRequestDto
+{
+    public PublicationType? PublicationType { get; set; }
+}
