@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
-using Microsoft.EntityFrameworkCore;
 using Team13.DomainHelpers;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 
@@ -11,12 +10,19 @@ namespace Team13.HitsClass.Domain;
 /// <summary>
 /// Summary description for Publication
 /// </summary>
-[PrimaryKey(nameof(Id))]
 public class Publication
 {
-    public int Id { get; }
+    public Publication(string content)
+    {
+        CreatedAtUtc = DateTime.UtcNow;
+        Content = content;
+    }
+
+    public int Id { get; set; }
+    public int CourseId { get; set; }
+    public Course Course { get; set; }
     public DateTime CreatedAtUtc { get; set; }
-    public DateTime LastUpdatedAtUtc { get; set; }
+    public DateTime? LastUpdatedAtUtc { get; set; }
     public PublicationType Type { get; set; }
     public string AuthorId { get; set; }
     public User Author { get; set; }

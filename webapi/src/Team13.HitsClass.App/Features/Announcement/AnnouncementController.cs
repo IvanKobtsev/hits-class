@@ -16,15 +16,6 @@ namespace Team13.HitsClass.App.Features.Announcement
         }
 
         /// <summary>
-        /// Gets full information for specific announcement
-        /// </summary>
-        [HttpGet("{id:int}")]
-        public async Task<AnnouncementDto> GetAnnouncement([FromRoute] int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Create announcement (check permission)
         /// </summary>
         [HttpPost]
