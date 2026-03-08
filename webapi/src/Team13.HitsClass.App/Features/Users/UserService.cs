@@ -33,7 +33,12 @@ public class UserService
         var userId = _userAccessor.GetUserId();
         var user = await _dbContext.Users.FirstAsync(x => x.Id == userId);
 
-        return new CurrentUserDto() { Id = userId, Username = user.UserName ?? "" };
+        return new CurrentUserDto()
+        {
+            Id = userId,
+            Username = user.UserName ?? "",
+            LegalName = user.LegalName,
+        };
     }
 
     public async Task Register(RegisterUserDto dto)
