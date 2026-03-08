@@ -87,7 +87,7 @@ public class HitsClassDbContext
         {
             b.Property(p => p.PublicationPayloadJson).HasColumnType("jsonb");
             b.HasOne(p => p.Author);
-            b.HasMany(p => p.ForWhom).WithMany();
+            b.HasMany(p => p.TargetUsers).WithMany();
             b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
             b.OwnsMany(
                 p => p.Attachments,

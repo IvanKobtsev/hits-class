@@ -27,7 +27,7 @@ public class PublicationServiceTests : AppServiceTestBase
     #region GetPublications Tests
 
     [Fact]
-    public async Task GetPublications_AsStudent_ReturnsOnlyPublicationsForUser()
+    public async Task GetPublications_AsStudent_ReturnsOnlyPublicationsForStudent()
     {
         // Arrange
         var (course, _, student1, _) = await CreateCourseWithUsersAndPublications();
@@ -158,7 +158,7 @@ public class PublicationServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task GetPublicationById_AsStudentInForWhom_ReturnsPublication()
+    public async Task GetPublicationById_AsStudentInTargetUsers_ReturnsPublication()
     {
         // Arrange
         var course = await CreateCourse();
@@ -180,7 +180,7 @@ public class PublicationServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task GetPublicationById_AsStudentNotInForWhom_ThrowsAccessDeniedException()
+    public async Task GetPublicationById_AsStudentNotInTargetUsers_ThrowsAccessDeniedException()
     {
         // Arrange
         var course = await CreateCourse();
@@ -275,7 +275,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Test publication content",
-            ForWhomUserIds = [student.Id],
+            TargetUsersIds = [student.Id],
         };
         var payload = new AnnouncementPayload();
 
@@ -291,11 +291,11 @@ public class PublicationServiceTests : AppServiceTestBase
         await WithDbContext(async db =>
         {
             var publication = await db
-                .Publications.Include(p => p.ForWhom)
+                .Publications.Include(p => p.TargetUsers)
                 .FirstOrDefaultAsync(p => p.Id == result.Id);
             publication.Should().NotBeNull();
-            publication.ForWhom.Should().HaveCount(1);
-            publication.ForWhom.Should().Contain(u => u.Id == student.Id);
+            publication.TargetUsers.Should().HaveCount(1);
+            publication.TargetUsers.Should().Contain(u => u.Id == student.Id);
         });
     }
 
@@ -311,7 +311,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Publication for everyone",
-            ForWhomUserIds = null,
+            TargetUsersIds = null,
         };
         var payload = new AnnouncementPayload();
 
@@ -323,12 +323,12 @@ public class PublicationServiceTests : AppServiceTestBase
         await WithDbContext(async db =>
         {
             var publication = await db
-                .Publications.Include(p => p.ForWhom)
+                .Publications.Include(p => p.TargetUsers)
                 .FirstOrDefaultAsync(p => p.Id == result.Id);
             publication.Should().NotBeNull();
-            publication.ForWhom.Should().HaveCount(2);
-            publication.ForWhom.Should().Contain(u => u.Id == student1.Id);
-            publication.ForWhom.Should().Contain(u => u.Id == student2.Id);
+            publication.TargetUsers.Should().HaveCount(2);
+            publication.TargetUsers.Should().Contain(u => u.Id == student1.Id);
+            publication.TargetUsers.Should().Contain(u => u.Id == student2.Id);
         });
     }
 
@@ -342,7 +342,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Assignment content",
-            ForWhomUserIds = [student.Id],
+            TargetUsersIds = [student.Id],
         };
         var payload = new AssignmentPayload
         {
@@ -370,7 +370,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Test publication",
-            ForWhomUserIds = [nonCourseStudent.Id],
+            TargetUsersIds = [nonCourseStudent.Id],
         };
         var payload = new AnnouncementPayload();
 
@@ -391,7 +391,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Test publication",
-            ForWhomUserIds = null,
+            TargetUsersIds = null,
         };
         var payload = new AnnouncementPayload();
 
@@ -404,7 +404,7 @@ public class PublicationServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task CreateNewPublication_EmptyForWhomList_CreatesPublicationForAllStudents()
+    public async Task CreateNewPublication_EmptyTargetUsersList_CreatesPublicationForAllStudents()
     {
         // Arrange
         var course = await CreateCourse();
@@ -414,8 +414,8 @@ public class PublicationServiceTests : AppServiceTestBase
         await AddStudentToCourse(course.Id, student2.Id);
         var dto = new TestCreatePublicationDto
         {
-            Content = "Publication with null ForWhomUserIds",
-            ForWhomUserIds = null,
+            Content = "Publication with null TargetUsersIds",
+            TargetUsersIds = null,
         };
         var payload = new AnnouncementPayload();
 
@@ -427,9 +427,9 @@ public class PublicationServiceTests : AppServiceTestBase
         await WithDbContext(async db =>
         {
             var publication = await db
-                .Publications.Include(p => p.ForWhom)
+                .Publications.Include(p => p.TargetUsers)
                 .FirstOrDefaultAsync(p => p.Id == result.Id);
-            publication!.ForWhom.Should().HaveCount(2);
+            publication!.TargetUsers.Should().HaveCount(2);
         });
     }
 
@@ -444,7 +444,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var dto = new TestCreatePublicationDto
         {
             Content = "Test publication",
-            ForWhomUserIds = [student.Id, nonCourseStudent.Id],
+            TargetUsersIds = [student.Id, nonCourseStudent.Id],
         };
         var payload = new AnnouncementPayload();
 
@@ -584,7 +584,7 @@ public class PublicationServiceTests : AppServiceTestBase
                 CourseId = courseId,
                 Type = type,
                 Author = author,
-                ForWhom = forWhomUsers,
+                TargetUsers = forWhomUsers,
                 PublicationPayload =
                     type == PublicationType.Announcement
                         ? new AnnouncementPayload()
