@@ -16,7 +16,7 @@ $header-height: 64px;
   transition: width 200ms ease;
   display: flex;
   flex-direction: column;
-  --sidebar-padding-x: 26px; // (sidebar-width-collapsed - icon-width) / 2 = (72 - 20) / 2
+  --sidebar-padding-x: 24px; // (sidebar-width-collapsed - icon-width) / 2 = (72 - 24) / 2
 
   &.expanded {
     width: $sidebar-width-expanded;

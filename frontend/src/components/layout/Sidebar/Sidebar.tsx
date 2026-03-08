@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import HomeIcon from 'assets/icons/i.svg?react';
-import ListIcon from 'assets/icons/list-ul.svg?react';
+import { useLocation, useNavigate } from 'react-router';
+import HomeIcon from 'assets/icons/home.svg?react';
+import SchoolIcon from 'assets/icons/school.svg?react';
+import PeopleIcon from 'assets/icons/people.svg?react';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
 import { useSidebar } from './SidebarContext';
 import { SidebarExpandableButton } from './SidebarExpandableButton/SidebarExpandableButton';
@@ -9,7 +11,15 @@ import { CourseListItemInSidebar } from './CourseListItemInSidebar/CourseListIte
 import styles from './Sidebar.module.scss';
 
 export const Sidebar: React.FC = () => {
-  const { isExpanded, toggle } = useSidebar();
+  const { isExpanded } = useSidebar();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleHomeClick = () => {
+    if (location.pathname !== '/courses') {
+      void navigate('/courses');
+    }
+  };
   const [isStudyingExpanded, setIsStudyingExpanded] = useState(false);
   const [isTeachingExpanded, setIsTeachingExpanded] = useState(false);
 
@@ -27,12 +37,12 @@ export const Sidebar: React.FC = () => {
         <SidebarExpandableButton
           title="Главная страница"
           icon={HomeIcon}
-          onClick={toggle}
+          onClick={handleHomeClick}
           isExpanded={isExpanded}
         />
         <SidebarExpandableDropdown
           title="Курсы, на которых я обучаюсь"
-          icon={ListIcon}
+          icon={SchoolIcon}
           onClick={() => setIsStudyingExpanded((prev) => !prev)}
           isExpandedVertically={isStudyingExpanded}
           isExpandedHorizontally={isExpanded}
@@ -43,7 +53,7 @@ export const Sidebar: React.FC = () => {
         </SidebarExpandableDropdown>
         <SidebarExpandableDropdown
           title="Курсы, которые я преподаю"
-          icon={ListIcon}
+          icon={PeopleIcon}
           onClick={() => setIsTeachingExpanded((prev) => !prev)}
           isExpandedVertically={isTeachingExpanded}
           isExpandedHorizontally={isExpanded}

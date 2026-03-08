@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { ReactNode } from 'react';
+import { MemoryRouter } from 'react-router';
 import { Sidebar } from './Sidebar';
 
 vi.mock('./SidebarContext', () => ({
@@ -70,7 +71,11 @@ describe('Sidebar', () => {
   test('shows both dropdown titles when expanded', () => {
     mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.getByText('Курсы, на которых я обучаюсь'),
@@ -81,7 +86,11 @@ describe('Sidebar', () => {
   test('shows the button title when expanded', () => {
     mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Главная страница')).toBeInTheDocument();
   });
@@ -91,7 +100,11 @@ describe('Sidebar', () => {
   test('hides both dropdown titles when collapsed', () => {
     mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle: vi.fn() });
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(
       screen.queryByText('Курсы, на которых я обучаюсь'),
@@ -104,7 +117,11 @@ describe('Sidebar', () => {
   test('hides the button title when collapsed', () => {
     mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle: vi.fn() });
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByText('Главная страница')).not.toBeInTheDocument();
   });
@@ -125,7 +142,11 @@ describe('Sidebar', () => {
       isError: false,
     } as any);
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Математика')).toBeInTheDocument();
     expect(screen.getByText('Физика')).toBeInTheDocument();
@@ -146,7 +167,11 @@ describe('Sidebar', () => {
         isError: false,
       } as any);
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(screen.getByText('Химия')).toBeInTheDocument();
   });
@@ -164,7 +189,11 @@ describe('Sidebar', () => {
       isError: false,
     } as any);
 
-    render(<Sidebar />);
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
 
     expect(screen.queryByText('Математика')).not.toBeInTheDocument();
   });
