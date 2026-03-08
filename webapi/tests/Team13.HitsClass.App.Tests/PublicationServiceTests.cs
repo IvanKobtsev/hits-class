@@ -130,7 +130,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var searchDto = new SearchPublicationsDto();
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<PersistenceAccessDeniedException>(async () =>
+        var exception = await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
             await Sut.GetPublications(999, searchDto)
         );
 
@@ -200,7 +200,11 @@ public class PublicationServiceTests : AppServiceTestBase
             await Sut.GetPublicationById(publication.Id)
         );
 
-        exception.Message.Should().Be("You do not have access to this publication.");
+        exception
+            .Message.Should()
+            .Be(
+                "Access was denied to the requested resource. You do not have access to this publication."
+            );
     }
 
     [Fact]
@@ -296,39 +300,7 @@ public class PublicationServiceTests : AppServiceTestBase
             publication.Should().NotBeNull();
             publication.TargetUsers.Should().HaveCount(1);
             publication.TargetUsers.Should().Contain(u => u.Id == student.Id);
-        });
-    }
-
-    [Fact]
-    public async Task CreateNewPublication_ForEveryone_CreatesPublicationForAllStudents()
-    {
-        // Arrange
-        var course = await CreateCourse();
-        var student1 = await CreateUser("student1@test.com");
-        var student2 = await CreateUser("student2@test.com");
-        await AddStudentToCourse(course.Id, student1.Id);
-        await AddStudentToCourse(course.Id, student2.Id);
-        var dto = new TestCreatePublicationDto
-        {
-            Content = "Publication for everyone",
-            TargetUsersIds = null,
-        };
-        var payload = new AnnouncementPayload();
-
-        // Act
-        var result = await Sut.CreateNewPublication(course.Id, dto, payload);
-
-        // Assert
-        result.Should().NotBeNull();
-        await WithDbContext(async db =>
-        {
-            var publication = await db
-                .Publications.Include(p => p.TargetUsers)
-                .FirstOrDefaultAsync(p => p.Id == result.Id);
-            publication.Should().NotBeNull();
-            publication.TargetUsers.Should().HaveCount(2);
-            publication.TargetUsers.Should().Contain(u => u.Id == student1.Id);
-            publication.TargetUsers.Should().Contain(u => u.Id == student2.Id);
+            publication.IsForEveryone.Should().BeFalse();
         });
     }
 
@@ -429,7 +401,8 @@ public class PublicationServiceTests : AppServiceTestBase
             var publication = await db
                 .Publications.Include(p => p.TargetUsers)
                 .FirstOrDefaultAsync(p => p.Id == result.Id);
-            publication!.TargetUsers.Should().HaveCount(2);
+            publication!.TargetUsers.Should().BeEmpty();
+            publication.IsForEveryone.Should().BeTrue();
         });
     }
 
