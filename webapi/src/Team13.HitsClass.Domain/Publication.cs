@@ -27,6 +27,7 @@ public class Publication
     public string AuthorId { get; set; }
     public User Author { get; set; }
     public string Content { get; set; }
+    public bool IsForEveryone { get; set; }
     public List<User> TargetUsers { get; set; }
     public List<Submission>? Submissions { get; set; }
     public List<Attachment> Attachments { get; set; }
