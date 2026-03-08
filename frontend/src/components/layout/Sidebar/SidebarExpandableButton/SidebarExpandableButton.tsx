@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './SidebarExpandableButton.module.scss';
 
 export type SidebarExpandableButtonProps = {
   title: string;
@@ -13,10 +14,12 @@ export const SidebarExpandableButton: React.FC<SidebarExpandableButtonProps> = (
   onClick,
   isExpanded,
 }) => (
-  <button type="button" onClick={onClick}>
-    <Icon data-test-id="sidebar-expandable-button-icon" />
+  <button type="button" onClick={onClick} className={styles.button}>
+    <Icon data-test-id="sidebar-expandable-button-icon" className={styles.icon} />
     {isExpanded && (
-      <span data-test-id="sidebar-expandable-button-title">{title}</span>
+      <span data-test-id="sidebar-expandable-button-title" className={styles.title}>
+        {title}
+      </span>
     )}
   </button>
 );

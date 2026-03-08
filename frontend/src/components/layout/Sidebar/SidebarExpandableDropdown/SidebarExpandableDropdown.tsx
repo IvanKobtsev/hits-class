@@ -1,4 +1,6 @@
 import React from 'react';
+import ArrowDownIcon from 'assets/icons/arrow-down.svg?react';
+import styles from './SidebarExpandableDropdown.module.scss';
 
 export type SidebarExpandableDropdownProps = {
   title: string;
@@ -12,13 +14,22 @@ export type SidebarExpandableDropdownProps = {
 export const SidebarExpandableDropdown: React.FC<
   SidebarExpandableDropdownProps
 > = ({ title, icon: Icon, onClick, isExpandedVertically, isExpandedHorizontally, children }) => (
-  <div>
-    <button type="button" onClick={onClick}>
-      <Icon data-test-id="sidebar-expandable-dropdown-icon" />
+  <div className={styles.wrapper}>
+    <button type="button" onClick={onClick} className={styles.header}>
+      <Icon data-test-id="sidebar-expandable-dropdown-icon" className={styles.icon} />
       {isExpandedHorizontally && (
-        <span data-test-id="sidebar-expandable-dropdown-title">{title}</span>
+        <>
+          <span data-test-id="sidebar-expandable-dropdown-title" className={styles.title}>
+            {title}
+          </span>
+          <ArrowDownIcon
+            className={`${styles.chevron}${isExpandedVertically ? ` ${styles.open}` : ''}`}
+          />
+        </>
       )}
     </button>
-    {isExpandedVertically && isExpandedHorizontally && children}
+    {isExpandedVertically && isExpandedHorizontally && (
+      <div className={styles.children}>{children}</div>
+    )}
   </div>
 );
