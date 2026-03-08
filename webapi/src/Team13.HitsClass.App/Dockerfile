@@ -20,5 +20,5 @@ RUN useradd dotnetuser --create-home --uid 4000 && \
 
 WORKDIR /webapi
 USER dotnetuser
-ENTRYPOINT node ./import-meta-env/import-meta-env.js -x ./wwwroot/.env -e ./wwwroot/.env -p ./wwwroot/* && dotnet Team13.HitsClass.App.dll
+ENTRYPOINT node ./import-meta-env/bin/import-meta-env.js -x ./wwwroot/.env -e ./wwwroot/.env -p ./wwwroot/* && dotnet Team13.HitsClass.App.dll
 EXPOSE 5000
