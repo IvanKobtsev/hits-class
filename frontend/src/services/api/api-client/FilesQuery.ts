@@ -22,6 +22,10 @@ export type UploadFileFilesMutationParameters = {
   file?: Types.FileParameter | null | undefined ;
 }
 
+export type UploadFilesBulkFilesMutationParameters = {
+  files?: any[] | null | undefined ;
+}
+
 export type DownloadFileFilesQueryParameters = {
   fileId: string ;
 }
@@ -56,6 +60,36 @@ export function useUploadFileMutation<TContext>(options?: Omit<UseMutationOption
   return useMutation({
     ...options,
     mutationFn: (uploadFileFilesMutationParameters: UploadFileFilesMutationParameters) => Client.uploadFile(uploadFileFilesMutationParameters.file),
+    mutationKey: key,
+  });
+}
+  
+export function uploadFilesBulkUrl(): string {
+  let url_ = getBaseUrl() + "/api/files/bulk";
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function uploadFilesBulkMutationKey(): MutationKey {
+  return trimArrayEnd([
+      'FilesClient',
+      'uploadFilesBulk',
+    ]);
+}
+
+/**
+ * Uploads multiple files and returns their metadata. Files are expected as form data with the key "files".
+ * @param files (optional) 
+ */
+export function useUploadFilesBulkMutation<TContext>(options?: Omit<UseMutationOptions<Types.FileInfoDto[], unknown, UploadFilesBulkFilesMutationParameters, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.FileInfoDto[], unknown, UploadFilesBulkFilesMutationParameters, TContext> {
+  const key = uploadFilesBulkMutationKey();
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (uploadFilesBulkFilesMutationParameters: UploadFilesBulkFilesMutationParameters) => Client.uploadFilesBulk(uploadFilesBulkFilesMutationParameters.files),
     mutationKey: key,
   });
 }

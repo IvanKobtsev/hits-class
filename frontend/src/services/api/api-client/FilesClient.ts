@@ -80,6 +80,76 @@ function processUploadFile(response: AxiosResponse): Promise<Types.FileInfoDto> 
 }
 
 /**
+ * Uploads multiple files and returns their metadata. Files are expected as form data with the key "files".
+ * @param files (optional) 
+ */
+export function uploadFilesBulk(files?: any[] | null | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.FileInfoDto[]> {
+    let url_ = getBaseUrl() + "/api/files/bulk";
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = new FormData();
+    if (files !== null && files !== undefined)
+        files.forEach(item_ => content_.append("files", item_.toString()));
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigUploadFilesBulk,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigUploadFilesBulk?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processUploadFilesBulk(_response);
+    });
+}
+
+function processUploadFilesBulk(response: AxiosResponse): Promise<Types.FileInfoDto[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initFileInfoDto(item)
+              );
+            }
+        return Promise.resolve<Types.FileInfoDto[]>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.FileInfoDto[]>(null as any);
+}
+
+/**
  * Downloads a file by its ID. The file is returned as a stream with the appropriate content type and file name.
  */
 export function downloadFile(fileId: string, config?: AxiosRequestConfig | undefined): Promise<Types.FileResponse> {
@@ -214,6 +284,17 @@ export function setUploadFileRequestConfig(value: Partial<AxiosRequestConfig>) {
 }
 export function patchUploadFileRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigUploadFile = patch(_requestConfigUploadFile ?? {});
+}
+
+let _requestConfigUploadFilesBulk: Partial<AxiosRequestConfig> | null;
+export function getUploadFilesBulkRequestConfig() {
+  return _requestConfigUploadFilesBulk;
+}
+export function setUploadFilesBulkRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigUploadFilesBulk = value;
+}
+export function patchUploadFilesBulkRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigUploadFilesBulk = patch(_requestConfigUploadFilesBulk ?? {});
 }
 
 let _requestConfigDownloadFile: Partial<AxiosRequestConfig> | null;
