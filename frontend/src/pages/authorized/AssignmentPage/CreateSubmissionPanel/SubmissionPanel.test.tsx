@@ -1,7 +1,8 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { MemoryRouter } from 'react-router-dom';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { AddAttachmentPanel } from './AddAttachmentPanel';
+import { SubmissionPanel } from './SubmissionPanel';
 
 const mockMutate = vi.fn();
 vi.mock('services/api/api-client/FilesQuery', () => ({
@@ -17,11 +18,31 @@ vi.mock('services/api/api-client/FilesQuery', () => ({
   }),
 }));
 
-function renderAddAttachmentPanel() {
-  return render(<AddAttachmentPanel />);
+const mockCreateSubmission = vi.fn();
+vi.mock('services/api/api-client/SubmissionQuery', () => ({
+  useCreateSubmissionMutation: () => ({
+    mutate: mockCreateSubmission,
+    mutateAsync: vi.fn(),
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+    data: undefined,
+    error: null,
+    reset: vi.fn(),
+  }),
+}));
+
+function renderSubmissionPanel(
+  initialEntries: string[] = ['/create-submission'],
+) {
+  return render(
+    <MemoryRouter initialEntries={initialEntries}>
+      <SubmissionPanel />
+    </MemoryRouter>,
+  );
 }
 
-describe('AddAttachmentPanel', () => {
+describe('SubmissionPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -29,19 +50,19 @@ describe('AddAttachmentPanel', () => {
   // --- Rendering ---
 
   test('renders panel with add-attachment-panel test id', () => {
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     expect(screen.getByTestId('add-attachment-panel')).toBeInTheDocument();
   });
 
   test('renders AttachedFilesTable', () => {
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     expect(screen.getByTestId('attached-files-table')).toBeInTheDocument();
   });
 
   test('renders submit button', () => {
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     expect(
       screen.getByRole('button', { name: /submit|сдать|отправить/i }),
@@ -49,7 +70,7 @@ describe('AddAttachmentPanel', () => {
   });
 
   test('renders file input to add files', () => {
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     const input = screen.getByTestId('add-attachment-file-input');
     expect(input).toBeInTheDocument();
@@ -60,7 +81,7 @@ describe('AddAttachmentPanel', () => {
 
   test('calls upload mutation with selected file when user selects one file', async () => {
     const user = userEvent.setup();
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     const file = new File(['content'], 'report.pdf', {
       type: 'application/pdf',
@@ -85,7 +106,7 @@ describe('AddAttachmentPanel', () => {
 
   test('calls upload mutation once per file when user selects multiple files', async () => {
     const user = userEvent.setup();
-    renderAddAttachmentPanel();
+    renderSubmissionPanel();
 
     const file1 = new File(['a'], 'a.pdf', { type: 'application/pdf' });
     const file2 = new File(['b'], 'b.pdf', { type: 'application/pdf' });
@@ -107,5 +128,34 @@ describe('AddAttachmentPanel', () => {
       }),
       expect.any(Object),
     );
+  });
+
+  test('submit button is active when there are uploaded files and no upload in progress', async () => {
+    const user = userEvent.setup();
+    renderSubmissionPanel(['/create-submission?assignmentId=1']);
+
+    const file = new File(['content'], 'report.pdf', {
+      type: 'application/pdf',
+    });
+    const input = screen.getByTestId('add-attachment-file-input');
+    await user.upload(input, file);
+
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    const [, options] = mockMutate.mock.calls[0];
+    const fakeFileInfo = {
+      id: 'server-file-id',
+      fileName: 'report.pdf',
+      size: 1024,
+      metadata: { externalId: null },
+      createdAt: new Date(),
+    };
+    options.onSuccess(fakeFileInfo);
+
+    await waitFor(() => {
+      const submitButton = screen.getByRole('button', {
+        name: /submit|сдать|отправить/i,
+      });
+      expect(submitButton).not.toBeDisabled();
+    });
   });
 });
