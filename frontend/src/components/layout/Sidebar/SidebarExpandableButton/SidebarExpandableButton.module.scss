@@ -1,0 +1,35 @@
+@use '../../../../styles/base' as *;
+
+.button {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 0 var(--sidebar-padding-x, 16px);
+  height: 48px;
+  background: none;
+  border: none;
+  border-radius: 0 24px 24px 0;
+  cursor: pointer;
+  color: $classroom-text-primary;
+  text-align: left;
+
+  &:hover {
+    background-color: $classroom-surface-alt;
+  }
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: $classroom-text-secondary;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
