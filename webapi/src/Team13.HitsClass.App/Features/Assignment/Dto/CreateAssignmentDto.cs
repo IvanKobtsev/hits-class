@@ -1,12 +1,10 @@
-using Team13.HitsClass.App.Features.Files.Dto;
+using Team13.HitsClass.App.Features.Publications.Dto;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 
 namespace Team13.HitsClass.App.Features.Assignment.Dto
 {
-    public class CreateAssignmentDto
+    public class CreateAssignmentDto : CreatePublicationDto
     {
-        public string Title { get; set; }
-        public string? Description { get; set; }
-        public DateTime? DeadlineUTC { get; set; }
-        public List<FileInfoDto> Attachments { get; set; }
+        public AssignmentPayload Payload { get; set; }
     }
 }

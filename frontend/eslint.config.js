@@ -71,6 +71,14 @@ module.exports = defineConfig([
       '@typescript-eslint/await-thenable': 'error',
     },
   },
+
+  {
+    files: ['src/services/api/api-client.types.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+
   globalIgnores([
     '**/node_modules',
     '**/package.json',

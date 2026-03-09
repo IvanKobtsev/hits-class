@@ -15,15 +15,6 @@ namespace Team13.HitsClass.App.Features.Assignment
         }
 
         /// <summary>
-        /// Gets full information for specific assignment
-        /// </summary>
-        [HttpGet("{id:int}")]
-        public async Task<AssignmentDto> GetAssignment([FromRoute] int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Gets statistics for specific assignment
         /// </summary>
         [HttpGet("{id:int}/statistics")]

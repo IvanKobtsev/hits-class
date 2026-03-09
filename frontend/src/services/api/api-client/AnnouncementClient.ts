@@ -14,22 +14,23 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Gets full information for specific announcement
+ * Create announcement (check permission)
  */
-export function getAnnouncement(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AnnouncementDto> {
-    let url_ = getBaseUrl() + "/api/announcements/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function createAnnouncement(dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.AnnouncementDto> {
+    let url_ = getBaseUrl() + "/api/announcements";
       url_ = url_.replace(/[?&]$/, "");
 
+    const content_ = Types.serializeCreateAnnouncementDto(dto);
+
     let options_: AxiosRequestConfig = {
-        ..._requestConfigGetAnnouncement,
+        ..._requestConfigCreateAnnouncement,
         ...config,
-        method: "GET",
+        data: content_,
+        method: "POST",
         url: url_,
         headers: {
-            ..._requestConfigGetAnnouncement?.headers,
+            ..._requestConfigCreateAnnouncement?.headers,
+            "Content-Type": "application/json",
             "Accept": "application/json"
         }
     };
@@ -41,11 +42,11 @@ export function getAnnouncement(id: number, config?: AxiosRequestConfig | undefi
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processGetAnnouncement(_response);
+        return processCreateAnnouncement(_response);
     });
 }
 
-function processGetAnnouncement(response: AxiosResponse): Promise<Types.AnnouncementDto> {
+function processCreateAnnouncement(response: AxiosResponse): Promise<Types.AnnouncementDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -197,79 +198,15 @@ function processDeleteAnnouncement(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
-
-/**
- * Create announcement (check permission)
- */
-export function createAnnouncement(dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.AnnouncementDto> {
-    let url_ = getBaseUrl() + "/api/announcements";
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = Types.serializeCreateAnnouncementDto(dto);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigCreateAnnouncement,
-        ...config,
-        data: content_,
-        method: "POST",
-        url: url_,
-        headers: {
-            ..._requestConfigCreateAnnouncement?.headers,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processCreateAnnouncement(_response);
-    });
+let _requestConfigCreateAnnouncement: Partial<AxiosRequestConfig> | null;
+export function getCreateAnnouncementRequestConfig() {
+  return _requestConfigCreateAnnouncement;
 }
-
-function processCreateAnnouncement(response: AxiosResponse): Promise<Types.AnnouncementDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initAnnouncementDto(resultData200);
-        return Promise.resolve<Types.AnnouncementDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.AnnouncementDto>(null as any);
+export function setCreateAnnouncementRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAnnouncement = value;
 }
-let _requestConfigGetAnnouncement: Partial<AxiosRequestConfig> | null;
-export function getGetAnnouncementRequestConfig() {
-  return _requestConfigGetAnnouncement;
-}
-export function setGetAnnouncementRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGetAnnouncement = value;
-}
-export function patchGetAnnouncementRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGetAnnouncement = patch(_requestConfigGetAnnouncement ?? {});
+export function patchCreateAnnouncementRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAnnouncement = patch(_requestConfigCreateAnnouncement ?? {});
 }
 
 let _requestConfigUpdateAnnouncement: Partial<AxiosRequestConfig> | null;
@@ -292,15 +229,4 @@ export function setDeleteAnnouncementRequestConfig(value: Partial<AxiosRequestCo
 }
 export function patchDeleteAnnouncementRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigDeleteAnnouncement = patch(_requestConfigDeleteAnnouncement ?? {});
-}
-
-let _requestConfigCreateAnnouncement: Partial<AxiosRequestConfig> | null;
-export function getCreateAnnouncementRequestConfig() {
-  return _requestConfigCreateAnnouncement;
-}
-export function setCreateAnnouncementRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAnnouncement = value;
-}
-export function patchCreateAnnouncementRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAnnouncement = patch(_requestConfigCreateAnnouncement ?? {});
 }
