@@ -50,6 +50,7 @@ vi.mock('./SidebarExpandableButton/SidebarExpandableButton', () => ({
 
 import { useSidebar } from './SidebarContext';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
+import { CourseListItemDto } from 'services/api/api-client.types';
 
 const mockedUseSidebar = vi.mocked(useSidebar);
 const mockedUseGetMyCoursesQuery = vi.mocked(useGetMyCoursesQuery);
@@ -133,7 +134,12 @@ describe('Sidebar', () => {
     mockedUseGetMyCoursesQuery.mockReturnValueOnce({
       data: {
         data: [
-          { id: 1, title: 'Математика', description: '', createdAt: new Date() },
+          {
+            id: 1,
+            title: 'Математика',
+            description: '',
+            createdAt: new Date(),
+          },
           { id: 2, title: 'Физика', description: '', createdAt: new Date() },
         ],
         totalCount: 2,
@@ -181,7 +187,12 @@ describe('Sidebar', () => {
     mockedUseGetMyCoursesQuery.mockReturnValue({
       data: {
         data: [
-          { id: 1, title: 'Математика', description: '', createdAt: new Date() },
+          {
+            id: 1,
+            title: 'Математика',
+            description: '',
+            createdAt: new Date(),
+          },
         ],
         totalCount: 1,
       },
