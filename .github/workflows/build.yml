@@ -97,13 +97,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy docker-compose to VM
+      - name: Copy files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
           password: ${{ secrets.VM_PASSWORD }}
-          source: docker-compose.yaml
+          source: docker-compose.yaml,nginx.conf
           target: ~/hits-class
 
       - name: Deploy via SSH
@@ -114,6 +114,14 @@ jobs:
           password: ${{ secrets.VM_PASSWORD }}
           script: |
             cd ~/hits-class
+
+            cat > .env << 'ENVEOF'
+            SSL_CERT_PATH=${{ secrets.SSL_CERT_PATH }}
+            SSL_KEY_PATH=${{ secrets.SSL_KEY_PATH }}
+            SITE_URL=${{ secrets.SITE_URL }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            DEFAULT_USER_PASSWORD=${{ secrets.DEFAULT_USER_PASSWORD }}
+            ENVEOF
 
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
 
