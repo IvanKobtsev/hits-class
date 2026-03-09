@@ -41,7 +41,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var assignment = await CreateAssignment(course.Id, forWhomUserIds: null); // for everyone
 
         // Create submissions with different states
-        await CreateSubmission(assignment.Id, student1.Id, SubmissionState.Submitted, "A+");
+        await CreateSubmission(assignment.Id, student1.Id, SubmissionState.Submitted, "5+");
         await CreateSubmission(assignment.Id, student2.Id, SubmissionState.Submitted, null);
         await CreateSubmission(assignment.Id, student3.Id, SubmissionState.Draft, null);
 
@@ -68,10 +68,13 @@ public class AssignmentServiceTests : AppServiceTestBase
         await AddStudentToCourse(course.Id, student2.Id);
         await AddStudentToCourse(course.Id, student3.Id);
 
-        var assignment = await CreateAssignment(course.Id);
+        var assignment = await CreateAssignment(
+            course.Id,
+            forWhomUserIds: [student1.Id, student3.Id]
+        ); // only for student1 and student3
 
         // Create submissions
-        await CreateSubmission(assignment.Id, student1.Id, SubmissionState.Submitted, "B");
+        await CreateSubmission(assignment.Id, student1.Id, SubmissionState.Submitted, "4");
         await CreateSubmission(assignment.Id, student3.Id, SubmissionState.Submitted, null);
 
         // Act
@@ -79,9 +82,9 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Total.Should().Be(3);
+        result.Total.Should().Be(2);
         result.Submitted.Should().Be(2);
-        result.NotSubmitted.Should().Be(1); // student2 hasn't submitted
+        result.NotSubmitted.Should().Be(0); // student2 hasn't submitted
         result.Marked.Should().Be(1);
     }
 
@@ -124,7 +127,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         await CreateSubmission(assignment.Id, student1.Id, SubmissionState.Draft, null);
         await CreateSubmission(assignment.Id, student2.Id, SubmissionState.Submitted, null);
-        await CreateSubmission(assignment.Id, student3.Id, SubmissionState.Accepted, "A+");
+        await CreateSubmission(assignment.Id, student3.Id, SubmissionState.Accepted, "5+");
 
         // Act
         var result = await Sut.GetAssignmentStatistics(assignment.Id);
