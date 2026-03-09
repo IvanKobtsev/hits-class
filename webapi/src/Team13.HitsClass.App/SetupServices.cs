@@ -1,3 +1,4 @@
+using Team13.HitsClass.App.Features.Assignment;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
 using Team13.HitsClass.App.Features.Publications;
@@ -23,6 +24,7 @@ public static class SetupServices
             .AddScoped<DefaultUserSeeder>()
             .AddScoped<UserService>()
             .AddScoped<PublicationService>()
+            .AddScoped<AssignmentService>()
             .AddScoped<FileService>()
             .AddScoped<CourseService>();
     }
