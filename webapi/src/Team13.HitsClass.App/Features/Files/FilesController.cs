@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Files.Dto;
 using Team13.WebApi.Pagination;
@@ -23,6 +23,15 @@ public class FilesController
     public async Task<FileInfoDto> UploadFile(IFormFile file)
     {
         return await _fileService.Upload(file);
+    }
+
+    /// <summary>
+    /// Uploads multiple files and returns their metadata. Files are expected as form data with the key "files".
+    /// </summary>
+    [HttpPost("bulk")]
+    public async Task<IReadOnlyList<FileInfoDto>> UploadFilesBulk(IFormFileCollection files)
+    {
+        return await _fileService.UploadBulk(files);
     }
 
     /// <summary>

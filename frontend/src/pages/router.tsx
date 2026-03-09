@@ -5,13 +5,24 @@ import { ReactRouterErrorBoundary } from './ReactRouterErrorBoundary';
 import { UseCookieAuth } from 'helpers/auth/auth-settings';
 import { LoginPage } from './unauthorized/LoginPage/LoginPage';
 import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPage';
+import { SubmissionPanel } from './authorized/AssignmentPage/CreateSubmissionPanel/SubmissionPanel';
+import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
     {
       path: '/',
       element: <RootPage />,
-      children: [],
+      children: [
+        {
+          path: '/create-submission',
+          element: <SubmissionPanel />,
+        },
+        {
+          path: Links.Authorized.Courses.route,
+          element: <CoursesPage />,
+        }
+      ],
       ErrorBoundary: ReactRouterErrorBoundary,
     },
   ]);

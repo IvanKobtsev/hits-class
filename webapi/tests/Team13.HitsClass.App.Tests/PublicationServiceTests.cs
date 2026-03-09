@@ -9,6 +9,8 @@ using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.WebApi.Domain.Helpers;
+using Team13.WebApi.Patching.Models;
 
 namespace Team13.HitsClass.App.Tests;
 
@@ -433,6 +435,401 @@ public class PublicationServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region PatchPublication Tests
+
+    [Fact]
+    public async Task PatchPublication_AsAuthor_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Announcement,
+            "Original content"
+        );
+        var patchDto = new TestPatchPublicationDto { Content = "Updated content" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(publication.Id);
+        result.Content.Should().Be("Updated content");
+
+        await WithDbContext(async db =>
+        {
+            var updatedPublication = await db.Publications.FirstAsync(p => p.Id == publication.Id);
+            updatedPublication.Content.Should().Be("Updated content");
+        });
+    }
+
+    [Fact]
+    public async Task PatchPublication_AsTeacher_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Announcement,
+            "Original content"
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var patchDto = new TestPatchPublicationDto { Content = "Updated by teacher" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().Be("Updated by teacher");
+    }
+
+    [Fact]
+    public async Task PatchPublication_AsAdmin_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Announcement,
+            "Original content"
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+
+        var patchDto = new TestPatchPublicationDto { Content = "Updated by admin" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().Be("Updated by admin");
+    }
+
+    [Fact]
+    public async Task PatchPublication_AsUnauthorizedStudent_ThrowsAccessDeniedException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var patchDto = new TestPatchPublicationDto { Content = "Unauthorized update" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.PatchPublication(publication.Id, patchDto, null)
+        );
+
+        exception
+            .Message.Should()
+            .Be(
+                "Access was denied to the requested resource. You do not have permissions to edit this publication."
+            );
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateTargetUsers_UpdatesTargetUsers()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student1 = await CreateUser("student1@test.com");
+        var student2 = await CreateUser("student2@test.com");
+        await AddStudentToCourse(course.Id, student1.Id);
+        await AddStudentToCourse(course.Id, student2.Id);
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Announcement,
+            forWhomUserIds: [student1.Id]
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Content = publication.Content,
+            TargetUsersIds = [student2.Id],
+        };
+        patchDto.SetHasProperty(nameof(patchDto.TargetUsersIds));
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        await WithDbContext(async db =>
+        {
+            var updatedPublication = await db
+                .Publications.Include(p => p.TargetUsers)
+                .FirstAsync(p => p.Id == publication.Id);
+            updatedPublication.TargetUsers.Should().HaveCount(1);
+            updatedPublication.TargetUsers.Should().Contain(u => u.Id == student2.Id);
+            updatedPublication.TargetUsers.Should().NotContain(u => u.Id == student1.Id);
+        });
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateTargetUsersWithInvalidUser_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        var nonCourseStudent = await CreateUser("noncourse@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Content = publication.Content,
+            TargetUsersIds = [nonCourseStudent.Id],
+        };
+        patchDto.SetHasProperty(nameof(patchDto.TargetUsersIds));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchPublication(publication.Id, patchDto, null)
+        );
+
+        exception
+            .Message.Should()
+            .Be("Cannot create publication for a user that is not a student of the course.");
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateWithEventPayload_UpdatesPayload()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(course.Id, PublicationType.Assignment);
+
+        var patchDto = new TestPatchPublicationDto { Content = "Updated assignment" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        var newDeadline = DateTime.UtcNow.AddDays(14);
+        var patchPublicationPayloadDto = new TestPatchPublicationPayloadDto
+        {
+            DeadlineUtc = newDeadline,
+        };
+        patchPublicationPayloadDto.SetHasProperty(nameof(patchPublicationPayloadDto.DeadlineUtc));
+
+        // Act
+        var result = await Sut.PatchPublication(
+            publication.Id,
+            patchDto,
+            patchPublicationPayloadDto
+        );
+
+        // Assert
+        result.Should().NotBeNull();
+        var resultPayload = result.PublicationPayload as AssignmentPayload;
+        resultPayload!.DeadlineUtc!.Value.Date.Should().Be(newDeadline.Date);
+    }
+
+    [Fact]
+    public async Task PatchPublication_PublicationDoesNotExist_ThrowsNotFoundException()
+    {
+        // Arrange
+        var patchDto = new TestPatchPublicationDto { Content = "Update" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
+            await Sut.PatchPublication(999, patchDto, null)
+        );
+
+        exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task PatchPublication_CourseTeacherCanEdit_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var patchDto = new TestPatchPublicationDto { Content = "Updated by course teacher" };
+        patchDto.SetHasProperty(nameof(patchDto.Content));
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().Be("Updated by course teacher");
+    }
+
+    #endregion
+
+    #region DeletePublication Tests
+
+    [Fact]
+    public async Task DeletePublication_AsAuthor_DeletesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+
+        // Act
+        await Sut.DeletePublication(publication.Id);
+
+        // Assert
+        await WithDbContext(async db =>
+        {
+            var deletedPublication = await db.Publications.FirstOrDefaultAsync(p =>
+                p.Id == publication.Id
+            );
+            deletedPublication.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DeletePublication_AsTeacher_DeletesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        // Act
+        await Sut.DeletePublication(publication.Id);
+
+        // Assert
+        await WithDbContext(async db =>
+        {
+            var deletedPublication = await db.Publications.FirstOrDefaultAsync(p =>
+                p.Id == publication.Id
+            );
+            deletedPublication.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DeletePublication_AsAdmin_DeletesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+
+        // Act
+        await Sut.DeletePublication(publication.Id);
+
+        // Assert
+        await WithDbContext(async db =>
+        {
+            var deletedPublication = await db.Publications.FirstOrDefaultAsync(p =>
+                p.Id == publication.Id
+            );
+            deletedPublication.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DeletePublication_AsUnauthorizedStudent_ThrowsAccessDeniedException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.DeletePublication(publication.Id)
+        );
+
+        exception
+            .Message.Should()
+            .Be(
+                "Access was denied to the requested resource. You do not have permissions to delete this publication."
+            );
+
+        // Verify publication still exists
+        await WithDbContext(async db =>
+        {
+            var existingPublication = await db.Publications.FirstOrDefaultAsync(p =>
+                p.Id == publication.Id
+            );
+            existingPublication.Should().NotBeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DeletePublication_CourseTeacherCanDelete_DeletesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var publication = await CreatePublication(course.Id, PublicationType.Announcement);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        // Act
+        await Sut.DeletePublication(publication.Id);
+
+        // Assert
+        await WithDbContext(async db =>
+        {
+            var deletedPublication = await db.Publications.FirstOrDefaultAsync(p =>
+                p.Id == publication.Id
+            );
+            deletedPublication.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DeletePublication_PublicationDoesNotExist_ThrowsNotFoundException()
+    {
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
+            await Sut.DeletePublication(999)
+        );
+
+        exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task DeletePublication_StudentTargetedForPublicationCannotDelete_ThrowsAccessDeniedException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Announcement,
+            forWhomUserIds: [student.Id]
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.DeletePublication(publication.Id)
+        );
+
+        exception
+            .Message.Should()
+            .Contain("You do not have permissions to delete this publication.");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private async Task<(
@@ -586,6 +983,17 @@ public class PublicationServiceTests : AppServiceTestBase
 
     #endregion
 
-    // Helper class for testing
+    // Helper classes for testing
     private class TestCreatePublicationDto : CreatePublicationDto { }
+
+    private class TestPatchPublicationDto : PatchPublicationDto
+    {
+        [RequiredOrMissing]
+        public TestPatchPublicationPayloadDto? Payload { get; set; }
+    }
+
+    private class TestPatchPublicationPayloadDto : PatchRequest<PublicationPayload>
+    {
+        public DateTime DeadlineUtc { get; set; }
+    }
 }

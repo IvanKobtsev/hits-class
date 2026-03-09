@@ -10,6 +10,8 @@ using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.PersistenceHelpers;
 using Team13.WebApi.Pagination;
+using Team13.WebApi.Patching;
+using Team13.WebApi.Patching.Models;
 
 namespace Team13.HitsClass.App.Features.Publications;
 
@@ -102,30 +104,13 @@ public class PublicationService(
             .Courses.Include(c => c.Students)
             .GetOne(Course.HasId(courseId));
 
-        var forEveryone = createPublicationDto.TargetUsersIds == null;
-        var targetUsers = !forEveryone
-            ? course
-                .Students.Where(s => createPublicationDto.TargetUsersIds!.Contains(s.Id))
-                .ToList()
-            : [];
-
-        if (!forEveryone)
-        {
-            var specifiedUserNotFromCourse = createPublicationDto.TargetUsersIds.Any(studentId =>
-                course.Students.All(s => s.Id != studentId)
-            );
-
-            if (specifiedUserNotFromCourse)
-                throw new ValidationException(
-                    "Cannot create publication for a user that is not a student of the course."
-                );
-        }
+        var targetUsers = GetTargetUsersFromIds(createPublicationDto.TargetUsersIds, course);
 
         var newPublication = new Publication(createPublicationDto.Content)
         {
             Type = publicationPayload.GetEventType(),
             Author = author,
-            IsForEveryone = forEveryone,
+            IsForEveryone = targetUsers.Count == 0,
             TargetUsers = targetUsers,
             PublicationPayload = publicationPayload,
             Course = course,
@@ -135,5 +120,96 @@ public class PublicationService(
         await dbContext.SaveChangesAsync();
 
         return newPublication.ToPublicationDto();
+    }
+
+    public async Task<PublicationDto> PatchPublication(
+        int publicationId,
+        PatchPublicationDto patchPublicationDto,
+        PatchRequest<PublicationPayload>? publicationPayload
+    )
+    {
+        var user = await dbContext.Users.GetOne(User.HasId(userAccessor.GetUserId()));
+        var publication = await dbContext
+            .Publications.AsSplitQuery()
+            .Include(p => p.TargetUsers)
+            .Include(p => p.Author)
+            .GetOne(Publication.HasId(publicationId));
+
+        var course = await dbContext
+            .Courses.Include(c => c.Teachers)
+            .Include(c => c.Students)
+            .GetOne(Course.HasId(publication.CourseId));
+
+        var canPatchPublication =
+            publication.AuthorId == user.Id
+            || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            || course.Teachers.Any(u => u.Id == user.Id);
+
+        if (!canPatchPublication)
+            throw new AccessDeniedException(
+                "You do not have permissions to edit this publication."
+            );
+
+        if (patchPublicationDto.IsFieldPresent(nameof(patchPublicationDto.TargetUsersIds)))
+        {
+            publication.TargetUsers = GetTargetUsersFromIds(
+                patchPublicationDto.TargetUsersIds,
+                course
+            );
+        }
+
+        publication.Update(patchPublicationDto);
+
+        if (publicationPayload != null)
+        {
+            var publicationPayloadToUpdate = publication.PublicationPayload;
+            publicationPayloadToUpdate.Update(publicationPayload);
+            publication.PublicationPayload = publicationPayloadToUpdate;
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        return publication.ToPublicationDto();
+    }
+
+    public async Task DeletePublication(int publicationId)
+    {
+        var user = await dbContext.Users.GetOne(User.HasId(userAccessor.GetUserId()));
+        var publication = await dbContext.Publications.GetOne(Publication.HasId(publicationId));
+        var course = await dbContext
+            .Courses.Include(c => c.Teachers)
+            .GetOne(Course.HasId(publication.CourseId));
+
+        var canDeletePublication =
+            publication.AuthorId == user.Id
+            || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            || course.Teachers.Any(u => u.Id == user.Id);
+
+        if (!canDeletePublication)
+            throw new AccessDeniedException(
+                "You do not have permissions to delete this publication."
+            );
+
+        dbContext.Publications.Remove(publication);
+        await dbContext.SaveChangesAsync();
+    }
+
+    private List<User> GetTargetUsersFromIds(List<string>? targetUsersIds, Course course)
+    {
+        if (targetUsersIds == null || targetUsersIds.Count == 0)
+            return [];
+
+        var targetUsers = course.Students.Where(s => targetUsersIds.Contains(s.Id)).ToList();
+
+        var specifiedUserNotFromCourse = targetUsersIds.Any(studentId =>
+            course.Students.All(s => s.Id != studentId)
+        );
+
+        if (specifiedUserNotFromCourse)
+            throw new ValidationException(
+                "Cannot create publication for a user that is not a student of the course."
+            );
+
+        return targetUsers;
     }
 }
