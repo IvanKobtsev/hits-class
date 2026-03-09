@@ -5,6 +5,6 @@ export type AssignmentViewProps = {
   submission?: SubmissionDto | null;
 };
 
-export const AssignmentView = (_props: AssignmentViewProps) => (
-  <div data-testid="assignment-view">AssignmentView</div>
-);
+export const AssignmentView = (_props: AssignmentViewProps) => {
+  return <></>;
+};

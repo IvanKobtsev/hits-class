@@ -98,6 +98,14 @@ describe('AssignmentView', () => {
     expect(el.textContent).toMatch(/\d{1,2}:\d{2}/);
   });
 
+  test('displays assignment description', () => {
+    renderAssignmentView({ assignment: mockAssignment });
+
+    expect(screen.getByTestId('AssignmentView-description')).toHaveTextContent(
+      'Реализуйте сортировку пузырьком',
+    );
+  });
+
   test('displays student mark when submission is provided', () => {
     renderAssignmentView({
       assignment: mockAssignment,
