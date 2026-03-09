@@ -6,6 +6,7 @@ import { UseCookieAuth } from 'helpers/auth/auth-settings';
 import { LoginPage } from './unauthorized/LoginPage/LoginPage';
 import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPage';
 import { SubmissionPanel } from './authorized/AssignmentPage/CreateSubmissionPanel/SubmissionPanel';
+import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
@@ -17,6 +18,10 @@ export const authorizedRoutes = () =>
           path: '/create-submission',
           element: <SubmissionPanel />,
         },
+        {
+          path: Links.Authorized.Courses.route,
+          element: <CoursesPage />,
+        }
       ],
       ErrorBoundary: ReactRouterErrorBoundary,
     },
