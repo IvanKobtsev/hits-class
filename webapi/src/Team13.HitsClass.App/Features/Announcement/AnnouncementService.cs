@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Announcement.Dto;
+using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 
@@ -16,12 +17,7 @@ namespace Team13.HitsClass.App.Features.Announcement
             _dbContext = dbContext;
         }
 
-        public async Task<AnnouncementDto> GetAnnouncement(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<AnnouncementDto> CreateAnnouncement(
+        public async Task<PublicationDto> CreateAnnouncement(
             int courseId,
             CreateAnnouncementDto dto
         )
@@ -29,7 +25,7 @@ namespace Team13.HitsClass.App.Features.Announcement
             throw new NotImplementedException();
         }
 
-        public async Task<AnnouncementDto> UpdateAnnouncement(int id, CreateAnnouncementDto dto)
+        public async Task<PublicationDto> PatchAnnouncement(int id, PatchAnnouncementDto dto)
         {
             throw new NotImplementedException();
         }

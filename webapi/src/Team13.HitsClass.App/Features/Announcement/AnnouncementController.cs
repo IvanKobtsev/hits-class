@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Announcement.Dto;
+using Team13.HitsClass.App.Features.Publications.Dto;
 
 namespace Team13.HitsClass.App.Features.Announcement
 {
@@ -19,7 +20,7 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// Create announcement
         /// </summary>
         [HttpPost("/api/courses/{id:int}/announcements")]
-        public async Task<AnnouncementDto> CreateAnnouncement(
+        public async Task<PublicationDto> CreateAnnouncement(
             [FromRoute] int courseId,
             [FromBody] CreateAnnouncementDto dto
         )
@@ -31,12 +32,12 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// Update specific announcement
         /// </summary>
         [HttpPut("{id:int}")]
-        public async Task<AnnouncementDto> UpdateAnnouncement(
+        public async Task<PublicationDto> UpdateAnnouncement(
             [FromRoute] int id,
             [FromBody] CreateAnnouncementDto dto
         )
         {
-            return await _announcementService.UpdateAnnouncement(id, dto);
+            return await _announcementService.PatchAnnouncement(id, dto);
         }
 
         /// <summary>
