@@ -2,12 +2,14 @@ import { useParams } from 'react-router';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import type { AssignmentDto } from 'services/api/api-client.types';
 import { AssignmentView } from './AssignmentView/AssignmentView';
-import { SubmissionPanel } from './SubmissionPanel/SubmissionPanel';
 import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
+import { SubmissionPanel } from './CreateSubmissionPanel/SubmissionPanel';
 
 // TODO: replace with useGetAssignmentQuery once implemented
-function useMockAssignmentQuery(_id: number): { data: AssignmentDto | undefined } {
+function useMockAssignmentQuery(_id: number): {
+  data: AssignmentDto | undefined;
+} {
   return {
     data: {
       id: _id,
