@@ -502,6 +502,65 @@ function processGetCourseMembers(response: AxiosResponse): Promise<Types.PagedRe
     }
     return Promise.resolve<Types.PagedResultOfCourseMemberDto>(null as any);
 }
+
+/**
+ * Join course with invite code
+ */
+export function joinCourse(inviteCode: string, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/courses/join/{inviteCode}";
+    if (inviteCode === undefined || inviteCode === null)
+      throw new Error("The parameter 'inviteCode' must be defined.");
+    url_ = url_.replace("{inviteCode}", encodeURIComponent("" + inviteCode));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigJoinCourse,
+        ...config,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigJoinCourse?.headers,
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processJoinCourse(_response);
+    });
+}
+
+function processJoinCourse(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
 let _requestConfigGetCourses: Partial<AxiosRequestConfig> | null;
 export function getGetCoursesRequestConfig() {
   return _requestConfigGetCourses;
@@ -577,4 +636,15 @@ export function setGetCourseMembersRequestConfig(value: Partial<AxiosRequestConf
 }
 export function patchGetCourseMembersRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigGetCourseMembers = patch(_requestConfigGetCourseMembers ?? {});
+}
+
+let _requestConfigJoinCourse: Partial<AxiosRequestConfig> | null;
+export function getJoinCourseRequestConfig() {
+  return _requestConfigJoinCourse;
+}
+export function setJoinCourseRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigJoinCourse = value;
+}
+export function patchJoinCourseRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigJoinCourse = patch(_requestConfigJoinCourse ?? {});
 }

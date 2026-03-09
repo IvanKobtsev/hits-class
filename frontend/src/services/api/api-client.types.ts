@@ -444,6 +444,192 @@ export function prepareSerializeMarkDto(_data: MarkDto): MarkDto {
   const data: Record<string, any> = { ..._data };
   return data as MarkDto;
 }
+export interface PagedResultOfPublicationDto  {
+  data: PublicationDto[];
+  totalCount: number;
+}
+export function deserializePagedResultOfPublicationDto(json: string): PagedResultOfPublicationDto {
+  const data = JSON.parse(json) as PagedResultOfPublicationDto;
+  initPagedResultOfPublicationDto(data);
+  return data;
+}
+export function initPagedResultOfPublicationDto(_data: PagedResultOfPublicationDto) {
+  if (_data) {
+    if (Array.isArray(_data["data"])) {
+      _data.data = _data["data"].map(item => 
+        initPublicationDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializePagedResultOfPublicationDto(_data: PagedResultOfPublicationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePagedResultOfPublicationDto(_data as PagedResultOfPublicationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePagedResultOfPublicationDto(_data: PagedResultOfPublicationDto): PagedResultOfPublicationDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.data)) {
+    data["data"] = _data.data.map(item => 
+        prepareSerializePublicationDto(item)
+    );
+  }
+  return data as PagedResultOfPublicationDto;
+}
+export interface PublicationDto  {
+  id: number;
+  createdAtUTC: Date;
+  lastUpdatedAtUTC: Date | null;
+  content: string | null;
+  author: UserDto;
+  attachments: Attachment[];
+  type: PublicationType;
+  publicationPayload: PublicationPayload;
+}
+export function deserializePublicationDto(json: string): PublicationDto {
+  const data = JSON.parse(json) as PublicationDto;
+  initPublicationDto(data);
+  return data;
+}
+export function initPublicationDto(_data: PublicationDto) {
+  if (_data) {
+    _data.createdAtUTC = _data["createdAtUTC"] ? new Date(_data["createdAtUTC"].toString()) : <any>null;
+    _data.lastUpdatedAtUTC = _data["lastUpdatedAtUTC"] ? new Date(_data["lastUpdatedAtUTC"].toString()) : <any>null;
+    _data.author = _data["author"] && initUserDto(_data["author"]);
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initAttachment(item)
+      );
+    }
+    _data.type = _data["type"];
+    _data.publicationPayload = _data["publicationPayload"] && initPublicationPayload(_data["publicationPayload"]);
+  }
+  return _data;
+}
+export function serializePublicationDto(_data: PublicationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePublicationDto(_data as PublicationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePublicationDto(_data: PublicationDto): PublicationDto {
+  const data: Record<string, any> = { ..._data };
+  data["createdAtUTC"] = _data.createdAtUTC && _data.createdAtUTC.toISOString();
+  data["lastUpdatedAtUTC"] = _data.lastUpdatedAtUTC && _data.lastUpdatedAtUTC.toISOString();
+  data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeAttachment(item)
+    );
+  }
+  data["publicationPayload"] = _data.publicationPayload && prepareSerializePublicationPayload(_data.publicationPayload);
+  return data as PublicationDto;
+}
+export interface Attachment  {
+  uuid: string;
+  fileName: string;
+  size: number;
+}
+export function deserializeAttachment(json: string): Attachment {
+  const data = JSON.parse(json) as Attachment;
+  initAttachment(data);
+  return data;
+}
+export function initAttachment(_data: Attachment) {
+    return _data;
+}
+export function serializeAttachment(_data: Attachment | undefined) {
+  if (_data) {
+    _data = prepareSerializeAttachment(_data as Attachment);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAttachment(_data: Attachment): Attachment {
+  const data: Record<string, any> = { ..._data };
+  return data as Attachment;
+}
+export enum PublicationType {
+    Announcement = "Announcement",
+    Assignment = "Assignment",
+}
+export interface PublicationPayload  {
+  publicationType: string;
+}
+export function deserializePublicationPayload(json: string): PublicationPayload {
+  const data = JSON.parse(json) as PublicationPayload;
+  if (data["publicationType"] === "Announcement") {
+    return initAnnouncementPayload(data as AnnouncementPayload);
+  }
+  if (data["publicationType"] === "Assignment") {
+    return initAssignmentPayload(data as AssignmentPayload);
+  }
+  initPublicationPayload(data);
+  return data;
+}
+export function initPublicationPayload(_data: PublicationPayload) {
+  return _data;
+}
+export function serializePublicationPayload(_data: PublicationPayload | undefined) {
+  if (_data) {
+    _data = prepareSerializePublicationPayload(_data as PublicationPayload);
+      _data["publicationType"] = "PublicationPayload";
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePublicationPayload(_data: PublicationPayload): PublicationPayload {
+  const data: Record<string, any> = { ..._data };
+  return data as PublicationPayload;
+}
+export interface AnnouncementPayload extends PublicationPayload  {
+}
+export function deserializeAnnouncementPayload(json: string): AnnouncementPayload {
+  const data = JSON.parse(json) as AnnouncementPayload;
+  initAnnouncementPayload(data);
+  return data;
+}
+export function initAnnouncementPayload(_data: AnnouncementPayload) {
+  initPublicationPayload(_data);
+  return _data;
+}
+export function serializeAnnouncementPayload(_data: AnnouncementPayload | undefined) {
+  if (_data) {
+    _data = prepareSerializeAnnouncementPayload(_data as AnnouncementPayload);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAnnouncementPayload(_data: AnnouncementPayload): AnnouncementPayload {
+  const data = prepareSerializePublicationPayload(_data as AnnouncementPayload) as Record<string, any>;
+  return data as AnnouncementPayload;
+}
+export interface AssignmentPayload extends PublicationPayload  {
+  title: string;
+  deadlineUtc: Date;
+}
+export function deserializeAssignmentPayload(json: string): AssignmentPayload {
+  const data = JSON.parse(json) as AssignmentPayload;
+  initAssignmentPayload(data);
+  return data;
+}
+export function initAssignmentPayload(_data: AssignmentPayload) {
+  initPublicationPayload(_data);
+  if (_data) {
+    _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
+  }
+  return _data;
+}
+export function serializeAssignmentPayload(_data: AssignmentPayload | undefined) {
+  if (_data) {
+    _data = prepareSerializeAssignmentPayload(_data as AssignmentPayload);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAssignmentPayload(_data: AssignmentPayload): AssignmentPayload {
+  const data = prepareSerializePublicationPayload(_data as AssignmentPayload) as Record<string, any>;
+  data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
+  return data as AssignmentPayload;
+}
 export interface PagedResultOfCourseListItemDto  {
   data: CourseListItemDto[];
   totalCount: number;
@@ -729,6 +915,30 @@ export function prepareSerializePatchCommentDto(_data: PatchCommentDto): PatchCo
   const data: Record<string, any> = { ..._data };
   return data as PatchCommentDto;
 }
+export interface AssignmentStatisticDto  {
+  submitted: number;
+  notSubmitted: number;
+  marked: number;
+  total: number;
+}
+export function deserializeAssignmentStatisticDto(json: string): AssignmentStatisticDto {
+  const data = JSON.parse(json) as AssignmentStatisticDto;
+  initAssignmentStatisticDto(data);
+  return data;
+}
+export function initAssignmentStatisticDto(_data: AssignmentStatisticDto) {
+    return _data;
+}
+export function serializeAssignmentStatisticDto(_data: AssignmentStatisticDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeAssignmentStatisticDto(_data as AssignmentStatisticDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeAssignmentStatisticDto(_data: AssignmentStatisticDto): AssignmentStatisticDto {
+  const data: Record<string, any> = { ..._data };
+  return data as AssignmentStatisticDto;
+}
 export interface AssignmentDto  {
   id: number;
   title: string;
@@ -788,35 +998,33 @@ export function prepareSerializeAssignmentDto(_data: AssignmentDto): AssignmentD
   }
   return data as AssignmentDto;
 }
-export interface AssignmentStatisticDto  {
-  submitted: number;
-  notSubmitted: number;
-  marked: number;
-  total: number;
+export interface CreatePublicationDto  {
+  content: string;
+  targetUsersIds: string[] | null;
 }
-export function deserializeAssignmentStatisticDto(json: string): AssignmentStatisticDto {
-  const data = JSON.parse(json) as AssignmentStatisticDto;
-  initAssignmentStatisticDto(data);
+export function deserializeCreatePublicationDto(json: string): CreatePublicationDto {
+  const data = JSON.parse(json) as CreatePublicationDto;
+  initCreatePublicationDto(data);
   return data;
 }
-export function initAssignmentStatisticDto(_data: AssignmentStatisticDto) {
-    return _data;
-}
-export function serializeAssignmentStatisticDto(_data: AssignmentStatisticDto | undefined) {
+export function initCreatePublicationDto(_data: CreatePublicationDto) {
   if (_data) {
-    _data = prepareSerializeAssignmentStatisticDto(_data as AssignmentStatisticDto);
+    _data.targetUsersIds = _data["targetUsersIds"];
+  }
+  return _data;
+}
+export function serializeCreatePublicationDto(_data: CreatePublicationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreatePublicationDto(_data as CreatePublicationDto);
   }
   return JSON.stringify(_data);
 }
-export function prepareSerializeAssignmentStatisticDto(_data: AssignmentStatisticDto): AssignmentStatisticDto {
+export function prepareSerializeCreatePublicationDto(_data: CreatePublicationDto): CreatePublicationDto {
   const data: Record<string, any> = { ..._data };
-  return data as AssignmentStatisticDto;
+  return data as CreatePublicationDto;
 }
-export interface CreateAssignmentDto  {
-  title: string;
-  description: string | null;
-  deadlineUTC: Date | null;
-  attachments: FileInfoDto[];
+export interface CreateAssignmentDto extends CreatePublicationDto  {
+  payload: AssignmentPayload;
 }
 export function deserializeCreateAssignmentDto(json: string): CreateAssignmentDto {
   const data = JSON.parse(json) as CreateAssignmentDto;
@@ -824,13 +1032,9 @@ export function deserializeCreateAssignmentDto(json: string): CreateAssignmentDt
   return data;
 }
 export function initCreateAssignmentDto(_data: CreateAssignmentDto) {
+  initCreatePublicationDto(_data);
   if (_data) {
-    _data.deadlineUTC = _data["deadlineUTC"] ? new Date(_data["deadlineUTC"].toString()) : <any>null;
-    if (Array.isArray(_data["attachments"])) {
-      _data.attachments = _data["attachments"].map(item => 
-        initFileInfoDto(item)
-      );
-    }
+    _data.payload = _data["payload"] && initAssignmentPayload(_data["payload"]);
   }
   return _data;
 }
@@ -841,13 +1045,8 @@ export function serializeCreateAssignmentDto(_data: CreateAssignmentDto | undefi
   return JSON.stringify(_data);
 }
 export function prepareSerializeCreateAssignmentDto(_data: CreateAssignmentDto): CreateAssignmentDto {
-  const data: Record<string, any> = { ..._data };
-  data["deadlineUTC"] = _data.deadlineUTC && _data.deadlineUTC.toISOString();
-  if (Array.isArray(_data.attachments)) {
-    data["attachments"] = _data.attachments.map(item => 
-        prepareSerializeFileInfoDto(item)
-    );
-  }
+  const data = prepareSerializeCreatePublicationDto(_data as CreateAssignmentDto) as Record<string, any>;
+  data["payload"] = _data.payload && prepareSerializeAssignmentPayload(_data.payload);
   return data as CreateAssignmentDto;
 }
 export interface AnnouncementDto  {
