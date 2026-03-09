@@ -1,3 +1,4 @@
+using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
 using Team13.HitsClass.App.Features.Publications;
@@ -24,6 +25,7 @@ public static class SetupServices
             .AddScoped<UserService>()
             .AddScoped<PublicationService>()
             .AddScoped<FileService>()
-            .AddScoped<CourseService>();
+            .AddScoped<CourseService>()
+            .AddScoped<AnnouncementService>();
     }
 }
