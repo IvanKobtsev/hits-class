@@ -1,0 +1,24 @@
+@use '../../../styles/base.scss' as *;
+
+.page {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search {
+  width: 320px;
+  height: 24px;
+  margin-bottom: 24px;
+}
+
+.tabs {
+  border-bottom: 1px solid #656668;
+}
