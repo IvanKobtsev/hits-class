@@ -21,37 +21,40 @@ namespace Team13.HitsClass.App.Features.Announcement
         [HttpGet("{id:int}")]
         public async Task<AnnouncementDto> GetAnnouncement([FromRoute] int id)
         {
-            throw new NotImplementedException();
+            return await _announcementService.GetAnnouncement(id);
         }
 
         /// <summary>
-        /// Create announcement (check permission)
+        /// Create announcement
         /// </summary>
-        [HttpPost]
-        public async Task<AnnouncementDto> CreateAnnouncement([FromBody] CreateAnnouncementDto dto)
+        [HttpPost("/api/courses/{id:int}/announcements")]
+        public async Task<AnnouncementDto> CreateAnnouncement(
+            [FromRoute] int courseId,
+            [FromBody] CreateAnnouncementDto dto
+        )
         {
-            throw new NotImplementedException();
+            return await _announcementService.CreateAnnouncement(courseId, dto);
         }
 
         /// <summary>
-        /// Update specific announcement (check permission)
+        /// Update specific announcement
         /// </summary>
         [HttpPut("{id:int}")]
-        public async Task UpdateAnnouncement(
+        public async Task<AnnouncementDto> UpdateAnnouncement(
             [FromRoute] int id,
             [FromBody] CreateAnnouncementDto dto
         )
         {
-            throw new NotImplementedException();
+            return await _announcementService.UpdateAnnouncement(id, dto);
         }
 
         /// <summary>
-        /// Delete specific announcement (check permission)
+        /// Delete specific announcement
         /// </summary>
         [HttpDelete("{id:int}")]
         public async Task DeleteAnnouncement([FromRoute] int id)
         {
-            throw new NotImplementedException();
+            await _announcementService.DeleteAnnouncement(id);
         }
     }
 }
