@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 
-vi.mock('components/layout/SidebarContext', () => ({
+vi.mock('../Sidebar/SidebarContext', () => ({
   useSidebar: vi.fn(),
 }));
 
@@ -11,12 +11,13 @@ vi.mock('services/api', () => ({
   QueryFactory: {
     UserQuery: {
       useGetCurrentUserInfoQuery: vi.fn(),
+      setGetCurrentUserInfoDefaultOptions: vi.fn(),
     },
   },
 }));
 
-import { useSidebar } from './SidebarContext';
 import { QueryFactory } from 'services/api';
+import { useSidebar } from 'components/layout/Sidebar/SidebarContext';
 import { AppHeader } from './AppHeader';
 
 const mockedUseSidebar = vi.mocked(useSidebar);
