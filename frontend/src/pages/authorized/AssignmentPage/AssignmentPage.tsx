@@ -1,4 +1,5 @@
 import { useParams } from 'react-router';
+import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import type { AssignmentDto } from 'services/api/api-client.types';
 import { AssignmentView } from './AssignmentView/AssignmentView';
@@ -6,42 +7,21 @@ import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
 import { SubmissionPanel } from './CreateSubmissionPanel/SubmissionPanel';
 
-// TODO: replace with useGetAssignmentQuery once implemented
-function useMockAssignmentQuery(_id: number): {
-  data: AssignmentDto | undefined;
-} {
-  return {
-    data: {
-      id: _id,
-      title: 'Домашнее задание (mock)',
-      description: null,
-      author: {
-        id: 'mock-author',
-        email: 'teacher@example.com',
-        legalName: 'Иван Петров',
-        groupNumber: null,
-      },
-      deadlineUTC: null,
-      createdAtUTC: new Date(),
-      lastUpdatedAtUTC: null,
-      attachments: [],
-      comments: [],
-    },
-  };
-}
-
 export const AssignmentPage = () => {
   const { assignmentId } = useParams();
   const id = Number(assignmentId);
 
-  const { data: assignment } = useMockAssignmentQuery(id);
+  const { data: publication } = useGetPublicationByIdQuery(id);
   const { data: submission } = useGetMySubmissionQuery(id);
 
-  if (!assignment) return null;
+  if (!publication) return null;
 
   return (
     <div data-test-id="AssignmentPage">
-      <AssignmentView assignment={assignment} submission={submission} />
+      <AssignmentView
+        assignment={publication as unknown as AssignmentDto}
+        submission={submission}
+      />
       <SubmissionPanel />
       <PrivateCommentView />
       <PublicCommentView />

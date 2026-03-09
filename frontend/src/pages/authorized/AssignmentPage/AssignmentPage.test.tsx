@@ -3,6 +3,10 @@ import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { AssignmentPage } from './AssignmentPage';
 
+vi.mock('services/api/api-client/PublicationsQuery', () => ({
+  useGetPublicationByIdQuery: vi.fn(),
+}));
+
 vi.mock('services/api/api-client/SubmissionQuery', () => ({
   useGetMySubmissionQuery: vi.fn(),
 }));
@@ -23,9 +27,22 @@ vi.mock('./PublicCommentView/PublicCommentView', () => ({
   PublicCommentView: () => <div data-test-id="PublicCommentView" />,
 }));
 
+import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 
+const mockedUseGetPublicationByIdQuery = vi.mocked(useGetPublicationByIdQuery);
 const mockedUseGetMySubmissionQuery = vi.mocked(useGetMySubmissionQuery);
+
+const mockPublication = {
+  id: 1,
+  type: 'Assignment',
+  publicationPayload: { publicationType: 'Assignment', title: 'Домашнее задание', deadlineUtc: null },
+  content: null,
+  author: { id: 'u1', email: 'teacher@example.com', legalName: 'Иван Петров', groupNumber: null },
+  createdAtUTC: new Date('2025-03-01T10:00:00Z'),
+  lastUpdatedAtUTC: null,
+  attachments: [],
+};
 
 const mockSubmission = {
   id: 1,
@@ -58,11 +75,14 @@ function renderAssignmentPage(courseId = 10, assignmentId = 1) {
   );
 }
 
-// TODO: use useGetAssignmentQuery once implemented on backend
-
 describe('AssignmentPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedUseGetPublicationByIdQuery.mockReturnValue({
+      isLoading: false,
+      data: mockPublication,
+      isError: false,
+    } as any);
     mockedUseGetMySubmissionQuery.mockReturnValue({
       isLoading: false,
       data: mockSubmission,
