@@ -2,16 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Team13.HitsClass.Common.Attributes;
 using Team13.Testing;
 using Team13.WebApi.Patching.Models;
 
@@ -232,7 +231,10 @@ public partial class BasicApiTests : ComponentTestBase
         foreach (Type patchRequestType in dtoTypes)
         {
             var domainType = patchRequestType.BaseType!.GenericTypeArguments.FirstOrDefault();
-            if (domainType == null)
+            if (
+                domainType == null
+                || domainType.GetCustomAttribute<DoNotCheckPatchRequestAttribute>() != null
+            )
             {
                 continue;
             }

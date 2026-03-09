@@ -167,6 +167,8 @@ public class PublicationService(
             publication.PublicationPayload = publicationPayloadToUpdate;
         }
 
+        publication.LastUpdatedAtUtc = DateTime.UtcNow;
+
         await dbContext.SaveChangesAsync();
 
         return publication.ToPublicationDto();
