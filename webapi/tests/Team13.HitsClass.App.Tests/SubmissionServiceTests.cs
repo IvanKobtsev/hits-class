@@ -3,9 +3,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Team13.HitsClass.App.Features.Files.Dto;
 using Team13.HitsClass.App.Features.Submission;
 using Team13.HitsClass.App.Features.Submission.Dto;
-using Team13.HitsClass.App.Features.Files.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
@@ -191,26 +191,20 @@ public class SubmissionServiceTests : AppServiceTestBase
     #region GetSubmissions Tests
 
     [Fact]
-    public async Task GetSubmissions_AsTeacher_ReturnsAllSubmissions()
+    public async Task GetSubmissions_AsGlobalTeacherNotInCourse_ThrowsAccessDeniedException()
     {
         // Arrange
         var course = await CreateCourse();
         var teacher = await CreateUserWithRole("teacher@test.com", UserRoles.Teacher);
-        var student1 = await CreateUser("student1@test.com");
-        var student2 = await CreateUser("student2@test.com");
-        await AddStudentToCourse(course.Id, student1.Id);
-        await AddStudentToCourse(course.Id, student2.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
         var assignment = await CreateAssignment(course.Id);
-        await CreateDbSubmission(assignment.Id, student1.Id);
-        await CreateDbSubmission(assignment.Id, student2.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        // Act
-        var result = await Sut.GetSubmissions(assignment.Id, new PagedRequestDto());
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Data.Should().HaveCount(2);
+        // Act & Assert
+        await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.GetSubmissions(assignment.Id, new PagedRequestDto())
+        );
     }
 
     [Fact]
@@ -353,7 +347,7 @@ public class SubmissionServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task GetSubmission_AsTeacher_ReturnsSubmission()
+    public async Task GetSubmission_AsGlobalTeacherNotInCourse_ThrowsAccessDeniedException()
     {
         // Arrange
         var course = await CreateCourse();
@@ -364,12 +358,10 @@ public class SubmissionServiceTests : AppServiceTestBase
         var submission = await CreateDbSubmission(assignment.Id, student.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        // Act
-        var result = await Sut.GetSubmission(submission.Id);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Id.Should().Be(submission.Id);
+        // Act & Assert
+        await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.GetSubmission(submission.Id)
+        );
     }
 
     [Fact]
@@ -383,6 +375,27 @@ public class SubmissionServiceTests : AppServiceTestBase
         var assignment = await CreateAssignment(course.Id);
         var submission = await CreateDbSubmission(assignment.Id, student.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+
+        // Act
+        var result = await Sut.GetSubmission(submission.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Id.Should().Be(submission.Id);
+    }
+
+    [Fact]
+    public async Task GetSubmission_AsCourseTeacher_ReturnsSubmission()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
         // Act
         var result = await Sut.GetSubmission(submission.Id);
@@ -425,7 +438,7 @@ public class SubmissionServiceTests : AppServiceTestBase
     #region MarkSubmission Tests
 
     [Fact]
-    public async Task MarkSubmission_AsTeacher_SetsMarkAndAcceptedState()
+    public async Task MarkSubmission_AsGlobalTeacherNotInCourse_ThrowsAccessDeniedException()
     {
         // Arrange
         var course = await CreateCourse();
@@ -436,17 +449,10 @@ public class SubmissionServiceTests : AppServiceTestBase
         var submission = await CreateDbSubmission(assignment.Id, student.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        var markDto = new MarkDto { Mark = "5", MarkComment = "Great work!" };
-
-        // Act
-        var result = await Sut.MarkSubmission(submission.Id, markDto);
-
-        // Assert
-        result.Should().NotBeNull();
-        result.Mark.Should().Be("5");
-        result.State.Should().Be(SubmissionState.Accepted);
-        result.LastMarkedAtUTC.Should().NotBeNull();
-        result.Comments.Should().ContainSingle(c => c.TextLexical == "Great work!");
+        // Act & Assert
+        await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.MarkSubmission(submission.Id, new MarkDto { Mark = "5" })
+        );
     }
 
     [Fact]
@@ -470,6 +476,32 @@ public class SubmissionServiceTests : AppServiceTestBase
         result.Should().NotBeNull();
         result.Mark.Should().Be("4");
         result.State.Should().Be(SubmissionState.Accepted);
+    }
+
+    [Fact]
+    public async Task MarkSubmission_AsCourseTeacher_SetsMarkAndAcceptedState()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "5", MarkComment = "Great work!" };
+
+        // Act
+        var result = await Sut.MarkSubmission(submission.Id, markDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Mark.Should().Be("5");
+        result.State.Should().Be(SubmissionState.Accepted);
+        result.LastMarkedAtUTC.Should().NotBeNull();
+        result.Comments.Should().ContainSingle(c => c.TextLexical == "Great work!");
     }
 
     [Fact]
@@ -504,10 +536,7 @@ public class SubmissionServiceTests : AppServiceTestBase
 
     #region Helper Methods
 
-    private async Task<Course> CreateCourse(
-        string title = "Test Course",
-        string? ownerId = null
-    )
+    private async Task<Course> CreateCourse(string title = "Test Course", string? ownerId = null)
     {
         return await WithDbContext(async db =>
         {
@@ -639,6 +668,7 @@ public class SubmissionServiceTests : AppServiceTestBase
                 State = SubmissionState.Submitted,
                 LastSubmittedAtUTC = DateTime.UtcNow,
                 Attachments = attachments ?? [],
+                Comments = [],
             };
 
             db.Submissions.Add(submission);
