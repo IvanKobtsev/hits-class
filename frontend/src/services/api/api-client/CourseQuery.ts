@@ -56,6 +56,10 @@ export type GetCourseMembersCourseQueryParameters = {
   courseId: number ;
 }
 
+export type JoinCourseCourseQueryParameters = {
+  inviteCode: string ;
+}
+
 export function getCoursesUrl(title?: string | null | undefined, createdByMe?: boolean | null | undefined, whereImTeacher?: boolean | null | undefined, whereImStudent?: boolean | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
   let url_ = getBaseUrl() + "/api/courses?";
 if (title !== undefined && title !== null)
@@ -669,4 +673,55 @@ The user must be teaching in it to access this endpoint.
  */
 export function setGetCourseMembersDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PagedResultOfCourseMemberDto | undefined) => Types.PagedResultOfCourseMemberDto) {
   queryClient.setQueryData(queryKey, updater);
+}
+    
+export function joinCourseUrl(inviteCode: string): string {
+  let url_ = getBaseUrl() + "/api/courses/join/{inviteCode}";
+if (inviteCode === undefined || inviteCode === null)
+  throw new Error("The parameter 'inviteCode' must be defined.");
+url_ = url_.replace("{inviteCode}", encodeURIComponent("" + inviteCode));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function joinCourseMutationKey(inviteCode: string): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'joinCourse',
+      inviteCode as any,
+    ]);
+}
+
+/**
+ * Join course with invite code
+ */
+export function useJoinCourseMutation<TContext>(inviteCode: string, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
+  const key = joinCourseMutationKey(inviteCode);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.joinCourse(inviteCode),
+    mutationKey: key,
+  });
+}
+  
+type JoinCourse__MutationParameters = JoinCourseCourseQueryParameters
+
+/**
+ * Join course with invite code
+ */
+export function useJoinCourseMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, JoinCourse__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: JoinCourseCourseQueryParameters}): UseMutationResult<void, unknown, JoinCourse__MutationParameters, TContext> {
+  const key = joinCourseMutationKey(options?.parameters?.inviteCode!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: JoinCourse__MutationParameters) => Client.joinCourse(data.inviteCode ?? options?.parameters?.inviteCode!),
+  mutationKey: key,
+});
 }
