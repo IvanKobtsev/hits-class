@@ -18,10 +18,6 @@ import * as Client from './AnnouncementClient'
 export { Client };
 import type { AxiosRequestConfig } from 'axios';
 
-export type GetAnnouncementAnnouncementQueryParameters = {
-  id: number ;
-}
-
 export type UpdateAnnouncementAnnouncementQueryParameters = {
   id: number ;
 }
@@ -30,98 +26,35 @@ export type DeleteAnnouncementAnnouncementQueryParameters = {
   id: number ;
 }
 
-export function getAnnouncementUrl(id: number): string {
-  let url_ = getBaseUrl() + "/api/announcements/{id}";
-if (id === undefined || id === null)
-  throw new Error("The parameter 'id' must be defined.");
-url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function createAnnouncementUrl(): string {
+  let url_ = getBaseUrl() + "/api/announcements";
   url_ = url_.replace(/[?&]$/, "");
   return url_;
 }
 
-let getAnnouncementDefaultOptions: Omit<UseQueryOptions<Types.AnnouncementDto, unknown, Types.AnnouncementDto>, 'queryKey'> = {
-  queryFn: __getAnnouncement,
-};
-export function getGetAnnouncementDefaultOptions() {
-  return getAnnouncementDefaultOptions;
-};
-export function setGetAnnouncementDefaultOptions(options: typeof getAnnouncementDefaultOptions) {
-  getAnnouncementDefaultOptions = options;
+export function createAnnouncementMutationKey(): MutationKey {
+  return trimArrayEnd([
+      'AnnouncementClient',
+      'createAnnouncement',
+    ]);
 }
 
-export function getAnnouncementQueryKey(id: number): QueryKey;
-export function getAnnouncementQueryKey(...params: any[]): QueryKey {
-  if (params.length === 1 && isParameterObject(params[0])) {
-    const { id,  } = params[0] as GetAnnouncementAnnouncementQueryParameters;
-
-    return trimArrayEnd([
-        'AnnouncementClient',
-        'getAnnouncement',
-        id as any,
-      ]);
-  } else {
-    return trimArrayEnd([
-        'AnnouncementClient',
-        'getAnnouncement',
-        ...params
-      ]);
-  }
-}
-function __getAnnouncement(context: QueryFunctionContext) {
-  return Client.getAnnouncement(
-      context.queryKey[2] as number    );
-}
-
-export function useGetAnnouncementQuery<TSelectData = Types.AnnouncementDto, TError = unknown>(dto: GetAnnouncementAnnouncementQueryParameters, options?: Omit<UseQueryOptions<Types.AnnouncementDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
- * Gets full information for specific announcement
+ * Create announcement (check permission)
  */
-export function useGetAnnouncementQuery<TSelectData = Types.AnnouncementDto, TError = unknown>(id: number, options?: Omit<UseQueryOptions<Types.AnnouncementDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
-export function useGetAnnouncementQuery<TSelectData = Types.AnnouncementDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
-  let options: UseQueryOptions<Types.AnnouncementDto, TError, TSelectData> | undefined = undefined;
-  let axiosConfig: AxiosRequestConfig |undefined;
-  let id: any = undefined;
+export function useCreateAnnouncementMutation<TContext>(options?: Omit<UseMutationOptions<Types.AnnouncementDto, unknown, Types.CreateAnnouncementDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.AnnouncementDto, unknown, Types.CreateAnnouncementDto, TContext> {
+  const key = createAnnouncementMutationKey();
   
-  if (params.length > 0) {
-    if (isParameterObject(params[0])) {
-      ({ id,  } = params[0] as GetAnnouncementAnnouncementQueryParameters);
-      options = params[1];
-      axiosConfig = params[2];
-    } else {
-      [id, options, axiosConfig] = params;
-    }
-  }
-
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
-  if (axiosConfig) {
-    options = options ?? { } as any;
-    options!.meta = { ...options!.meta, axiosConfig };
-  }
-
-  return useQuery<Types.AnnouncementDto, TError, TSelectData>({
-    queryFn: __getAnnouncement,
-    queryKey: getAnnouncementQueryKey(id),
-    ...getAnnouncementDefaultOptions as unknown as Omit<UseQueryOptions<Types.AnnouncementDto, TError, TSelectData>, 'queryKey'>,
+  
+  return useMutation({
     ...options,
+    mutationFn: (dto: Types.CreateAnnouncementDto) => Client.createAnnouncement(dto),
+    mutationKey: key,
   });
 }
-/**
- * Gets full information for specific announcement
- */
-export function setGetAnnouncementData(queryClient: QueryClient, updater: (data: Types.AnnouncementDto | undefined) => Types.AnnouncementDto, id: number) {
-  queryClient.setQueryData(getAnnouncementQueryKey(id),
-    updater
-  );
-}
-
-/**
- * Gets full information for specific announcement
- */
-export function setGetAnnouncementDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.AnnouncementDto | undefined) => Types.AnnouncementDto) {
-  queryClient.setQueryData(queryKey, updater);
-}
-    
+  
 export function updateAnnouncementUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/announcements/{id}";
 if (id === undefined || id === null)
@@ -224,33 +157,4 @@ return useMutation({
   mutationFn: (data: DeleteAnnouncement__MutationParameters) => Client.deleteAnnouncement(data.id ?? options?.parameters?.id!),
   mutationKey: key,
 });
-}
-  
-export function createAnnouncementUrl(): string {
-  let url_ = getBaseUrl() + "/api/announcements";
-  url_ = url_.replace(/[?&]$/, "");
-  return url_;
-}
-
-export function createAnnouncementMutationKey(): MutationKey {
-  return trimArrayEnd([
-      'AnnouncementClient',
-      'createAnnouncement',
-    ]);
-}
-
-/**
- * Create announcement (check permission)
- */
-export function useCreateAnnouncementMutation<TContext>(options?: Omit<UseMutationOptions<Types.AnnouncementDto, unknown, Types.CreateAnnouncementDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.AnnouncementDto, unknown, Types.CreateAnnouncementDto, TContext> {
-  const key = createAnnouncementMutationKey();
-  
-  const metaContext = useContext(QueryMetaContext);
-  options = addMetaToOptions(options, metaContext);
-  
-  return useMutation({
-    ...options,
-    mutationFn: (dto: Types.CreateAnnouncementDto) => Client.createAnnouncement(dto),
-    mutationKey: key,
-  });
 }

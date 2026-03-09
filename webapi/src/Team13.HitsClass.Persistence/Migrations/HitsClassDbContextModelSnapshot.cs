@@ -418,15 +418,15 @@ namespace Team13.HitsClass.Persistence.Migrations
 
             modelBuilder.Entity("PublicationUser", b =>
                 {
-                    b.Property<string>("ForWhomId")
-                        .HasColumnType("text");
-
                     b.Property<int>("PublicationId")
                         .HasColumnType("integer");
 
-                    b.HasKey("ForWhomId", "PublicationId");
+                    b.Property<string>("TargetUsersId")
+                        .HasColumnType("text");
 
-                    b.HasIndex("PublicationId");
+                    b.HasKey("PublicationId", "TargetUsersId");
+
+                    b.HasIndex("TargetUsersId");
 
                     b.ToTable("PublicationUser");
                 });
@@ -560,10 +560,16 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("CourseId")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("LastUpdatedAtUtc")
+                    b.Property<bool>("IsForEveryone")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastUpdatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<JsonDocument>("PublicationPayloadJson")
@@ -576,6 +582,8 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
+
+                    b.HasIndex("CourseId");
 
                     b.ToTable("Publications");
                 });
@@ -592,14 +600,13 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("LastMarkedAtUTC")
+                    b.Property<DateTime?>("LastMarkedAtUTC")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("LastSubmittedAtUTC")
+                    b.Property<DateTime?>("LastSubmittedAtUTC")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Mark")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<int>("PublicationId")
@@ -812,15 +819,15 @@ namespace Team13.HitsClass.Persistence.Migrations
 
             modelBuilder.Entity("PublicationUser", b =>
                 {
-                    b.HasOne("Team13.HitsClass.Domain.User", null)
-                        .WithMany()
-                        .HasForeignKey("ForWhomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Team13.HitsClass.Domain.Publication", null)
                         .WithMany()
                         .HasForeignKey("PublicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Team13.HitsClass.Domain.User", null)
+                        .WithMany()
+                        .HasForeignKey("TargetUsersId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -874,6 +881,12 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Team13.HitsClass.Domain.Course", "Course")
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.OwnsMany("Team13.HitsClass.Domain.Attachment", "Attachments", b1 =>
                         {
                             b1.Property<int>("PublicationId");
@@ -902,6 +915,8 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("Author");
+
+                    b.Navigation("Course");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>

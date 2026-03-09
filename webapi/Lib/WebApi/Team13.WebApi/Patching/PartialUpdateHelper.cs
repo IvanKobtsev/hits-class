@@ -33,7 +33,7 @@ public static class PartialUpdateHelper
             .Where(x => x.GetGetMethod() != null)
             .Where(x => x.GetCustomAttribute<DoNotPatchAttribute>() == null)
             .ToList();
-        var typeToUpdate = typeof(TObjectToUpdate);
+        var typeToUpdate = objectToUpdate.GetType();
 
         foreach (var propertyInNewValuesObject in objectWithNewValuesProperties)
         {

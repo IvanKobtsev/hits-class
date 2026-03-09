@@ -14,22 +14,22 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Gets full information for specific assignment
+ * Gets statistics for specific assignment
  */
-export function getAssignment(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
-    let url_ = getBaseUrl() + "/api/assignments/{id}";
+export function getAssignmentStatistics(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentStatisticDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/statistics";
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigGetAssignment,
+        ..._requestConfigGetAssignmentStatistics,
         ...config,
         method: "GET",
         url: url_,
         headers: {
-            ..._requestConfigGetAssignment?.headers,
+            ..._requestConfigGetAssignmentStatistics?.headers,
             "Accept": "application/json"
         }
     };
@@ -41,11 +41,75 @@ export function getAssignment(id: number, config?: AxiosRequestConfig | undefine
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processGetAssignment(_response);
+        return processGetAssignmentStatistics(_response);
     });
 }
 
-function processGetAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
+function processGetAssignmentStatistics(response: AxiosResponse): Promise<Types.AssignmentStatisticDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initAssignmentStatisticDto(resultData200);
+        return Promise.resolve<Types.AssignmentStatisticDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.AssignmentStatisticDto>(null as any);
+}
+
+/**
+ * Create assignment (check permission)
+ */
+export function createAssignment(dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
+    let url_ = getBaseUrl() + "/api/assignments";
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigCreateAssignment,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigCreateAssignment?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processCreateAssignment(_response);
+    });
+}
+
+function processCreateAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -86,7 +150,7 @@ export function updateAssignment(id: number, dto: Types.CreateAssignmentDto, con
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializeCreateAssignmentDto(dto);
+    const content_ = JSON.stringify(dto);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigUpdateAssignment,
@@ -197,142 +261,26 @@ function processDeleteAssignment(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
-
-/**
- * Gets statistics for specific assignment
- */
-export function getAssignmentStatistics(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentStatisticDto> {
-    let url_ = getBaseUrl() + "/api/assignments/{id}/statistics";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
-      url_ = url_.replace(/[?&]$/, "");
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigGetAssignmentStatistics,
-        ...config,
-        method: "GET",
-        url: url_,
-        headers: {
-            ..._requestConfigGetAssignmentStatistics?.headers,
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processGetAssignmentStatistics(_response);
-    });
+let _requestConfigGetAssignmentStatistics: Partial<AxiosRequestConfig> | null;
+export function getGetAssignmentStatisticsRequestConfig() {
+  return _requestConfigGetAssignmentStatistics;
+}
+export function setGetAssignmentStatisticsRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignmentStatistics = value;
+}
+export function patchGetAssignmentStatisticsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetAssignmentStatistics = patch(_requestConfigGetAssignmentStatistics ?? {});
 }
 
-function processGetAssignmentStatistics(response: AxiosResponse): Promise<Types.AssignmentStatisticDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initAssignmentStatisticDto(resultData200);
-        return Promise.resolve<Types.AssignmentStatisticDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.AssignmentStatisticDto>(null as any);
+let _requestConfigCreateAssignment: Partial<AxiosRequestConfig> | null;
+export function getCreateAssignmentRequestConfig() {
+  return _requestConfigCreateAssignment;
 }
-
-/**
- * Create assignment (check permission)
- */
-export function createAssignment(dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
-    let url_ = getBaseUrl() + "/api/assignments";
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = Types.serializeCreateAssignmentDto(dto);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigCreateAssignment,
-        ...config,
-        data: content_,
-        method: "POST",
-        url: url_,
-        headers: {
-            ..._requestConfigCreateAssignment?.headers,
-            "Content-Type": "application/json",
-            "Accept": "application/json"
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processCreateAssignment(_response);
-    });
+export function setCreateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAssignment = value;
 }
-
-function processCreateAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        let result200: any = null;
-        let resultData200  = _responseText;
-        result200 = Types.initAssignmentDto(resultData200);
-        return Promise.resolve<Types.AssignmentDto>(result200);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<Types.AssignmentDto>(null as any);
-}
-let _requestConfigGetAssignment: Partial<AxiosRequestConfig> | null;
-export function getGetAssignmentRequestConfig() {
-  return _requestConfigGetAssignment;
-}
-export function setGetAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGetAssignment = value;
-}
-export function patchGetAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGetAssignment = patch(_requestConfigGetAssignment ?? {});
+export function patchCreateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateAssignment = patch(_requestConfigCreateAssignment ?? {});
 }
 
 let _requestConfigUpdateAssignment: Partial<AxiosRequestConfig> | null;
@@ -355,26 +303,4 @@ export function setDeleteAssignmentRequestConfig(value: Partial<AxiosRequestConf
 }
 export function patchDeleteAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigDeleteAssignment = patch(_requestConfigDeleteAssignment ?? {});
-}
-
-let _requestConfigGetAssignmentStatistics: Partial<AxiosRequestConfig> | null;
-export function getGetAssignmentStatisticsRequestConfig() {
-  return _requestConfigGetAssignmentStatistics;
-}
-export function setGetAssignmentStatisticsRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigGetAssignmentStatistics = value;
-}
-export function patchGetAssignmentStatisticsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigGetAssignmentStatistics = patch(_requestConfigGetAssignmentStatistics ?? {});
-}
-
-let _requestConfigCreateAssignment: Partial<AxiosRequestConfig> | null;
-export function getCreateAssignmentRequestConfig() {
-  return _requestConfigCreateAssignment;
-}
-export function setCreateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAssignment = value;
-}
-export function patchCreateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAssignment = patch(_requestConfigCreateAssignment ?? {});
 }

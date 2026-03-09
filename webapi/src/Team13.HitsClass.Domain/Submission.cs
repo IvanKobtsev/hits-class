@@ -9,16 +9,15 @@ namespace Team13.HitsClass.Domain;
 /// <summary>
 /// Summary description for Submission
 /// </summary>
-[PrimaryKey(nameof(Id))]
 public class Submission
 {
-    public int Id { get; }
+    public int Id { get; set; }
     public int PublicationId { get; set; }
     public Publication Publication { get; set; }
     public SubmissionState State { get; set; }
-    public DateTime LastSubmittedAtUTC { get; set; }
-    public string Mark { get; set; }
-    public DateTime LastMarkedAtUTC { get; set; }
+    public DateTime? LastSubmittedAtUTC { get; set; }
+    public string? Mark { get; set; }
+    public DateTime? LastMarkedAtUTC { get; set; }
     public List<Attachment> Attachments { get; set; }
     public string AuthorId { get; set; }
 

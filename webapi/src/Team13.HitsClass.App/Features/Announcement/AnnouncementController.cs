@@ -16,15 +16,6 @@ namespace Team13.HitsClass.App.Features.Announcement
         }
 
         /// <summary>
-        /// Gets full information for specific announcement
-        /// </summary>
-        [HttpGet("{id:int}")]
-        public async Task<AnnouncementDto> GetAnnouncement([FromRoute] int id)
-        {
-            return await _announcementService.GetAnnouncement(id);
-        }
-
-        /// <summary>
         /// Create announcement
         /// </summary>
         [HttpPost("/api/courses/{id:int}/announcements")]
