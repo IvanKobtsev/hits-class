@@ -11,7 +11,7 @@ vi.mock('./AssignmentView/AssignmentView', () => ({
   AssignmentView: () => <div data-test-id="AssignmentView" />,
 }));
 
-vi.mock('./SubmissionPanel/SubmissionPanel', () => ({
+vi.mock('./CreateSubmissionPanel/SubmissionPanel', () => ({
   SubmissionPanel: () => <div data-test-id="SubmissionPanel" />,
 }));
 
