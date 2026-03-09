@@ -258,6 +258,36 @@ public class AssignmentServiceTests : AppServiceTestBase
     }
 
     [Fact]
+    public async Task CreateAssignment_DeadlineAtMidnight_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var midnight = DateTime.Today.AddDays(1);
+        var dto = new CreateAssignmentDto
+        {
+            Content = "Assignment content",
+            TargetUsersIds = [student.Id],
+            Payload = new AssignmentPayload
+            {
+                Title = "Current Time Assignment",
+                DeadlineUtc = midnight,
+            },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateAssignment(course.Id, dto)
+        );
+
+        exception
+            .Message.Should()
+            .Be("Deadline cannot be 00:00. Always choose 23:59 over midnight.");
+    }
+
+    [Fact]
     public async Task CreateAssignment_NullDeadline_CreatesAssignmentSuccessfully()
     {
         // Arrange
@@ -337,7 +367,7 @@ public class AssignmentServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task CreateAssignment_MultipleTargetUsers_CreatesAssignmentForAll()
+    public async Task CreateAssignment_MultipleTargetUsers_CreatesAssignmentForAllOfThem()
     {
         // Arrange
         var course = await CreateCourse();
@@ -429,6 +459,30 @@ public class AssignmentServiceTests : AppServiceTestBase
         );
 
         exception.Message.Should().Be("Deadline must be in the future.");
+    }
+
+    [Fact]
+    public async Task PatchAssignment_DeadlineAtMidnight_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(course.Id);
+
+        var midnight = DateTime.Today.AddDays(1);
+        var dto = new PatchAssignmentDto
+        {
+            Payload = new PatchAssignmentPayloadDto { DeadlineUtc = midnight },
+        };
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchAssignment(assignment.Id, dto)
+        );
+
+        exception
+            .Message.Should()
+            .Be("Deadline cannot be 00:00. Always choose 23:59 over midnight.");
     }
 
     [Fact]
