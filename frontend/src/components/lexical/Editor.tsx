@@ -16,7 +16,6 @@ import { useLexicalEditable } from '@lexical/react/useLexicalEditable';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { CAN_USE_DOM } from './utils/canUseDOM';
 
 import { useSettings } from './context/SettingsContext';
 import { useSharedHistoryContext } from './context/SharedHistoryContext';
@@ -41,6 +40,7 @@ import {
 import { HistoryPlugin } from './history/plugin';
 import { useLexicalEditorAggregator } from './LexicalEditorAggregator.tsx';
 import { createId } from 'components/uikit/type-utils.ts';
+import { CAN_USE_DOM } from 'shared/canUseDOM.ts';
 
 // In the browser you can use the native DOMParser API to parse the HTML string.
 const parser = new DOMParser();

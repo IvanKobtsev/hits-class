@@ -15,11 +15,11 @@ import {
 } from '@lexical/table';
 import { EditorThemeClasses, Klass, LexicalEditor, LexicalNode } from 'lexical';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import invariant from 'shared/invariant';
 
 import Button from '../ui/Button';
 import { DialogActions } from '../ui/Dialog';
 import TextInput from '../ui/TextInput';
+import invariant from 'shared/invariant';
 
 export type InsertTableCommandPayload = Readonly<{
   columns: string;

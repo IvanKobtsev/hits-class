@@ -290,7 +290,6 @@ function FloatingLinkEditor({
         <div className={styles.editModeWrapper}>
           <Field
             title={i18n.t('link_field')}
-            childrenWrapperClassName={styles.linkInputWrapper}
             className={styles.linkInputField}
           >
             <Input

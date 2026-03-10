@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from 'react';
-import * as utils from 'components/uikit/helpers/hotkey/HotkeysUtils';
+import * as utils from './HotkeysUtils';
 
 export type UseHotkeysResult = {
   usedKeyCombinations: utils.KeyCombination[];
