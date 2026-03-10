@@ -1,0 +1,87 @@
+@use '../../../../../styles/base.scss' as *;
+
+
+.card {
+    border-radius: 0.75rem !important;
+    overflow: hidden !important;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px !important;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.typeIcon {
+  width: 32px !important;
+  height: 32px !important;
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.typeIconAnnouncement {
+  background-color: #eff6ff !important;
+  color: #3b82f6 !important;
+}
+
+.typeIconAssignment {
+  background-color: #f0fdf4 !important;
+  color: #16a34a !important;
+}
+
+.authorName {
+  font-weight: 600 !important;
+  color: #111827;
+  line-height: 1.4 !important;
+}
+
+.date {
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.assignmentTitle {
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  color: #111827;
+  margin: 0 !important;
+}
+
+.contentText {
+  color: #374151;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.deadlineSection {
+  margin-top: 8px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.deadlineChip {
+  background-color: #fff7ed !important;
+  color: #ea580c !important;
+  font-weight: 500;
+  height: 24px;
+}
+
+.actionArea {
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  height: 100%;
+}

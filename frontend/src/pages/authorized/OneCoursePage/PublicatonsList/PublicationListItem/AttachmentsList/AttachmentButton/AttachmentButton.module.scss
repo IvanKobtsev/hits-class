@@ -1,0 +1,58 @@
+@use '../../../../../../../styles/base.scss' as *;
+
+.attachmentItem {
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 8px 12px !important;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  &:hover:not(:disabled) {
+    background-color: #f9fafb;
+  }
+
+  &:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.attachmentIcon {
+  min-width: 32px !important;
+  
+  svg {
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+  }
+}
+
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.fileName {
+  font-size: 0.875rem;
+  color: #111827;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.fileSize {
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
