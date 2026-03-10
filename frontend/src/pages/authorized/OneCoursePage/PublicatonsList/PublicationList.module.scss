@@ -1,0 +1,17 @@
+@use '../../../../styles/base.scss' as *;
+.container {
+  width: 100%;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.emptyState {
+  padding: 40px;
+  text-align: center;
+  background: #f9fafb;
+  border-radius: 8px;
+}
