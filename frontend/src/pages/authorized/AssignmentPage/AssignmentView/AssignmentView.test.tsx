@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { AssignmentView } from './AssignmentView';
 import {
   AssignmentDto,
@@ -7,6 +7,12 @@ import {
   SubmissionState,
   UserDto,
 } from 'services/api/api-client.types';
+
+vi.mock('components/lexical/LexicalViewer', () => ({
+  LexicalViewer: ({ lexicalState }: { lexicalState: string }) => (
+    <div>{lexicalState}</div>
+  ),
+}));
 
 const mockAuthor: UserDto = {
   id: 'author-1',
@@ -23,22 +29,7 @@ const mockAssignment: AssignmentDto = {
   deadlineUTC: new Date('2025-03-15T18:00:00Z'),
   createdAtUTC: new Date('2025-03-01T10:30:00Z'),
   lastUpdatedAtUTC: null,
-  attachments: [
-    {
-      id: 'file-1',
-      fileName: 'task.pdf',
-      size: 1024,
-      metadata: { externalId: null },
-      createdAt: new Date('2025-03-01T10:00:00Z'),
-    },
-    {
-      id: 'file-2',
-      fileName: 'example.py',
-      size: 512,
-      metadata: { externalId: null },
-      createdAt: new Date('2025-03-01T10:00:00Z'),
-    },
-  ],
+  attachments: [],
   comments: [],
 };
 
@@ -115,19 +106,6 @@ describe('AssignmentView', () => {
     expect(screen.getByTestId('AssignmentView-mark')).toHaveTextContent('85');
   });
 
-  // --- Вложения ---
-
-  test('displays attached files', () => {
-    renderAssignmentView({ assignment: mockAssignment });
-
-    expect(
-      screen.getByTestId('AssignmentView-attachment-task.pdf'),
-    ).toHaveTextContent('task.pdf');
-    expect(
-      screen.getByTestId('AssignmentView-attachment-example.py'),
-    ).toHaveTextContent('example.py');
-  });
-
   // --- Граничные случаи ---
 
   test('does not display mark when submission is not provided', () => {
@@ -143,14 +121,6 @@ describe('AssignmentView', () => {
     });
 
     expect(screen.queryByTestId('AssignmentView-mark')).not.toBeInTheDocument();
-  });
-
-  test('renders no attachment elements when attachments array is empty', () => {
-    renderAssignmentView({ assignment: { ...mockAssignment, attachments: [] } });
-
-    expect(
-      screen.queryAllByTestId(/^AssignmentView-attachment-/),
-    ).toHaveLength(0);
   });
 
   test('shows placeholder when deadline is not set', () => {

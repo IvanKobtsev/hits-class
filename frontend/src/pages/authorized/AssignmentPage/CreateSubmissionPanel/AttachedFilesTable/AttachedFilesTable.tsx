@@ -1,24 +1,13 @@
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  LinearProgress,
-  IconButton,
-  Snackbar,
-  Alert,
-  Paper,
-} from '@mui/material';
+import styles from './AttachedFilesTable.module.scss';
 
 const MAX_TOTAL_SIZE_BYTES = 1024 * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes < 1024 * 1024 * 1024)
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
 }
 
@@ -44,59 +33,61 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
 
   return (
     <>
-      <TableContainer
-        component={Paper}
-        data-test-id="attached-files-table"
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell />
-              <TableCell>Name</TableCell>
-              <TableCell>Size</TableCell>
-              <TableCell>Progress</TableCell>
-              <TableCell />
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {files.map((file) => (
-              <TableRow key={file.id}>
-                <TableCell>
-                  <span aria-hidden>📄</span>
-                </TableCell>
-                <TableCell>{file.name}</TableCell>
-                <TableCell>{formatFileSize(file.size)}</TableCell>
-                <TableCell>
-                  {file.status === 'uploading' && (
-                    <LinearProgress
-                      variant="determinate"
-                      value={file.progress ?? 0}
-                      aria-label="Upload progress"
-                    />
-                  )}
-                  {file.status === 'too_large' &&
-                    'Размер файла не должен превышать 400 MB'}
-                  {file.status === 'error' && 'Ошибка загрузки'}
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={() => onRemove(file.id)}
-                    aria-label="Remove file"
-                  >
-                    ×
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Snackbar open={totalSizeExceeded} autoHideDuration={null}>
-        <Alert severity="error">
+      <table className={styles.table} data-test-id="attached-files-table">
+        <thead>
+          <tr>
+            <th className={styles.colIcon} />
+            <th className={styles.colName}>Имя</th>
+            <th className={styles.colSize}>Размер</th>
+            <th className={styles.colProgress}>Статус</th>
+            <th className={styles.colAction} />
+          </tr>
+        </thead>
+        <tbody>
+          {files.map((file) => (
+            <tr key={file.id}>
+              <td className={styles.cellIcon}>
+                <span aria-hidden>📄</span>
+              </td>
+              <td className={styles.cellName}>{file.name}</td>
+              <td className={styles.cellSize}>{formatFileSize(file.size)}</td>
+              <td>
+                {file.status === 'uploading' && (
+                  <progress
+                    className={styles.progress}
+                    value={file.progress ?? 0}
+                    max={100}
+                    aria-label="Upload progress"
+                  />
+                )}
+                {file.status === 'too_large' && (
+                  <span className={styles.errorText}>
+                    Размер файла не должен превышать 400 MB
+                  </span>
+                )}
+                {file.status === 'error' && (
+                  <span className={styles.errorText}>Ошибка загрузки</span>
+                )}
+              </td>
+              <td className={styles.cellAction}>
+                <button
+                  type="button"
+                  className={styles.removeButton}
+                  onClick={() => onRemove(file.id)}
+                  aria-label="Remove file"
+                >
+                  ×
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {totalSizeExceeded && (
+        <div className={styles.toast} role="alert">
           Файлы не должны весить больше 1GB в сумме
-        </Alert>
-      </Snackbar>
+        </div>
+      )}
     </>
   );
 };

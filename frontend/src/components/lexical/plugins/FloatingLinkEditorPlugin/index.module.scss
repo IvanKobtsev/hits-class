@@ -1,0 +1,49 @@
+@use 'src/styles/variables.scss' as *;
+
+.linkEditor {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  width: 423px;
+  opacity: 0;
+  background-color: #fff;
+
+  border-radius: 4px;
+  box-shadow: 0 4px 16px 0 rgba(0, 88, 71, 0.16);
+
+  transition: opacity 0.5s;
+  will-change: transform;
+
+  &.hidden {
+    transition: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+.editModeWrapper {
+  margin: 20px 24px;
+}
+
+.input {
+  width: 308px;
+}
+
+.linkInputField {
+  width: 100%;
+}
+
+.linkInputWrapper {
+  display: flex;
+  flex-direction: row;
+
+  gap: 4px;
+}
+
+.highlighted {
+  background-color: $blue-800;
+  color: white;
+  text-decoration: none;
+}

@@ -1,0 +1,129 @@
+@use 'src/styles/variables' as *;
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  color: $classroom-text-primary;
+}
+
+.table thead th {
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 500;
+  color: $classroom-text-secondary;
+  border-bottom: 1px solid $border-input;
+  white-space: nowrap;
+}
+
+.table tbody tr {
+  border-bottom: 1px solid $border-disabled;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
+.table td {
+  padding: 7px 8px;
+  vertical-align: middle;
+}
+
+.colIcon,
+.cellIcon {
+  width: 28px;
+  color: $classroom-text-secondary;
+  font-size: 16px;
+}
+
+.colName,
+.cellName {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.colSize,
+.cellSize {
+  width: 72px;
+  white-space: nowrap;
+  color: $classroom-text-secondary;
+}
+
+.colProgress {
+  min-width: 100px;
+}
+
+.colAction,
+.cellAction {
+  width: 32px;
+  text-align: center;
+}
+
+.progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  border: none;
+  border-radius: 2px;
+  background: $border-disabled;
+  color: $primary;
+
+  &::-webkit-progress-bar {
+    background: $border-disabled;
+    border-radius: 2px;
+  }
+
+  &::-webkit-progress-value {
+    background: $primary;
+    border-radius: 2px;
+  }
+
+  &::-moz-progress-bar {
+    background: $primary;
+    border-radius: 2px;
+  }
+}
+
+.errorText {
+  color: $danger;
+  font-size: 12px;
+}
+
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: $classroom-text-secondary;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: rgba($danger, 0.08);
+    color: $danger;
+  }
+}
+
+.toast {
+  margin-top: 8px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  background: rgba($danger, 0.08);
+  border: 1px solid rgba($danger, 0.25);
+  color: $danger;
+  font-size: 13px;
+}

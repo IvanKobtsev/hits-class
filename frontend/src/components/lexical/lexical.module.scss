@@ -1,0 +1,289 @@
+@use 'src/styles/variables' as *;
+@use 'src/styles/base' as *;
+@use 'src/styles/mixins' as *;
+
+:global {
+  .ContentEditable__root {
+    min-height: 25px !important;
+    width: 100%;
+    // background-color: yellow;
+  }
+  .toolbar {
+    display: flex;
+    background: #fff;
+    vertical-align: middle;
+    overflow: auto;
+    height: 32px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    &.hidden {
+      visibility: hidden;
+    }
+  }
+
+  button.toolbar-item {
+    border: 0;
+    display: flex;
+    background: none;
+    padding: 4px;
+    cursor: pointer;
+    vertical-align: middle;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  button.toolbar-item:disabled {
+    cursor: not-allowed;
+  }
+
+  button.toolbar-item.spaced {
+    margin-right: 4px;
+  }
+
+  button.toolbar-item i.format {
+    background-size: contain;
+    height: 24px;
+    width: 24px;
+    // vertical-align: -0.25em;
+    display: flex;
+    // opacity: 0.6;
+  }
+
+  button.toolbar-item:disabled .icon,
+  button.toolbar-item:disabled .text,
+  button.toolbar-item:disabled i.format,
+  button.toolbar-item:disabled .chevron-down {
+    opacity: 0.2;
+  }
+
+  button.toolbar-item.active {
+    background-color: rgba(223, 232, 250, 0.3);
+  }
+
+  button.toolbar-item.active i {
+    opacity: 1;
+  }
+
+  .toolbar-item:hover:not([disabled]) {
+    background-color: #eee;
+  }
+
+  .toolbar-item.font-family .text {
+    display: block;
+    max-width: 40px;
+  }
+
+  .toolbar .code-language {
+    width: 150px;
+  }
+
+  .toolbar .toolbar-item .text {
+    @include p1;
+    display: flex;
+    vertical-align: middle;
+    color: #777;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    height: 20px;
+    text-align: left;
+    padding-right: 10px;
+  }
+
+  .toolbar .toolbar-item .icon {
+    display: flex;
+    width: 20px;
+    height: 20px;
+    user-select: none;
+    margin-right: 8px;
+    line-height: 16px;
+    background-size: contain;
+  }
+
+  .toolbar i.chevron-down,
+  .toolbar-item i.chevron-down {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    user-select: none;
+  }
+
+  .toolbar i.chevron-down.inside {
+    width: 16px;
+    height: 16px;
+    display: flex;
+    margin-left: -25px;
+    margin-top: 11px;
+    margin-right: 10px;
+    pointer-events: none;
+  }
+
+  .toolbar .divider {
+    width: 1px;
+    background-color: #eee;
+    margin: 4px 4px;
+  }
+
+  i.undo {
+    background-image: url(/lexical/icons/Undo.svg);
+  }
+
+  i.redo {
+    background-image: url(/lexical/icons/Redo.svg);
+  }
+
+  i.bold {
+    background-image: url(/lexical/icons/Bold.svg);
+  }
+
+  i.italic {
+    background-image: url(/lexical/icons/Italic.svg);
+  }
+
+  i.underline {
+    background-image: url(/lexical/icons/Underline.svg);
+  }
+
+  i.bulletlist {
+    background-image: url(/lexical/icons/BulletList.svg);
+  }
+  i.numberlist {
+    background-image: url(/lexical/icons/NumberList.svg);
+  }
+
+  i.delete-step {
+    background-image: url(/lexical/icons/DeleteStep.svg);
+  }
+  i.clone-step {
+    background-image: url(/lexical/icons/CloneStep.svg);
+  }
+  i.test-step-up {
+    background-image: url(/lexical/icons/TestStepUp.svg);
+  }
+  i.test-step-down {
+    background-image: url(/lexical/icons/TestStepDown.svg);
+  }
+
+  i.add-attachment {
+    background-image: url(/lexical/icons/AddAttachment.svg);
+  }
+  i.add-link {
+    background-image: url(/lexical/icons/AddLink.svg);
+  }
+  i.remove-link {
+    background-image: url(/lexical/icons/RemoveLink.svg);
+  }
+
+  i.strikethrough {
+    background-image: url(/lexical/icons/Strikethrough.svg);
+  }
+
+  i.left-align {
+    background-image: url(/icons/text-left.svg);
+  }
+
+  i.center-align {
+    background-image: url(/icons/text-center.svg);
+  }
+
+  i.right-align {
+    background-image: url(/icons/text-right.svg);
+  }
+
+  i.justify-align {
+    background-image: url(/icons/justify.svg);
+  }
+  i.test-step-add {
+    background-image: url(/lexical/icons/AddStep.svg);
+  }
+  i.test-step-insert {
+    background-image: url(/lexical/icons/InsertStep.svg);
+  }
+  i.test-step-add-shared {
+    background-image: url(/lexical/icons/AddSharedStep.svg);
+  }
+  i.test-step-insert-shared {
+    background-image: url(/lexical/icons/InsertSharedStep.svg);
+  }
+
+  .PlaygroundEditorTheme__listItem {
+    margin-bottom: 12px;
+    &::marker {
+      font-size: 12px;
+    }
+  }
+  .PlaygroundEditorTheme__listItemChecked,
+  .PlaygroundEditorTheme__listItemUnchecked {
+    position: relative;
+    margin-left: 8px;
+    margin-right: 8px;
+    padding-left: 24px;
+    padding-right: 24px;
+    list-style-type: none;
+    outline: none;
+  }
+  .PlaygroundEditorTheme__listItemChecked {
+    text-decoration: line-through;
+  }
+  .PlaygroundEditorTheme__listItemUnchecked:before,
+  .PlaygroundEditorTheme__listItemChecked:before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    top: 2px;
+    left: 0;
+    cursor: pointer;
+    display: block;
+    background-size: cover;
+    position: absolute;
+  }
+  .PlaygroundEditorTheme__listItemUnchecked[dir='rtl']:before,
+  .PlaygroundEditorTheme__listItemChecked[dir='rtl']:before {
+    left: auto;
+    right: 0;
+  }
+  .PlaygroundEditorTheme__listItemUnchecked:focus:before,
+  .PlaygroundEditorTheme__listItemChecked:focus:before {
+    box-shadow: 0 0 0 2px #a6cdfe;
+    border-radius: 2px;
+  }
+  .PlaygroundEditorTheme__listItemUnchecked:before {
+    border: 1px solid #999;
+    border-radius: 2px;
+  }
+  .PlaygroundEditorTheme__listItemChecked:before {
+    border: 1px solid rgb(61, 135, 245);
+    border-radius: 2px;
+    background-color: #3d87f5;
+    background-repeat: no-repeat;
+  }
+  .PlaygroundEditorTheme__listItemChecked:after {
+    content: '';
+    cursor: pointer;
+    border-color: #fff;
+    border-style: solid;
+    position: absolute;
+    display: block;
+    top: 6px;
+    width: 3px;
+    left: 7px;
+    right: 7px;
+    height: 6px;
+    transform: rotate(45deg);
+    border-width: 0 2px 2px 0;
+  }
+  .PlaygroundEditorTheme__nestedListItem {
+    list-style-type: none;
+  }
+  .PlaygroundEditorTheme__nestedListItem:before,
+  .PlaygroundEditorTheme__nestedListItem:after {
+    display: none;
+  }
+}
+.editorShell {
+  max-width: unset !important;
+}
+.readOnlyEditor {
+}

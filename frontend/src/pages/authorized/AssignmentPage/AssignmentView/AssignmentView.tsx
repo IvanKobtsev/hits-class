@@ -1,4 +1,7 @@
+import AssignmentIcon from 'assets/icons/list-ul.svg?react';
+import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import { AssignmentDto, SubmissionDto } from 'services/api/api-client.types';
+import styles from './AssignmentView.module.scss';
 
 function formatDateUTC(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
@@ -19,33 +22,70 @@ export type AssignmentViewProps = {
 };
 
 export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) => {
-  const { title, description, author, createdAtUTC, deadlineUTC, attachments } = assignment;
+  const { title, description, author, createdAtUTC, deadlineUTC } = assignment;
 
   return (
-    <div>
-      <h1 data-test-id="AssignmentView-title">{title}</h1>
-
-      <span data-test-id="AssignmentView-author">{author.legalName}</span>
-
-      <span data-test-id="AssignmentView-publication-date">
-        {formatDateUTC(createdAtUTC)}
-      </span>
-
-      <span data-test-id="AssignmentView-deadline">
-        {deadlineUTC ? formatDateTimeUTC(deadlineUTC) : 'Не указан'}
-      </span>
-
-      <p data-test-id="AssignmentView-description">{description}</p>
-
-      {submission?.mark != null && (
-        <span data-test-id="AssignmentView-mark">{submission.mark}</span>
-      )}
-
-      {attachments.map((file) => (
-        <div key={file.id} data-test-id={`AssignmentView-attachment-${file.fileName}`}>
-          {file.fileName}
+    <div className={styles.container}>
+      <div className={styles.banner}>
+        <div className={styles.bannerTop}>
+          <div className={styles.iconWrapper}>
+            <AssignmentIcon />
+          </div>
+          <h1 className={styles.title} data-test-id="AssignmentView-title">
+            {title}
+          </h1>
         </div>
-      ))}
+
+        <div className={styles.meta}>
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Автор:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-author"
+            >
+              {author.legalName}
+            </span>
+          </span>
+
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Опубликовано:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-publication-date"
+            >
+              {formatDateUTC(createdAtUTC)}
+            </span>
+          </span>
+
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Срок сдачи:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-deadline"
+            >
+              {deadlineUTC ? formatDateTimeUTC(deadlineUTC) : 'Не указан'}
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.body}>
+        {description != null && (
+          <div
+            className={styles.description}
+            data-test-id="AssignmentView-description"
+          >
+            <LexicalViewer lexicalState={description} />
+          </div>
+        )}
+
+        {submission?.mark != null && (
+          <div className={styles.markBadge} data-test-id="AssignmentView-mark">
+            <span className={styles.markLabel}>Оценка:</span>
+            {submission.mark}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
