@@ -1,24 +1,23 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Announcement.Dto;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
+using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
+using Team13.LowLevelPrimitives.Exceptions;
+using Team13.PersistenceHelpers;
 
 namespace Team13.HitsClass.App.Features.Announcement
 {
     public class AnnouncementService
     {
         private readonly PublicationService _publicationService;
-        private readonly HitsClassDbContext _dbContext;
 
-        public AnnouncementService(
-            PublicationService publicationService,
-            HitsClassDbContext dbContext
-        )
+        public AnnouncementService(PublicationService publicationService)
         {
             _publicationService = publicationService;
-            _dbContext = dbContext;
         }
 
         public async Task<PublicationDto> CreateAnnouncement(

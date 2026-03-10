@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AwesomeAssertions.Equivalency.Tracing;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Announcement;
@@ -137,6 +138,58 @@ namespace Team13.HitsClass.App.Tests
         }
 
         [Fact]
+        public async Task CreateAnnouncement_UserIsStudent_CreatesAnnouncementForEveryone()
+        {
+            var course = await CreateCourse();
+            var student1 = await CreateUser("student1@gmail.com");
+            var student2 = await CreateUser("student2@gmail.com");
+            await AddStudentToCourse(course.Id, student1.Id);
+            await AddStudentToCourse(course.Id, student2.Id);
+            var createDto = new CreateAnnouncementDto
+            {
+                Content = "Hello, tomorrow class is canceled! :)",
+                TargetUsersIds = [],
+                Payload = new AnnouncementPayload(),
+            };
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student1.Id);
+
+            var announcement = await _announcementService.CreateAnnouncement(course.Id, createDto);
+
+            announcement.Should().NotBeNull();
+            announcement.Content.Should().Be(createDto.Content);
+            announcement.Type.Should().Be(PublicationType.Announcement);
+            await WithDbContext(async db =>
+            {
+                var publication = await db
+                    .Publications.Include(p => p.TargetUsers)
+                    .FirstAsync(p => p.Id == announcement.Id);
+                publication.IsForEveryone.Should().BeTrue();
+            });
+        }
+
+        [Fact]
+        public async Task CreateAnnouncement_UserIsStudentAndSelectsUsers_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student1 = await CreateUser("student1@gmail.com");
+            var student2 = await CreateUser("student2@gmail.com");
+            await AddStudentToCourse(course.Id, student1.Id);
+            await AddStudentToCourse(course.Id, student2.Id);
+            var createDto = new CreateAnnouncementDto
+            {
+                Content = "Hello, tomorrow class is canceled! :)",
+                TargetUsersIds = [student2.Id],
+                Payload = new AnnouncementPayload(),
+            };
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student1.Id);
+
+            Func<Task> act = async () =>
+                await _announcementService.CreateAnnouncement(course.Id, createDto);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
         public async Task PatchAnnouncement_ValidData_UpdatesAnnouncement()
         {
             var course = await CreateCourse();
@@ -214,6 +267,51 @@ namespace Team13.HitsClass.App.Tests
                 await _announcementService.PatchAnnouncement(announcement.Id, patchDto);
 
             await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task PatchAnnouncement_UserIsStudentAndAuthor_UpdatesAnnouncement()
+        {
+            var owner = await CreateUser("owner@gmail.com");
+            var course = await CreateCourse("Title", "description", owner.Id);
+            await AddStudentToCourse(course.Id, _defaultUser.Id);
+            var announcement = await CreateAnnouncement(course.Id);
+            var patchDto = new PatchAnnouncementDto
+            {
+                Content = "Joking. All missing students will be expelled. :)",
+            };
+            patchDto.SetHasProperty(nameof(patchDto.Content));
+
+            var patchedAnnouncement = await _announcementService.PatchAnnouncement(
+                announcement.Id,
+                patchDto
+            );
+
+            patchedAnnouncement.Should().NotBeNull();
+            patchedAnnouncement.Content.Should().Be(patchDto.Content);
+        }
+
+        [Fact]
+        public async Task PatchAnnouncement_UserIsStudentAndSetsTargetUsers_ThrowsValidationException()
+        {
+            var owner = await CreateUser("owner@gmail.com");
+            var course = await CreateCourse("Title", "description", owner.Id);
+            var student1 = await CreateUser("student1@gmail.com");
+            await AddStudentToCourse(course.Id, student1.Id);
+            await AddStudentToCourse(course.Id, _defaultUser.Id);
+            var announcement = await CreateAnnouncement(course.Id);
+            var patchDto = new PatchAnnouncementDto
+            {
+                Content = "Joking. All missing students will be expelled. :)",
+                TargetUsersIds = [student1.Id],
+            };
+            patchDto.SetHasProperty(nameof(patchDto.Content));
+            patchDto.SetHasProperty(nameof(patchDto.TargetUsersIds));
+
+            Func<Task> act = async () =>
+                await _announcementService.PatchAnnouncement(announcement.Id, patchDto);
+
+            await act.Should().ThrowAsync<ValidationException>();
         }
 
         [Fact]
@@ -297,7 +395,26 @@ namespace Team13.HitsClass.App.Tests
         }
 
         [Fact]
-        public async Task DeleteAnnouncement_UserIsStudent_DeletesAnnouncement()
+        public async Task DeleteAnnouncement_UserIsStudentAndAuthor_DeletesAnnouncement()
+        {
+            var owner = await CreateUser("owner@gmail.com");
+            var course = await CreateCourse("Title", "description", owner.Id);
+            await AddStudentToCourse(course.Id, _defaultUser.Id);
+            var announcement = await CreateAnnouncement(course.Id);
+
+            await _announcementService.DeleteAnnouncement(announcement.Id);
+
+            await WithDbContext(async db =>
+            {
+                var deletedAnnouncement = await db.Publications.FirstOrDefaultAsync(p =>
+                    p.Id == announcement.Id
+                );
+                deletedAnnouncement.Should().BeNull();
+            });
+        }
+
+        [Fact]
+        public async Task DeleteAnnouncement_UserIsStudent_ThrowsAccessDeniedException()
         {
             var course = await CreateCourse();
             var student = await CreateUser("student@gmail.com");
