@@ -50,7 +50,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     lastUpdatedAtUTC &&
     formatDate(createdAtUTC) !== formatDate(lastUpdatedAtUTC);
 
-  const link = `/${isAssignment ? 'assignment' : 'announcement'}/${id}`;
+  const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
 
   return (
     <>
