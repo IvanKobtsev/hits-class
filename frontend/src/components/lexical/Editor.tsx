@@ -16,7 +16,7 @@ import { useLexicalEditable } from '@lexical/react/useLexicalEditable';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import * as React from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { CAN_USE_DOM } from 'shared/canUseDOM';
+import { CAN_USE_DOM } from './utils/canUseDOM';
 
 import { useSettings } from './context/SettingsContext';
 import { useSharedHistoryContext } from './context/SharedHistoryContext';

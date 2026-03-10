@@ -5,8 +5,8 @@ import {
 } from 'lexical';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useContext, useEffect } from 'react';
-import { KeyCombination, normalizeKey } from 'helpers/hotkey/HotkeysUtils';
-import { HotkeysContext } from 'helpers/hotkey/HotkeysContextProvider';
+import { HotkeysContext } from 'components/uikit/helpers/hotkey/HotkeysContextProvider';
+import { KeyCombination, normalizeKey } from 'components/uikit/helpers/hotkey/HotkeysUtils';
 
 export function ContextKeyBlockerPlugin() {
   const [editor] = useLexicalComposerContext();

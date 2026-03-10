@@ -16,11 +16,11 @@ import {
   LexicalNode,
   SerializedElementNode,
 } from 'lexical';
-import {IS_CHROME} from 'shared/environment';
-import invariant from 'shared/invariant';
 
 import {$isCollapsibleContainerNode} from './CollapsibleContainerNode';
 import {domOnBeforeMatch, setDomHiddenUntilFound} from './CollapsibleUtils';
+import { IS_CHROME } from 'shared/environment';
+import invariant from 'shared/invariant';
 
 type SerializedCollapsibleContentNode = SerializedElementNode;
 

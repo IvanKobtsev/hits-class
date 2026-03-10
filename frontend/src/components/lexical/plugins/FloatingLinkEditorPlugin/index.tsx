@@ -45,7 +45,7 @@ import { Field } from 'components/uikit/Field.tsx';
 import { useTriggerOnClickOutsideElement } from 'helpers/useTriggerOnClickOutsideElement.ts';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation.ts';
 import clsx from 'clsx';
-import { useScrollerContext } from '../../ScrollerContext';
+import { useScrollerContext } from 'helpers/ScrollerContext';
 
 function FloatingLinkEditor({
   editor,

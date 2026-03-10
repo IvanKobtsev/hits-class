@@ -1,4 +1,50 @@
 {
+  "Components": {
+    "LexicalToolbar": {
+      "bold": "Bold",
+      "italic": "Italic",
+      "underline": "Underline",
+      "strikethrough": "Strikethrough",
+      "add_link": "Insert link",
+      "remove_link": "Remove link",
+      "link_field": "Address",
+      "add_attachment": "Add attachment",
+      "add_new_step": "Add new step",
+      "numbered_list": "Numbered list",
+      "bulleted_list": "Bulleted list",
+      "InsertNewStep": {
+        "text": "Insert test step",
+        "hotkey": "Ctrl+Enter"
+      },
+      "InsertSharedSteps": {
+        "text": "Insert shared steps"
+      },
+      "DeleteStep": {
+        "text": "Delete step",
+        "hotkey": "Ctrl+Del"
+      },
+      "MoveStepUp": {
+        "text": "Move step up",
+        "hotkey": "Alt+↑"
+      },
+      "MoveStepDown": {
+        "text": "Move step down",
+        "hotkey": "Alt+↓"
+      },
+      "DuplicateStep": {
+        "text": "Duplicate step",
+        "hotkey": "Ctrl+D"
+      },
+      "Undo": {
+        "text": "Undo",
+        "hotkey": "Ctrl+Z"
+      },
+      "Redo": {
+        "text": "Redo",
+        "hotkey": "Ctrl+Y"
+      }
+    }
+  },
   "Common_App": "HitsClass",
   "AppHeader": {
     "hitsclass_button": "HitsClass"

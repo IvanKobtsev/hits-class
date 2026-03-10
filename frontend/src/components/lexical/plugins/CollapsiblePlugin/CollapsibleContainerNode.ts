@@ -19,10 +19,10 @@ import {
   SerializedElementNode,
   Spread,
 } from 'lexical';
-import {IS_CHROME} from 'shared/environment';
-import invariant from 'shared/invariant';
 
 import {setDomHiddenUntilFound} from './CollapsibleUtils';
+import invariant from 'shared/invariant';
+import { IS_CHROME } from 'shared/environment';
 
 type SerializedCollapsibleContainerNode = Spread<
   {

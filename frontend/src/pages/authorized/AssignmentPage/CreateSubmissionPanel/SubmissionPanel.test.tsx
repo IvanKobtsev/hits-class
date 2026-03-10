@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter } from 'react-router-dom';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { SubmissionPanel } from './SubmissionPanel';
 
@@ -32,14 +31,8 @@ vi.mock('services/api/api-client/SubmissionQuery', () => ({
   }),
 }));
 
-function renderSubmissionPanel(
-  initialEntries: string[] = ['/create-submission'],
-) {
-  return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <SubmissionPanel />
-    </MemoryRouter>,
-  );
+function renderSubmissionPanel(assignmentId?: number) {
+  return render(<SubmissionPanel assignmentId={assignmentId} />);
 }
 
 describe('SubmissionPanel', () => {
@@ -132,7 +125,7 @@ describe('SubmissionPanel', () => {
 
   test('submit button is active when there are uploaded files and no upload in progress', async () => {
     const user = userEvent.setup();
-    renderSubmissionPanel(['/create-submission?assignmentId=1']);
+    renderSubmissionPanel(1);
 
     const file = new File(['content'], 'report.pdf', {
       type: 'application/pdf',

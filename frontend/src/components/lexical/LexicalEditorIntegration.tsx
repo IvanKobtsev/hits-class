@@ -25,12 +25,7 @@ import { createEditor, EditorState, LexicalEditor } from 'lexical';
 import { useRef } from 'react';
 import { BeautifulMentionNode } from 'lexical-beautiful-mentions';
 import { getBeautifulMentionsTheme } from './getBeautifulMentionsTheme';
-import {
-  ParameterMentionsPlugin,
-  ParametersPluginProps,
-} from './ParameterMentionsPlugin';
 import { ContextKeyBlockerPlugin } from './KeyBlockerPlugin';
-import { UserMentionsPlugin } from './UserMentionsPlugin';
 
 console.warn(
   'If you are profiling the playground app, please ensure you turn off the debug view. You can disable it by pressing on the settings control in the bottom-left of your screen and toggling the debug view setting.',
@@ -49,7 +44,6 @@ export const LexicalEditorIntegration = (props: {
   initialHtmlState?: string | null;
   editable?: boolean;
   id?: string;
-  parameterPluginProps?: ParametersPluginProps;
   editorClassName?: string;
   disableBeautifulMentions?: boolean;
   enableUserMentions?: boolean;
@@ -99,10 +93,6 @@ export const LexicalEditorIntegration = (props: {
                 placeholder={props.placeholder}
                 placeholderClassName={props.placeholderClassName}
               />
-              {!props.disableBeautifulMentions && (
-                <ParameterMentionsPlugin {...props.parameterPluginProps} />
-              )}
-              {props.enableUserMentions && <UserMentionsPlugin />}
               <OnChangePlugin
                 onChange={(state) => {
                   if (isFirstChange.current) {

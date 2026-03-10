@@ -28,7 +28,7 @@ export const AssignmentPage = () => {
           <PublicCommentView />
         </div>
         <div className={styles.right}>
-          <SubmissionPanel />
+          <SubmissionPanel assignmentId={id} />
           <PrivateCommentView />
         </div>
       </div>

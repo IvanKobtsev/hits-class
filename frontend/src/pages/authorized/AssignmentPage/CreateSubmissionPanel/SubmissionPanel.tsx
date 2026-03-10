@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Button } from '@mui/material';
-import { useSearchParams } from 'react-router-dom';
+import React, { useState, useCallback, useRef } from 'react';
+import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
 import { useUploadFileMutation } from 'services/api/api-client/FilesQuery';
 import { useCreateSubmissionMutation } from 'services/api/api-client/SubmissionQuery';
 import type { FileInfoDto } from 'services/api/api-client.types';
@@ -8,6 +7,7 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from './AttachedFilesTable/AttachedFilesTable';
+import styles from './SubmissionPanel.module.scss';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -15,13 +15,14 @@ function makeId(): string {
   return `file-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export const SubmissionPanel: React.FC = () => {
-  const [searchParams] = useSearchParams();
-  const assignmentIdParam = searchParams.get('assignmentId');
-  const assignmentId = assignmentIdParam
-    ? parseInt(assignmentIdParam, 10)
-    : undefined;
+export type SubmissionPanelProps = {
+  assignmentId?: number;
+};
 
+export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
+  assignmentId,
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
   const [uploadedFileInfos, setUploadedFileInfos] = useState<
     Record<string, FileInfoDto>
@@ -107,24 +108,37 @@ export const SubmissionPanel: React.FC = () => {
   }, [assignmentId, attachments, canSubmit, createSubmission]);
 
   return (
-    <div data-test-id="add-attachment-panel">
-      <AttachedFilesTable files={files} onRemove={handleRemove} />
-      <input
-        type="file"
-        multiple
-        data-test-id="add-attachment-file-input"
-        onChange={handleFileInputChange}
-        style={{ display: 'block', marginTop: 8 }}
-      />
-      <Button
-        variant="contained"
-        sx={{ mt: 2 }}
-        aria-label="Submit"
-        disabled={!canSubmit}
-        onClick={handleSubmit}
-      >
-        Submit
-      </Button>
+    <div className={styles.panel} data-test-id="add-attachment-panel">
+      <div className={styles.header}>Ваша работа</div>
+      <div className={styles.body}>
+        <AttachedFilesTable files={files} onRemove={handleRemove} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          className={styles.fileInput}
+          data-test-id="add-attachment-file-input"
+          onChange={handleFileInputChange}
+        />
+        <Button
+          title="Добавить файл"
+          color={ButtonColor.Default}
+          width={ButtonWidth.Fullwidth}
+          className={styles.addFileButton}
+          onClick={() => fileInputRef.current?.click()}
+        />
+      </div>
+      <div className={styles.footer}>
+        <Button
+          title="Сдать"
+          color={ButtonColor.Primary}
+          width={ButtonWidth.Fullwidth}
+          className={styles.submitButton}
+          disabled={!canSubmit}
+          onClick={handleSubmit}
+          aria-label="Submit"
+        />
+      </div>
     </div>
   );
 };

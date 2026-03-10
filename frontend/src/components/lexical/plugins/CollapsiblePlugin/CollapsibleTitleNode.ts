@@ -18,11 +18,11 @@ import {
   RangeSelection,
   SerializedElementNode,
 } from 'lexical';
-import {IS_CHROME} from 'shared/environment';
-import invariant from 'shared/invariant';
 
 import {$isCollapsibleContainerNode} from './CollapsibleContainerNode';
 import {$isCollapsibleContentNode} from './CollapsibleContentNode';
+import { IS_CHROME } from 'shared/environment';
+import invariant from 'shared/invariant';
 
 type SerializedCollapsibleTitleNode = SerializedElementNode;
 
