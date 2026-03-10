@@ -19,5 +19,6 @@ export const Links = {
       id: RequiredNumberParam,
     }),
     UiKit: createRoute('/uikit'),
+    Courses: createRoute('/courses'),
   },
 };
