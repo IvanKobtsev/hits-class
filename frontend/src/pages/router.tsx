@@ -7,7 +7,6 @@ import { LoginPage } from './unauthorized/LoginPage/LoginPage';
 import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPage';
 import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
 import { CoursesRoutes } from './authorized/CoursesPage/CoursesRoutes';
-import { PageNotFound } from './authorized/errorPages/PageNotFound';
 import { AssignmentPage } from './authorized/AssignmentPage/AssignmentPage';
 
 export const authorizedRoutes = () =>
@@ -26,7 +25,7 @@ export const authorizedRoutes = () =>
           children: [
             {
               path: Links.Authorized.CourseNotFound.route,
-              element: <PageNotFound />,
+              element: <div>Course not found</div>,
             },
             {
               path: Links.Authorized.CourseAccessDenied.route,
