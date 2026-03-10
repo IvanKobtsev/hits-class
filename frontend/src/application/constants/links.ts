@@ -10,6 +10,16 @@ export const Links = {
   },
   Authorized: {
     Dashboard: createRoute('/'),
+    CourseRoutes: createRoute('/courses/:courseId'),
+    CourseNotFound: createRoute('/courses/:courseId/not-found', {
+      courseId: RequiredNumberParam,
+    }),
+    CourseAccessDenied: createRoute('/courses/:courseId/access-denied', {
+      courseId: RequiredNumberParam,
+    }),
+    AssignmentRoutes: createRoute(
+      '/courses/:courseId/assignments/:assignmentId',
+    ),
     Products: createRoute('/products'),
     ProductDetails: createRoute('/products/:id', {
       id: RequiredNumberParam,

@@ -5,8 +5,10 @@ import { ReactRouterErrorBoundary } from './ReactRouterErrorBoundary';
 import { UseCookieAuth } from 'helpers/auth/auth-settings';
 import { LoginPage } from './unauthorized/LoginPage/LoginPage';
 import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPage';
-import { SubmissionPanel } from './authorized/AssignmentPage/CreateSubmissionPanel/SubmissionPanel';
 import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
+import { CoursesRoutes } from './authorized/CoursesPage/CoursesRoutes';
+import { PageNotFound } from './authorized/errorPages/PageNotFound';
+import { AssignmentPage } from './authorized/AssignmentPage/AssignmentPage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
@@ -15,13 +17,27 @@ export const authorizedRoutes = () =>
       element: <RootPage />,
       children: [
         {
-          path: '/create-submission',
-          element: <SubmissionPanel />,
-        },
-        {
           path: Links.Authorized.Courses.route,
           element: <CoursesPage />,
-        }
+        },
+        {
+          path: Links.Authorized.CourseRoutes.route,
+          element: <CoursesRoutes />,
+          children: [
+            {
+              path: Links.Authorized.CourseNotFound.route,
+              element: <PageNotFound />,
+            },
+            {
+              path: Links.Authorized.CourseAccessDenied.route,
+              element: <div>Access denied</div>,
+            },
+            {
+              path: Links.Authorized.AssignmentRoutes.route,
+              element: <AssignmentPage />,
+            },
+          ],
+        },
       ],
       ErrorBoundary: ReactRouterErrorBoundary,
     },

@@ -1,0 +1,27 @@
+@use 'src/styles/mixins' as *;
+
+.ErrorPage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  // 62px — height of the header
+  min-height: calc(100vh - 62px);
+  text-align: center;
+
+  .title {
+    @include h2;
+    margin-bottom: 16px;
+  }
+
+  .message {
+    margin-bottom: 56px;
+    @include p1;
+  }
+
+  .primaryButton {
+    margin-bottom: 24px;
+  }
+}
