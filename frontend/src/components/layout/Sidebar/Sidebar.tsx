@@ -3,11 +3,15 @@ import { useLocation, useNavigate } from 'react-router';
 import HomeIcon from 'assets/icons/home.svg?react';
 import SchoolIcon from 'assets/icons/school.svg?react';
 import PeopleIcon from 'assets/icons/people.svg?react';
+import AddIcon from 'assets/icons/add.svg?react';
+import LoginIcon from 'assets/icons/login.svg?react';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
 import { useSidebar } from './SidebarContext';
 import { SidebarExpandableButton } from './SidebarExpandableButton/SidebarExpandableButton';
 import { SidebarExpandableDropdown } from './SidebarExpandableDropdown/SidebarExpandableDropdown';
 import { CourseListItemInSidebar } from './CourseListItemInSidebar/CourseListItemInSidebar';
+import { CreateCourseModal } from './CreateCourseModal/CreateCourseModal';
+import { JoinCourseModal } from './JoinCourseModal/JoinCourseModal';
 import styles from './Sidebar.module.scss';
 
 export const Sidebar: React.FC = () => {
@@ -20,8 +24,11 @@ export const Sidebar: React.FC = () => {
       void navigate('/courses');
     }
   };
+
   const [isStudyingExpanded, setIsStudyingExpanded] = useState(false);
   const [isTeachingExpanded, setIsTeachingExpanded] = useState(false);
+  const [isCreateCourseOpen, setIsCreateCourseOpen] = useState(false);
+  const [isJoinCourseOpen, setIsJoinCourseOpen] = useState(false);
 
   const { data: studyingData } = useGetMyCoursesQuery({ whereImStudent: true });
   const { data: teachingData } = useGetMyCoursesQuery({ whereImTeacher: true });
@@ -62,7 +69,28 @@ export const Sidebar: React.FC = () => {
             <CourseListItemInSidebar key={course.id} course={course} />
           ))}
         </SidebarExpandableDropdown>
+        <SidebarExpandableButton
+          title="Создать курс"
+          icon={AddIcon}
+          onClick={() => setIsCreateCourseOpen(true)}
+          isExpanded={isExpanded}
+        />
+        <SidebarExpandableButton
+          title="Записаться на курс"
+          icon={LoginIcon}
+          onClick={() => setIsJoinCourseOpen(true)}
+          isExpanded={isExpanded}
+        />
       </nav>
+
+      <CreateCourseModal
+        isOpen={isCreateCourseOpen}
+        onClose={() => setIsCreateCourseOpen(false)}
+      />
+      <JoinCourseModal
+        isOpen={isJoinCourseOpen}
+        onClose={() => setIsJoinCourseOpen(false)}
+      />
     </aside>
   );
 };

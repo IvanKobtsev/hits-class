@@ -160,7 +160,7 @@ describe('AttachedFilesTable', () => {
 
   // --- Total size over 1 GB → toast ---
 
-  test('shows toast "Файлы не должны весить больше 1GB в сумме" when total size exceeds 1 GB', () => {
+  test('shows error "Файлы не должны весить больше 1GB в сумме" when total size exceeds 1 GB', () => {
     const halfGb = Math.floor(MAX_TOTAL_SIZE_BYTES / 2) + 1;
     const files = [
       { id: '1', name: 'a.zip', size: halfGb, status: 'uploaded' as const },

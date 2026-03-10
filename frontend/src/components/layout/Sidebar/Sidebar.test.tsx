@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
@@ -41,11 +42,23 @@ vi.mock('./SidebarExpandableButton/SidebarExpandableButton', () => ({
   SidebarExpandableButton: ({
     title,
     isExpanded,
+    onClick,
   }: {
     title: string;
     isExpanded: boolean;
+    onClick?: () => void;
     [key: string]: unknown;
-  }) => (isExpanded ? <span>{title}</span> : null),
+  }) => (isExpanded ? <button onClick={onClick}>{title}</button> : null),
+}));
+
+vi.mock('./CreateCourseModal/CreateCourseModal', () => ({
+  CreateCourseModal: ({ isOpen }: { isOpen: boolean; [key: string]: unknown }) =>
+    isOpen ? <div data-test-id="create-course-modal" /> : null,
+}));
+
+vi.mock('./JoinCourseModal/JoinCourseModal', () => ({
+  JoinCourseModal: ({ isOpen }: { isOpen: boolean; [key: string]: unknown }) =>
+    isOpen ? <div data-test-id="join-course-modal" /> : null,
 }));
 
 import { useSidebar } from './SidebarContext';
@@ -180,6 +193,74 @@ describe('Sidebar', () => {
     );
 
     expect(screen.getByText('Химия')).toBeInTheDocument();
+  });
+
+  // --- Create / Join course buttons ---
+
+  test('shows "Создать курс" button when expanded', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Создать курс')).toBeInTheDocument();
+  });
+
+  test('shows "Записаться на курс" button when expanded', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Записаться на курс')).toBeInTheDocument();
+  });
+
+  test('hides "Создать курс" button when collapsed', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle: vi.fn() });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Создать курс')).not.toBeInTheDocument();
+  });
+
+  test('opens CreateCourseModal when "Создать курс" is clicked', async () => {
+    const user = userEvent.setup();
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByText('Создать курс'));
+
+    expect(screen.getByTestId('create-course-modal')).toBeInTheDocument();
+  });
+
+  test('opens JoinCourseModal when "Записаться на курс" is clicked', async () => {
+    const user = userEvent.setup();
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByText('Записаться на курс'));
+
+    expect(screen.getByTestId('join-course-modal')).toBeInTheDocument();
   });
 
   test('hides course items when collapsed', () => {
