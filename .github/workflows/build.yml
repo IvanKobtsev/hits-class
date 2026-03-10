@@ -1,0 +1,129 @@
+name: Build, push and deploy the app image
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image name to lowercase
+        run: echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack (Yarn 4)
+        run: corepack enable
+
+      - name: Install JS dependencies
+        run: yarn install --immutable
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # Backend: skip build if webapi/ hasn't changed
+      - name: Cache backend publish
+        id: cache-backend
+        uses: actions/cache@v4
+        with:
+          path: publish
+          key: backend-publish-${{ hashFiles('webapi/**') }}
+
+      - name: Build backend
+        if: steps.cache-backend.outputs.cache-hit != 'true'
+        run: yarn build-dotnet
+        env:
+          HUSKY: 0
+
+      # Frontend: skip build if frontend/ hasn't changed
+      - name: Cache frontend build
+        id: cache-frontend
+        uses: actions/cache@v4
+        with:
+          path: frontend/build
+          key: frontend-build-${{ hashFiles('frontend/**', 'tsconfig.json') }}
+
+      - name: Build frontend
+        if: steps.cache-frontend.outputs.cache-hit != 'true'
+        run: |
+          yarn frontend build-scss-for-razor
+          yarn build-frontend
+
+      - name: Copy frontend to publish
+        run: yarn copy-frontend
+
+      - name: Copy import-meta-env CLI
+        run: cp -r node_modules/@import-meta-env/cli publish/import-meta-env
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./publish
+          file: ./publish/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy files to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          source: docker-compose.yaml,nginx.conf
+          target: ~/hits-class
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          script: |
+            cd ~/hits-class
+
+            cat > .env << 'ENVEOF'
+            SSL_CERT_PATH=${{ secrets.SSL_CERT_PATH }}
+            SSL_KEY_PATH=${{ secrets.SSL_KEY_PATH }}
+            SITE_URL=${{ secrets.SITE_URL }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            DEFAULT_USER_PASSWORD=${{ secrets.DEFAULT_USER_PASSWORD }}
+            ENVEOF
+
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GHCR_USER }} --password-stdin
+
+            docker compose pull
+            docker compose up -d --force-recreate --remove-orphans

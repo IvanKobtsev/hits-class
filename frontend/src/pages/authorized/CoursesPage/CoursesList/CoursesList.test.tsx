@@ -132,3 +132,4 @@ describe('CoursesList', () => {
     expect(screen.getByTestId('CoursesList-error')).toBeInTheDocument();
   });
 });
+ 
