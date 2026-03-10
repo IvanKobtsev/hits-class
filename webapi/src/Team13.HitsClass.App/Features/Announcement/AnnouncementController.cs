@@ -34,7 +34,7 @@ namespace Team13.HitsClass.App.Features.Announcement
         [HttpPut("{id:int}")]
         public async Task<PublicationDto> UpdateAnnouncement(
             [FromRoute] int id,
-            [FromBody] CreateAnnouncementDto dto
+            [FromBody] PatchAnnouncementDto dto
         )
         {
             return await _announcementService.PatchAnnouncement(id, dto);

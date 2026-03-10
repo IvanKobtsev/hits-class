@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Announcement.Dto;
+using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
@@ -8,12 +9,15 @@ namespace Team13.HitsClass.App.Features.Announcement
 {
     public class AnnouncementService
     {
-        private readonly IUserAccessor _userAccessor;
+        private readonly PublicationService _publicationService;
         private readonly HitsClassDbContext _dbContext;
 
-        public AnnouncementService(IUserAccessor userAccessor, HitsClassDbContext dbContext)
+        public AnnouncementService(
+            PublicationService publicationService,
+            HitsClassDbContext dbContext
+        )
         {
-            _userAccessor = userAccessor;
+            _publicationService = publicationService;
             _dbContext = dbContext;
         }
 
@@ -22,17 +26,17 @@ namespace Team13.HitsClass.App.Features.Announcement
             CreateAnnouncementDto dto
         )
         {
-            throw new NotImplementedException();
+            return await _publicationService.CreateNewPublication(courseId, dto, dto.Payload);
         }
 
         public async Task<PublicationDto> PatchAnnouncement(int id, PatchAnnouncementDto dto)
         {
-            throw new NotImplementedException();
+            return await _publicationService.PatchPublication(id, dto, dto.Payload);
         }
 
         public async Task DeleteAnnouncement(int id)
         {
-            throw new NotImplementedException();
+            await _publicationService.DeletePublication(id);
         }
     }
 }
