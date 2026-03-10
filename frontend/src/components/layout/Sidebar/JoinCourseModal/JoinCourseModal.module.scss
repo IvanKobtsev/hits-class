@@ -1,0 +1,12 @@
+@use 'src/styles/variables' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 320px;
+}
+
+.footer {
+  margin-top: 8px;
+}
