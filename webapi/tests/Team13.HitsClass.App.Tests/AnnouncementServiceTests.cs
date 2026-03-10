@@ -7,6 +7,7 @@ using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Announcement.Dto;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.LowLevelPrimitives.Exceptions;
 
 namespace Team13.HitsClass.App.Tests
@@ -31,6 +32,7 @@ namespace Team13.HitsClass.App.Tests
             {
                 Content = "Hello, tomorrow class is canceled! :)",
                 TargetUsersIds = [student.Id],
+                Payload = new AnnouncementPayload(),
             };
 
             var announcement = await _announcementService.CreateAnnouncement(course.Id, createDto);
@@ -48,12 +50,13 @@ namespace Team13.HitsClass.App.Tests
             {
                 Content = "Hello, tomorrow class is canceled! :)",
                 TargetUsersIds = null,
+                Payload = new AnnouncementPayload(),
             };
 
             Func<Task> act = async () =>
                 await _announcementService.CreateAnnouncement(999, createDto);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -65,6 +68,7 @@ namespace Team13.HitsClass.App.Tests
             {
                 Content = "Hello, tomorrow class is canceled! :)",
                 TargetUsersIds = [student.Id],
+                Payload = new AnnouncementPayload(),
             };
 
             Func<Task> act = async () =>
@@ -85,6 +89,7 @@ namespace Team13.HitsClass.App.Tests
             {
                 Content = "Hello, tomorrow class is canceled! :)",
                 TargetUsersIds = [student1.Id, student2.Id],
+                Payload = new AnnouncementPayload(),
             };
 
             var announcement = await _announcementService.CreateAnnouncement(course.Id, createDto);
@@ -113,6 +118,7 @@ namespace Team13.HitsClass.App.Tests
             {
                 Content = "Hello, tomorrow class is canceled! :)",
                 TargetUsersIds = [student1.Id, student2.Id],
+                Payload = new AnnouncementPayload(),
             };
 
             var announcement = await _announcementService.CreateAnnouncement(course.Id, createDto);
@@ -126,7 +132,7 @@ namespace Team13.HitsClass.App.Tests
                 publication.TargetUsers.Should().HaveCount(2);
                 publication.TargetUsers.Should().Contain(u => u.Id == student1.Id);
                 publication.TargetUsers.Should().Contain(u => u.Id == student2.Id);
-                publication.TargetUsers.Should().NotContain(u => u.Id == student2.Id);
+                publication.TargetUsers.Should().NotContain(u => u.Id == student3.Id);
             });
         }
 
@@ -164,7 +170,7 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _announcementService.PatchAnnouncement(999, patchDto);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -317,7 +323,7 @@ namespace Team13.HitsClass.App.Tests
         {
             Func<Task> act = async () => await _announcementService.DeleteAnnouncement(999);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         private async Task<Course> CreateCourse(
@@ -402,6 +408,7 @@ namespace Team13.HitsClass.App.Tests
                     TargetUsers = targetUsers,
                     IsForEveryone = targetUserIds == null,
                     Attachments = [],
+                    PublicationPayload = new AnnouncementPayload(),
                 };
 
                 db.Publications.Add(announcement);
