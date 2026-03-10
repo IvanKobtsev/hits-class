@@ -7,13 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Team13.HitsClass.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class AddCommentsTable : Migration
+    public partial class AddSubmissionComments : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Comments",
+                name: "SubmissionComments",
                 columns: table => new
                 {
                     Id = table
@@ -36,16 +36,16 @@ namespace Team13.HitsClass.Persistence.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_SubmissionComments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_AspNetUsers_AuthorId",
+                        name: "FK_SubmissionComments_AspNetUsers_AuthorId",
                         column: x => x.AuthorId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade
                     );
                     table.ForeignKey(
-                        name: "FK_Comments_Submissions_SubmissionId",
+                        name: "FK_SubmissionComments_Submissions_SubmissionId",
                         column: x => x.SubmissionId,
                         principalTable: "Submissions",
                         principalColumn: "Id",
@@ -55,14 +55,14 @@ namespace Team13.HitsClass.Persistence.Migrations
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_AuthorId",
-                table: "Comments",
+                name: "IX_SubmissionComments_AuthorId",
+                table: "SubmissionComments",
                 column: "AuthorId"
             );
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_SubmissionId",
-                table: "Comments",
+                name: "IX_SubmissionComments_SubmissionId",
+                table: "SubmissionComments",
                 column: "SubmissionId"
             );
         }
@@ -70,7 +70,7 @@ namespace Team13.HitsClass.Persistence.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "Comments");
+            migrationBuilder.DropTable(name: "SubmissionComments");
         }
     }
 }

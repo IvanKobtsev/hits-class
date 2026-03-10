@@ -2,7 +2,7 @@ using System;
 
 namespace Team13.HitsClass.Domain;
 
-public class Comment
+public class SubmissionComment
 {
     public int Id { get; set; }
     public int SubmissionId { get; set; }
@@ -16,9 +16,9 @@ public class Comment
     /// <summary>
     /// Needed for Entity Framework, keep empty.
     /// </summary>
-    public Comment() { }
+    public SubmissionComment() { }
 
-    public Comment(int submissionId, string authorId, string textLexical)
+    public SubmissionComment(int submissionId, string authorId, string textLexical)
     {
         SubmissionId = submissionId;
         AuthorId = authorId;

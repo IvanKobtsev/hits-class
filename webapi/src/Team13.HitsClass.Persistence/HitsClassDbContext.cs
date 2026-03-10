@@ -21,7 +21,7 @@ public class HitsClassDbContext
     public DbSet<Course> Courses { get; set; }
     public DbSet<Publication> Publications { get; set; }
     public DbSet<Submission> Submissions { get; set; }
-    public DbSet<Comment> Comments { get; set; }
+    public DbSet<SubmissionComment> SubmissionComments { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -114,7 +114,7 @@ public class HitsClassDbContext
             );
         });
 
-        builder.Entity<Comment>(b =>
+        builder.Entity<SubmissionComment>(b =>
         {
             b.HasOne(c => c.Author).WithMany().HasForeignKey(c => c.AuthorId);
         });

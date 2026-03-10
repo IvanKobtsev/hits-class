@@ -15,8 +15,8 @@ using Team13.HitsClass.Persistence;
 namespace Team13.HitsClass.Persistence.Migrations
 {
     [DbContext(typeof(HitsClassDbContext))]
-    [Migration("20260309143743_AddCommentsTable")]
-    partial class AddCommentsTable
+    [Migration("20260310172157_AddSubmissionComments")]
+    partial class AddSubmissionComments
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -480,40 +480,6 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.ToTable("AuditLogs");
                 });
 
-            modelBuilder.Entity("Team13.HitsClass.Domain.Comment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("AuthorId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("LastEditedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("SubmissionId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("TextLexical")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AuthorId");
-
-                    b.HasIndex("SubmissionId");
-
-                    b.ToTable("Comments");
-                });
-
             modelBuilder.Entity("Team13.HitsClass.Domain.Course", b =>
                 {
                     b.Property<int>("Id")
@@ -659,6 +625,40 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.HasIndex("PublicationId");
 
                     b.ToTable("Submissions");
+                });
+
+            modelBuilder.Entity("Team13.HitsClass.Domain.SubmissionComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastEditedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SubmissionId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TextLexical")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("SubmissionId");
+
+                    b.ToTable("SubmissionComments");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.User", b =>
@@ -878,25 +878,6 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Team13.HitsClass.Domain.Comment", b =>
-                {
-                    b.HasOne("Team13.HitsClass.Domain.User", "Author")
-                        .WithMany()
-                        .HasForeignKey("AuthorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Team13.HitsClass.Domain.Submission", "Submission")
-                        .WithMany("Comments")
-                        .HasForeignKey("SubmissionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Author");
-
-                    b.Navigation("Submission");
-                });
-
             modelBuilder.Entity("Team13.HitsClass.Domain.Course", b =>
                 {
                     b.HasOne("Team13.HitsClass.Domain.User", "Owner")
@@ -950,6 +931,8 @@ namespace Team13.HitsClass.Persistence.Migrations
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
 
+                            b1.Property<DateTime>("CreatedAt");
+
                             b1.Property<string>("FileName")
                                 .IsRequired();
 
@@ -996,6 +979,8 @@ namespace Team13.HitsClass.Persistence.Migrations
                             b1.Property<int>("__synthesizedOrdinal")
                                 .ValueGeneratedOnAdd();
 
+                            b1.Property<DateTime>("CreatedAt");
+
                             b1.Property<string>("FileName")
                                 .IsRequired();
 
@@ -1019,6 +1004,25 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Publication");
+                });
+
+            modelBuilder.Entity("Team13.HitsClass.Domain.SubmissionComment", b =>
+                {
+                    b.HasOne("Team13.HitsClass.Domain.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Team13.HitsClass.Domain.Submission", "Submission")
+                        .WithMany("Comments")
+                        .HasForeignKey("SubmissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Submission");
                 });
 
             modelBuilder.Entity("OpenIddict.EntityFrameworkCore.Models.OpenIddictEntityFrameworkCoreApplication", b =>

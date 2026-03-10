@@ -25,7 +25,7 @@ public class Submission
     [ForeignKey(nameof(AuthorId))]
     public User Author { get; set; }
 
-    public List<Comment> Comments { get; set; }
+    public List<SubmissionComment> Comments { get; set; }
 
     #region Specifications
 

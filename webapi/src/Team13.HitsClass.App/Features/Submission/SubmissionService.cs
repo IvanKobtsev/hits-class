@@ -85,7 +85,7 @@ public class SubmissionService(
             .GetOne(Publication.HasId(assignmentId));
 
         var canView =
-            await userManager.HasAnyOfRoles(user, [UserRoles.Admin])
+            await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
             || publication.Course.Teachers.Any(t => t.Id == userId);
 
         if (!canView)
@@ -135,7 +135,7 @@ public class SubmissionService(
             .GetOne(Publication.HasId(submission.PublicationId));
 
         var canView =
-            await userManager.HasAnyOfRoles(user, [UserRoles.Admin])
+            await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
             || publication.Course.Teachers.Any(t => t.Id == userId)
             || submission.AuthorId == userId;
 
@@ -162,7 +162,7 @@ public class SubmissionService(
             .GetOne(Publication.HasId(submission.PublicationId));
 
         var canMark =
-            await userManager.HasAnyOfRoles(user, [UserRoles.Admin])
+            await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
             || publication.Course.Teachers.Any(t => t.Id == userId);
 
         if (!canMark)
@@ -174,7 +174,10 @@ public class SubmissionService(
 
         if (!string.IsNullOrEmpty(dto.MarkComment))
         {
-            var comment = new Comment(submission.Id, userId, dto.MarkComment) { Author = user };
+            var comment = new SubmissionComment(submission.Id, userId, dto.MarkComment)
+            {
+                Author = user,
+            };
             submission.Comments.Add(comment);
         }
 
