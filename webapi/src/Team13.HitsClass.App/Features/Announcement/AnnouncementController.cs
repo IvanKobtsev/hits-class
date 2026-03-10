@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Announcement.Dto;
+using Team13.HitsClass.App.Features.Publications.Dto;
 
 namespace Team13.HitsClass.App.Features.Announcement
 {
@@ -16,33 +17,36 @@ namespace Team13.HitsClass.App.Features.Announcement
         }
 
         /// <summary>
-        /// Create announcement (check permission)
+        /// Create announcement
         /// </summary>
-        [HttpPost]
-        public async Task<AnnouncementDto> CreateAnnouncement([FromBody] CreateAnnouncementDto dto)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Update specific announcement (check permission)
-        /// </summary>
-        [HttpPut("{id:int}")]
-        public async Task UpdateAnnouncement(
-            [FromRoute] int id,
+        [HttpPost("/api/courses/{id:int}/announcements")]
+        public async Task<PublicationDto> CreateAnnouncement(
+            [FromRoute] int courseId,
             [FromBody] CreateAnnouncementDto dto
         )
         {
-            throw new NotImplementedException();
+            return await _announcementService.CreateAnnouncement(courseId, dto);
         }
 
         /// <summary>
-        /// Delete specific announcement (check permission)
+        /// Update specific announcement
+        /// </summary>
+        [HttpPut("{id:int}")]
+        public async Task<PublicationDto> UpdateAnnouncement(
+            [FromRoute] int id,
+            [FromBody] PatchAnnouncementDto dto
+        )
+        {
+            return await _announcementService.PatchAnnouncement(id, dto);
+        }
+
+        /// <summary>
+        /// Delete specific announcement
         /// </summary>
         [HttpDelete("{id:int}")]
         public async Task DeleteAnnouncement([FromRoute] int id)
         {
-            throw new NotImplementedException();
+            await _announcementService.DeleteAnnouncement(id);
         }
     }
 }
