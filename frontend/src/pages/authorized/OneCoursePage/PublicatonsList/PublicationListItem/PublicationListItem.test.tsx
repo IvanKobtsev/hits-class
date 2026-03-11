@@ -79,7 +79,7 @@ describe('PublicationListItem', () => {
   test('renders a link to the publication page', () => {
     renderPublicationListItem();
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/announcement/1');
+    expect(link).toHaveAttribute('href', '/announcements/1');
   });
 
   test('renders attachments list', () => {
@@ -113,7 +113,7 @@ describe('PublicationListItem', () => {
   test('renders correct link for assignment', () => {
     renderPublicationListItem(mockAssignment);
     const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', '/assignment/2');
+    expect(link).toHaveAttribute('href', '/assignments/2');
   });
 
   test('does not render deadline for announcement', () => {
@@ -173,7 +173,7 @@ describe('PublicationListItem', () => {
 
   test('link href changes when different id is passed', () => {
     renderPublicationListItem({ ...mockAnnouncement, id: 42 });
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/announcement/42');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/announcements/42');
   });
 
   // --- Publication type check ---
