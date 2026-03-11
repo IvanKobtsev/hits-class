@@ -1,0 +1,86 @@
+@use '../../../../styles/base.scss' as *;
+
+.wrapper {
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+  border: 1px solid $border-disabled;
+  overflow: hidden;
+  background: $light-input-background;
+}
+
+.banner {
+  padding: 24px 28px;
+}
+
+.title {
+  color: #fff;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.info {
+  padding: 16px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.9rem;
+  color: $resources-text-gray;
+}
+
+.teacher {
+  margin: 0;
+  font-size: 0.85rem;
+  color: $resources-text-gray;
+}
+
+.inviteRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+}
+
+.inviteBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inviteLabel {
+  color: $resources-text-gray;
+}
+
+.inviteCode {
+  font-weight: 700;
+  color: $primary;
+}
+
+.copyBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+  transition: color 0.15s;
+
+  &:hover {
+    color: $primary;
+  }
+}
+
+.copyIcon {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
