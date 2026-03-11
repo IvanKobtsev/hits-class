@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using Team13.HitsClass.Common;
+using Team13.HitsClass.Common.Attributes;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 
 namespace Team13.HitsClass.Domain;
@@ -8,6 +9,7 @@ namespace Team13.HitsClass.Domain;
 /// Base class for publication payloads used to allow for
 /// different types of content/logic based on the type.
 /// </summary>
+[DoNotCheckPatchRequest]
 [JsonPolymorphic(
     TypeDiscriminatorPropertyName = PublicationConstants.PublicationTypeDiscriminatorPropertyName
 )]
