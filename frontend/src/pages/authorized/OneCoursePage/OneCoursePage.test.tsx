@@ -33,6 +33,10 @@ vi.mock('./useCourseRole', () => ({
   useCourseRole: vi.fn(() => 'student'),
 }));
 
+vi.mock('services/api/api-client/CourseClient', () => ({
+  exportMarks: vi.fn(),
+}));
+
 vi.mock('services/api', () => ({
   QueryFactory: {
     CourseQuery: {
@@ -49,12 +53,14 @@ vi.mock('services/api', () => ({
 
 import { QueryFactory } from 'services/api';
 import { useCourseRole } from './useCourseRole';
+import { exportMarks } from 'services/api/api-client/CourseClient';
 
 const mockedGetCourse = vi.mocked(QueryFactory.CourseQuery.useGetCourseQuery);
 const mockedGetPublications = vi.mocked(
   QueryFactory.PublicationsQuery.useGetPublicationsQuery,
 );
 const mockedUseCourseRole = vi.mocked(useCourseRole);
+const mockedExportMarks = vi.mocked(exportMarks);
 
 const mockCourse: CourseDto = {
   id: 1,
@@ -225,5 +231,47 @@ describe('OneCoursePage', () => {
     await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
     await user.click(screen.getByTestId('OneCoursePage-tab-feed'));
     expect(screen.getByTestId('CourseFeedTab')).toBeInTheDocument();
+  });
+
+  // --- Export marks button ---
+
+  test('shows export button for teacher in grades tab', async () => {
+    mockedUseCourseRole.mockReturnValue('teacher');
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
+    expect(screen.getByRole('button', { name: 'Экспорт оценок' })).toBeInTheDocument();
+  });
+
+  test('does not show export button for student in grades tab', async () => {
+    mockedUseCourseRole.mockReturnValue('student');
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
+    expect(screen.queryByRole('button', { name: 'Экспорт оценок' })).not.toBeInTheDocument();
+  });
+
+  test('calls exportMarks and triggers download on button click', async () => {
+    mockedUseCourseRole.mockReturnValue('teacher');
+    const blob = new Blob(['csv'], { type: 'text/csv' });
+    mockedExportMarks.mockResolvedValue({ data: blob, fileName: 'Оценки Test.csv', status: 200, headers: {} });
+
+    const createObjectURL = vi.fn(() => 'blob:url');
+    const revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
+    await user.click(screen.getByRole('button', { name: 'Экспорт оценок' }));
+
+    expect(mockedExportMarks).toHaveBeenCalledWith(1);
+    expect(createObjectURL).toHaveBeenCalledWith(blob);
+    expect(clickSpy).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:url');
+
+    clickSpy.mockRestore();
   });
 });

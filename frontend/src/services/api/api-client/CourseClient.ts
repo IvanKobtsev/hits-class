@@ -561,6 +561,74 @@ function processJoinCourse(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
+
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function exportMarks(courseId: number, config?: AxiosRequestConfig | undefined): Promise<Types.FileResponse> {
+    let url_ = getBaseUrl() + "/api/courses/{courseId}/marks/export";
+    if (courseId === undefined || courseId === null)
+      throw new Error("The parameter 'courseId' must be defined.");
+    url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigExportMarks,
+        ...config,
+        responseType: "blob",
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigExportMarks?.headers,
+            "Accept": "application/octet-stream"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processExportMarks(_response);
+    });
+}
+
+function processExportMarks(response: AxiosResponse): Promise<Types.FileResponse> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200 || status === 206) {
+        const contentDisposition = response.headers ? response.headers["content-disposition"] : undefined;
+        let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+        let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+        if (fileName) {
+            fileName = decodeURIComponent(fileName);
+        } else {
+            fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+        }
+        return Promise.resolve({ fileName: fileName, status: status, data: new Blob([response.data], { type: response.headers["content-type"] }), headers: _headers });
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.FileResponse>(null as any);
+}
 let _requestConfigGetCourses: Partial<AxiosRequestConfig> | null;
 export function getGetCoursesRequestConfig() {
   return _requestConfigGetCourses;
@@ -647,4 +715,15 @@ export function setJoinCourseRequestConfig(value: Partial<AxiosRequestConfig>) {
 }
 export function patchJoinCourseRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigJoinCourse = patch(_requestConfigJoinCourse ?? {});
+}
+
+let _requestConfigExportMarks: Partial<AxiosRequestConfig> | null;
+export function getExportMarksRequestConfig() {
+  return _requestConfigExportMarks;
+}
+export function setExportMarksRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigExportMarks = value;
+}
+export function patchExportMarksRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigExportMarks = patch(_requestConfigExportMarks ?? {});
 }

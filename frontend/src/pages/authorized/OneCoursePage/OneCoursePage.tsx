@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs, Tab } from '@mui/material';
+import { Tabs, Tab, Button } from '@mui/material';
 import { QueryFactory } from 'services/api';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useCourseRole } from './useCourseRole';
@@ -9,6 +9,7 @@ import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
 import { Navigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
+import { exportMarks } from 'services/api/api-client/CourseClient';
 import { Links } from 'application/constants/links';
 
 type TabValue = 'feed' | 'grades' | 'members';
@@ -29,6 +30,17 @@ export const OneCoursePage: React.FC = () => {
     QueryFactory.PublicationsQuery.useGetPublicationsQuery({ courseId: id });
 
   const role = useCourseRole(course);
+
+  const handleExportMarks = async () => {
+    const response = await exportMarks(id);
+
+    const url = URL.createObjectURL(response.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = response.fileName ?? `Оценки.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   const isLoading = courseLoading || pubLoading;
 
   if (!courseLoading && courseError) {
@@ -91,7 +103,11 @@ export const OneCoursePage: React.FC = () => {
             )}
             {activeTab === 'grades' && (
               <div data-test-id="OneCoursePage-grades">
-                Оценки — в разработке
+                {role === 'teacher' && (
+                  <Button variant="outlined" onClick={handleExportMarks}>
+                    Экспорт оценок
+                  </Button>
+                )}
               </div>
             )}
             {activeTab === 'members' && (

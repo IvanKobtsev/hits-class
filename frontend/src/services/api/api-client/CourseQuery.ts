@@ -60,6 +60,10 @@ export type JoinCourseCourseQueryParameters = {
   inviteCode: string ;
 }
 
+export type ExportMarksCourseQueryParameters = {
+  courseId: number ;
+}
+
 export function getCoursesUrl(title?: string | null | undefined, createdByMe?: boolean | null | undefined, whereImTeacher?: boolean | null | undefined, whereImStudent?: boolean | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
   let url_ = getBaseUrl() + "/api/courses?";
 if (title !== undefined && title !== null)
@@ -724,4 +728,96 @@ return useMutation({
   mutationFn: (data: JoinCourse__MutationParameters) => Client.joinCourse(data.inviteCode ?? options?.parameters?.inviteCode!),
   mutationKey: key,
 });
+}
+  
+export function exportMarksUrl(courseId: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{courseId}/marks/export";
+if (courseId === undefined || courseId === null)
+  throw new Error("The parameter 'courseId' must be defined.");
+url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let exportMarksDefaultOptions: Omit<UseQueryOptions<Types.FileResponse, unknown, Types.FileResponse>, 'queryKey'> = {
+  queryFn: __exportMarks,
+};
+export function getExportMarksDefaultOptions() {
+  return exportMarksDefaultOptions;
+};
+export function setExportMarksDefaultOptions(options: typeof exportMarksDefaultOptions) {
+  exportMarksDefaultOptions = options;
+}
+
+export function exportMarksQueryKey(courseId: number): QueryKey;
+export function exportMarksQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { courseId,  } = params[0] as ExportMarksCourseQueryParameters;
+
+    return trimArrayEnd([
+        'CourseClient',
+        'exportMarks',
+        courseId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'CourseClient',
+        'exportMarks',
+        ...params
+      ]);
+  }
+}
+function __exportMarks(context: QueryFunctionContext) {
+  return Client.exportMarks(
+      context.queryKey[2] as number    );
+}
+
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(dto: ExportMarksCourseQueryParameters, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(courseId: number, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.FileResponse, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let courseId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ courseId,  } = params[0] as ExportMarksCourseQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [courseId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.FileResponse, TError, TSelectData>({
+    queryFn: __exportMarks,
+    queryKey: exportMarksQueryKey(courseId),
+    ...exportMarksDefaultOptions as unknown as Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function setExportMarksData(queryClient: QueryClient, updater: (data: Types.FileResponse | undefined) => Types.FileResponse, courseId: number) {
+  queryClient.setQueryData(exportMarksQueryKey(courseId),
+    updater
+  );
+}
+
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function setExportMarksDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.FileResponse | undefined) => Types.FileResponse) {
+  queryClient.setQueryData(queryKey, updater);
 }
