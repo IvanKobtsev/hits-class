@@ -184,6 +184,26 @@ namespace Team13.HitsClass.App.Features.Courses
             return await GetAllCourses(searchDto, userId, true);
         }
 
+        public async Task AddStudentToCourse(int courseId, string studentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task AddTeacherToCourse(int courseId, string teacherId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BanStudentFromCourse(int courseId, string studentId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task DeleteTeacherfromCourse(int courseId, string teacherId)
+        {
+            throw new NotImplementedException();
+        }
+
         private async Task<PagedResult<CourseListItemDto>> GetAllCourses(
             CoursesSearchDto searchDto,
             string currentUserId,
