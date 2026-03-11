@@ -1,13 +1,8 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using AwesomeAssertions.Equivalency.Tracing;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Courses.Dto;
 using Team13.HitsClass.Domain;
-using Team13.HitsClass.Persistence.Migrations;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Pagination;
 
@@ -563,7 +558,7 @@ namespace Team13.HitsClass.App.Tests
 
             Func<Task> act = async () => await _courseService.AddStudentToCourse(999, student.Id);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -574,7 +569,7 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _courseService.AddStudentToCourse(course.Id, "notUser");
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -684,7 +679,7 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _courseService.AddTeacherToCourse(course.Id, "notUser");
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -799,7 +794,7 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _courseService.BanStudentFromCourse(course.Id, "notUser");
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
@@ -810,7 +805,7 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _courseService.BanStudentFromCourse(course.Id, student.Id);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<ValidationException>();
         }
 
         [Fact]
@@ -827,7 +822,7 @@ namespace Team13.HitsClass.App.Tests
                 var courseInDb = await db
                     .Courses.Include(c => c.Teachers)
                     .FirstAsync(c => c.Id == course.Id);
-                courseInDb.Teachers.Should().NotContain(s => s.Id == teachers.Id);
+                courseInDb.Teachers.Should().NotContain(s => s.Id == teacher.Id);
             });
         }
 
@@ -885,18 +880,18 @@ namespace Team13.HitsClass.App.Tests
             Func<Task> act = async () =>
                 await _courseService.DeleteTeacherfromCourse(course.Id, "notUser");
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
         }
 
         [Fact]
-        public async Task DeleteTeacherFromCourse_UserIsNotStudent_ThrowsNotFoundException()
+        public async Task DeleteTeacherFromCourse_UserIsNotTeacher_ThrowsNotFoundException()
         {
             var course = await CreateCourse();
             var teacher = await CreateUser("teacher@gmail.com");
             Func<Task> act = async () =>
                 await _courseService.DeleteTeacherfromCourse(course.Id, teacher.Id);
 
-            await act.Should().ThrowAsync<NotFoundException>();
+            await act.Should().ThrowAsync<ValidationException>();
         }
 
         private async Task<Course> CreateCourse(

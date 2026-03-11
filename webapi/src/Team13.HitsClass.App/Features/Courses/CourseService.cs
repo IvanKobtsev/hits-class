@@ -1,11 +1,15 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Comments.Dto;
 using Team13.HitsClass.App.Features.Courses.Dto;
 using Team13.HitsClass.App.Features.Users.Dto;
+using Team13.HitsClass.App.Utils;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.PersistenceHelpers;
 using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Courses
@@ -14,11 +18,17 @@ namespace Team13.HitsClass.App.Features.Courses
     {
         private readonly IUserAccessor _userAccessor;
         private readonly HitsClassDbContext _dbContext;
+        private readonly UserManager<User> _userManager;
 
-        public CourseService(IUserAccessor userAccessor, HitsClassDbContext dbContext)
+        public CourseService(
+            IUserAccessor userAccessor,
+            HitsClassDbContext dbContext,
+            UserManager<User> userManager
+        )
         {
             _userAccessor = userAccessor;
             _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         public async Task<CourseDto> GetCourseById(int courseId)
@@ -186,22 +196,127 @@ namespace Team13.HitsClass.App.Features.Courses
 
         public async Task AddStudentToCourse(int courseId, string studentId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+            var student = await _dbContext.Users.GetOne(User.HasId(studentId));
+
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "User is not allowed to add students to this course."
+                );
+            }
+
+            var isMember =
+                course.Teachers.Any(t => t.Id == studentId)
+                || course.OwnerId == studentId
+                || course.Students.Any(t => t.Id == studentId);
+            if (isMember)
+            {
+                throw new ValidationException("This user is already a member of this course.");
+            }
+
+            course.Students.Add(student);
+            if (course.BannedStudents.Any(s => s.Id == studentId))
+            {
+                course.BannedStudents.Remove(student);
+            }
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task AddTeacherToCourse(int courseId, string teacherId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+            var teacher = await _dbContext.Users.GetOne(User.HasId(teacherId));
+
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "User is not allowed to add teachers to this course."
+                );
+            }
+
+            var isMember =
+                course.Teachers.Any(t => t.Id == teacherId)
+                || course.OwnerId == teacherId
+                || course.Students.Any(t => t.Id == teacherId);
+            if (isMember)
+            {
+                throw new ValidationException("This user is already a member of this course.");
+            }
+
+            course.Teachers.Add(teacher);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task BanStudentFromCourse(int courseId, string studentId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+            var student = await _dbContext.Users.GetOne(User.HasId(studentId));
+
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "User is not allowed to ban students from this course."
+                );
+            }
+
+            if (!course.Students.Any(s => s.Id == studentId))
+            {
+                throw new ValidationException("This user is not a student in this course.");
+            }
+
+            course.Students.Remove(student);
+            course.BannedStudents.Add(student);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task DeleteTeacherfromCourse(int courseId, string teacherId)
         {
-            throw new NotImplementedException();
+            var course = await FindCourseOrThrow(courseId);
+            var teacher = await _dbContext.Users.GetOne(User.HasId(teacherId));
+
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "User is not allowed to delete teachers from this course."
+                );
+            }
+
+            if (!course.Teachers.Any(s => s.Id == teacherId))
+            {
+                throw new ValidationException("This user is not a teacher in this course.");
+            }
+
+            course.Teachers.Remove(teacher);
+            await _dbContext.SaveChangesAsync();
         }
 
         private async Task<PagedResult<CourseListItemDto>> GetAllCourses(
