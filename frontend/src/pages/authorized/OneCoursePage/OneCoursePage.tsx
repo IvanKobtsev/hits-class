@@ -5,6 +5,7 @@ import { QueryFactory } from 'services/api';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useCourseRole } from './useCourseRole';
 import { CourseFeedTab } from './CourseFeedTab/CourseFeedTab';
+import { CreateAnnouncementModal } from './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal';
 import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
 import { Navigate } from 'react-router-dom';
@@ -18,6 +19,10 @@ export const OneCoursePage: React.FC = () => {
   const id = Number(courseId);
 
   const [activeTab, setActiveTab] = useState<TabValue>('feed');
+  const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
+
+  // TODO: implement create assignment flow
+  const handleCreateAssignment = () => undefined;
 
   const {
     data: course,
@@ -87,6 +92,8 @@ export const OneCoursePage: React.FC = () => {
                 courseId={id}
                 publications={publicationsData?.data ?? []}
                 role={role}
+                onCreateAnnouncement={() => setIsAnnouncementModalOpen(true)}
+                onCreateAssignment={handleCreateAssignment}
               />
             )}
             {activeTab === 'grades' && (
@@ -102,6 +109,10 @@ export const OneCoursePage: React.FC = () => {
           </div>
         </div>
       )}
+      <CreateAnnouncementModal
+        isOpen={isAnnouncementModalOpen}
+        onClose={() => setIsAnnouncementModalOpen(false)}
+      />
     </Loading>
   );
 };
