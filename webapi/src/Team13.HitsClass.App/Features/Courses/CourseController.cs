@@ -101,4 +101,28 @@ public class CourseController
     {
         await _courseService.JoinCourseByInviteCode(inviteCode);
     }
+
+    /// <summary>
+    /// Adds student to course
+    /// </summary>
+    [HttpPost("{id:int}/student")]
+    public async Task AddStudent([FromRoute] int id, [FromBody] string studentId) { }
+
+    /// <summary>
+    /// Adds teacher to course
+    /// </summary>
+    [HttpPost("{id:int}/teacher")]
+    public async Task AddTeacher([FromRoute] int id, [FromBody] string teacherId) { }
+
+    /// <summary>
+    /// Bans student from course
+    /// </summary>
+    [HttpDelete("{id:int}/student")]
+    public async Task BanStudent([FromRoute] int id, [FromBody] string studentId) { }
+
+    /// <summary>
+    /// Deletes teacher from course
+    /// </summary>
+    [HttpDelete("{id:int}/teacher")]
+    public async Task DeleteTeacher([FromRoute] int id, [FromBody] string teacherId) { }
 }
