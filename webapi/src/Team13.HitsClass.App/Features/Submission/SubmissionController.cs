@@ -7,10 +7,8 @@ namespace Team13.HitsClass.App.Features.Submission
 {
     [Authorize]
     [Route("api")]
-    public class SubmissionController
+    public class SubmissionController(SubmissionService submissionService)
     {
-        public SubmissionController() { }
-
         /// <summary>
         /// Create submission
         /// </summary>
@@ -20,25 +18,28 @@ namespace Team13.HitsClass.App.Features.Submission
             [FromBody] CreateSubmissionDto dto
         )
         {
-            throw new NotImplementedException();
+            return await submissionService.CreateSubmission(id, dto);
         }
 
         /// <summary>
         /// Gets all submissions for an assignment (check permission)
         /// </summary>
         [HttpGet("assignments/{id:int}/submissions")]
-        public async Task<PagedResult<SubmissionListItem>> GetSubmissions([FromRoute] int id)
+        public async Task<PagedResult<SubmissionListItem>> GetSubmissions(
+            [FromRoute] int id,
+            [FromQuery] PagedRequestDto dto
+        )
         {
-            throw new NotImplementedException();
+            return await submissionService.GetSubmissions(id, dto);
         }
 
         /// <summary>
         /// Gets student's submission for an assignment
         /// </summary>
         [HttpGet("assignments/{id:int}/my-submission")]
-        public async Task<SubmissionDto> GetMySubmission([FromRoute] int id)
+        public async Task<SubmissionDto?> GetMySubmission([FromRoute] int id)
         {
-            throw new NotImplementedException();
+            return await submissionService.GetMySubmission(id);
         }
 
         /// <summary>
@@ -47,7 +48,7 @@ namespace Team13.HitsClass.App.Features.Submission
         [HttpGet("submissions/{id:int}")]
         public async Task<SubmissionDto> GetSubmission([FromRoute] int id)
         {
-            throw new NotImplementedException();
+            return await submissionService.GetSubmission(id);
         }
 
         /// <summary>
@@ -56,7 +57,7 @@ namespace Team13.HitsClass.App.Features.Submission
         [HttpPut("submissions/{id:int}/mark")]
         public async Task<SubmissionDto> MarkSubmission([FromRoute] int id, [FromBody] MarkDto dto)
         {
-            throw new NotImplementedException();
+            return await submissionService.MarkSubmission(id, dto);
         }
     }
 }

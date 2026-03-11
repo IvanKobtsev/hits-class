@@ -3,6 +3,7 @@ using Team13.HitsClass.App.Features.Assignment;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
 using Team13.HitsClass.App.Features.Publications;
+using Team13.HitsClass.App.Features.Submission;
 using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.App.Services.Authentication;
 using Team13.HitsClass.App.Services.Authentication.Seed;
@@ -28,6 +29,7 @@ public static class SetupServices
             .AddScoped<AssignmentService>()
             .AddScoped<FileService>()
             .AddScoped<CourseService>()
-            .AddScoped<AnnouncementService>();
+            .AddScoped<AnnouncementService>()
+            .AddScoped<SubmissionService>();
     }
 }

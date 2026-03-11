@@ -21,6 +21,7 @@ public class HitsClassDbContext
     public DbSet<Course> Courses { get; set; }
     public DbSet<Publication> Publications { get; set; }
     public DbSet<Submission> Submissions { get; set; }
+    public DbSet<SubmissionComment> SubmissionComments { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -101,6 +102,9 @@ public class HitsClassDbContext
         builder.Entity<Submission>(b =>
         {
             b.HasOne(s => s.Author);
+            b.HasMany(s => s.Comments)
+                .WithOne(c => c.Submission)
+                .HasForeignKey(c => c.SubmissionId);
             b.OwnsMany(
                 p => p.Attachments,
                 ownedNavigationBuilder =>
@@ -108,6 +112,11 @@ public class HitsClassDbContext
                     ownedNavigationBuilder.ToJson();
                 }
             );
+        });
+
+        builder.Entity<SubmissionComment>(b =>
+        {
+            b.HasOne(c => c.Author).WithMany().HasForeignKey(c => c.AuthorId);
         });
     }
 
