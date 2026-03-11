@@ -10,7 +10,19 @@ vi.mock('services/api/api-client/CourseQuery', () => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   }),
+  getCoursesQueryKey: () => ['CourseClient', 'getCourses'],
 }));
+
+const mockInvalidateQueries = vi.fn();
+vi.mock('@tanstack/react-query', async (importActual) => {
+  const actual = await importActual<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({
+      invalidateQueries: mockInvalidateQueries,
+    }),
+  };
+});
 
 vi.mock('components/uikit/suspense/Loading', () => ({
   Loading: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -112,6 +124,22 @@ describe('CreateCourseModal', () => {
 
     await waitFor(() => {
       expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  test('invalidates courses query after successful creation', async () => {
+    const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
+    renderModal();
+
+    await user.type(screen.getByTestId('CreateCourse-title'), 'Алгоритмы');
+    await user.type(screen.getByTestId('CreateCourse-description'), 'Описание');
+    await user.click(screen.getByRole('button', { name: /создать/i }));
+
+    await waitFor(() => {
+      expect(mockInvalidateQueries).toHaveBeenCalledWith({
+        queryKey: ['CourseClient', 'getCourses'],
+      });
     });
   });
 

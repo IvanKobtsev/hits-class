@@ -17,6 +17,10 @@ export const authorizedRoutes = () =>
       element: <RootPage />,
       children: [
         {
+          path: Links.Authorized.Dashboard.route,
+          element: <CoursesPage />,
+        },
+        {
           path: Links.Authorized.Courses.route,
           element: <CoursesPage />,
         },
