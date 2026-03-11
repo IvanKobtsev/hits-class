@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using AwesomeAssertions.Equivalency.Tracing;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Courses.Dto;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Pagination;
 
@@ -15,11 +19,13 @@ namespace Team13.HitsClass.App.Tests
     public class CourseServiceTests : AppServiceTestBase
     {
         private readonly CourseService _courseService;
+        private readonly UserManager<User> _userManager;
 
         public CourseServiceTests(ITestOutputHelper output)
             : base(output)
         {
             _courseService = CreateService<CourseService>();
+            _userManager = CreateService<UserManager<User>>();
         }
 
         [Fact]
@@ -503,5 +509,315 @@ namespace Team13.HitsClass.App.Tests
                 return user;
             });
         }
+
+        #region ExportMarks Tests
+
+        [Fact]
+        public async Task ExportMarks_AsOwner_ReturnsCsvFile()
+        {
+            var course = await CreateCourse("Test Course");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            result.Should().NotBeNull();
+            result.ContentType.Should().Contain("text/csv");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AsCourseTeacher_ReturnsCsvFile()
+        {
+            var course = await CreateCourse("Test Course");
+            var teacher = await CreateUser("courseteacher@test.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            result.Should().NotBeNull();
+            result.ContentType.Should().Contain("text/csv");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AsGlobalTeacher_ReturnsCsvFile()
+        {
+            var course = await CreateCourse("Test Course");
+            var teacher = await CreateUserWithRole("globalteacher@test.com", UserRoles.Teacher);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            result.Should().NotBeNull();
+            result.ContentType.Should().Contain("text/csv");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AsAdmin_ReturnsCsvFile()
+        {
+            var course = await CreateCourse("Test Course");
+            var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            result.Should().NotBeNull();
+            result.ContentType.Should().Contain("text/csv");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AsStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            Func<Task> act = async () => await _courseService.ExportMarks(course.Id);
+
+            await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task ExportMarks_CourseDoesNotExist_ThrowsNotFoundException()
+        {
+            Func<Task> act = async () => await _courseService.ExportMarks(999);
+
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+        }
+
+        [Fact]
+        public async Task ExportMarks_IncludesAssignmentTitlesAsColumns()
+        {
+            var course = await CreateCourse("Test Course");
+            await CreateAssignment(course.Id, "Math Exam");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            csv.Should().Contain("Math Exam");
+        }
+
+        [Fact]
+        public async Task ExportMarks_IncludesStudentNamesAsRows()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await WithDbContext(async db =>
+            {
+                var user = new User("student@test.com", null, "John Student");
+                db.Users.Add(user);
+                await db.SaveChangesAsync();
+                return user;
+            });
+            await AddStudentToCourse(course.Id, student.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            csv.Should().Contain("John Student");
+        }
+
+        [Fact]
+        public async Task ExportMarks_MarkedStudent_HasMarkInCell()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var assignment = await CreateAssignment(course.Id, "Assignment 1");
+            await CreateMarkedSubmission(assignment.Id, student.Id, "5");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            csv.Should().Contain(";5;");
+        }
+
+        [Fact]
+        public async Task ExportMarks_StudentWithNoSubmission_HasEmptyCell()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            await CreateAssignment(course.Id, "Assignment 1");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            csv.Should().Contain(";;");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AverageMarkCalculated()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var a1 = await CreateAssignment(course.Id, "A1");
+            var a2 = await CreateAssignment(course.Id, "A2");
+            await CreateMarkedSubmission(a1.Id, student.Id, "5");
+            await CreateMarkedSubmission(a2.Id, student.Id, "3");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            csv.Should().Contain(";4");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AverageIgnoresAbsences()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var a1 = await CreateAssignment(course.Id, "A1");
+            var a2 = await CreateAssignment(course.Id, "A2");
+            await CreateMarkedSubmission(a1.Id, student.Id, "4");
+            // no submission for a2
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            // average of only "4" should be "4", not "2"
+            var lines = csv.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            var dataLine = lines.Skip(1).First(); // skip header
+            var lastCell = dataLine.Split(';').Last();
+            lastCell.Should().Be("4");
+        }
+
+        [Fact]
+        public async Task ExportMarks_AverageHandlesPlusAndMinusSuffixes()
+        {
+            var course = await CreateCourse("Test Course");
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var a1 = await CreateAssignment(course.Id, "A1");
+            var a2 = await CreateAssignment(course.Id, "A2");
+            await CreateMarkedSubmission(a1.Id, student.Id, "5+"); // 5.3
+            await CreateMarkedSubmission(a2.Id, student.Id, "4-"); // 3.7
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            var csv = Encoding.UTF8.GetString(result.FileContents);
+            // average of 5.3 and 3.7 = 4.5
+            csv.Should().Contain(";4.5");
+        }
+
+        [Fact]
+        public async Task ExportMarks_FileDownloadNameContainsCourseName()
+        {
+            var course = await CreateCourse("Test Course");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+            var result = await _courseService.ExportMarks(course.Id);
+
+            result.FileDownloadName.Should().Be("Оценки Test Course.csv");
+        }
+
+        #endregion
+
+        #region ExportMarks Helpers
+
+        private async Task AddStudentToCourse(int courseId, string studentId)
+        {
+            await WithDbContext(async db =>
+            {
+                var course = await db
+                    .Courses.Include(c => c.Students)
+                    .FirstAsync(c => c.Id == courseId);
+                var student = await db.Users.FirstAsync(u => u.Id == studentId);
+                course.Students.Add(student);
+                await db.SaveChangesAsync();
+            });
+        }
+
+        private async Task AddTeacherToCourse(int courseId, string teacherId)
+        {
+            await WithDbContext(async db =>
+            {
+                var course = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == courseId);
+                var teacher = await db.Users.FirstAsync(u => u.Id == teacherId);
+                course.Teachers.Add(teacher);
+                await db.SaveChangesAsync();
+            });
+        }
+
+        private async Task<User> CreateUserWithRole(string email, string role)
+        {
+            var user = await CreateUser(email);
+            await EnsureRoleExists(role);
+            await _userManager.AddToRoleAsync(user, role);
+            return user;
+        }
+
+        private async Task EnsureRoleExists(string roleName)
+        {
+            var roleManager = CreateService<RoleManager<IdentityRole>>();
+            if (!await roleManager.RoleExistsAsync(roleName))
+            {
+                await roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+        }
+
+        private async Task<Publication> CreateAssignment(
+            int courseId,
+            string title = "Test Assignment"
+        )
+        {
+            return await WithDbContext(async db =>
+            {
+                var author = await db.Users.FirstAsync(u => u.Id == _defaultUser.Id);
+                var publication = new Publication("Assignment content")
+                {
+                    CourseId = courseId,
+                    Type = PublicationType.Assignment,
+                    Author = author,
+                    IsForEveryone = true,
+                    TargetUsers = [],
+                    PublicationPayload = new AssignmentPayload
+                    {
+                        Title = title,
+                        DeadlineUtc = DateTime.UtcNow.AddDays(7),
+                    },
+                    Attachments = [],
+                };
+                db.Publications.Add(publication);
+                await db.SaveChangesAsync();
+                return publication;
+            });
+        }
+
+        private async Task<Domain.Submission> CreateMarkedSubmission(
+            int publicationId,
+            string authorId,
+            string mark
+        )
+        {
+            return await WithDbContext(async db =>
+            {
+                var submission = new Domain.Submission
+                {
+                    PublicationId = publicationId,
+                    AuthorId = authorId,
+                    State = SubmissionState.Accepted,
+                    LastSubmittedAtUTC = DateTime.UtcNow,
+                    Mark = mark,
+                    Attachments = [],
+                    Comments = [],
+                };
+                db.Submissions.Add(submission);
+                await db.SaveChangesAsync();
+                return submission;
+            });
+        }
+
+        #endregion
     }
 }

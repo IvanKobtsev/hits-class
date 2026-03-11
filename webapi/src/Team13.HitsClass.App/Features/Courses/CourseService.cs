@@ -1,11 +1,19 @@
+using System.Globalization;
+using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Comments.Dto;
 using Team13.HitsClass.App.Features.Courses.Dto;
 using Team13.HitsClass.App.Features.Users.Dto;
+using Team13.HitsClass.App.Utils;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.PersistenceHelpers;
 using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Courses
@@ -14,11 +22,17 @@ namespace Team13.HitsClass.App.Features.Courses
     {
         private readonly IUserAccessor _userAccessor;
         private readonly HitsClassDbContext _dbContext;
+        private readonly UserManager<User> _userManager;
 
-        public CourseService(IUserAccessor userAccessor, HitsClassDbContext dbContext)
+        public CourseService(
+            IUserAccessor userAccessor,
+            HitsClassDbContext dbContext,
+            UserManager<User> userManager
+        )
         {
             _userAccessor = userAccessor;
             _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         public async Task<CourseDto> GetCourseById(int courseId)
@@ -267,6 +281,120 @@ namespace Team13.HitsClass.App.Features.Courses
                 .ToListAsync();
 
             return new PagedResult<CourseListItemDto>(data, totalCount);
+        }
+
+        public async Task<FileContentResult> ExportMarks(int courseId)
+        {
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+
+            var course = await _dbContext
+                .Courses.Include(c => c.Students)
+                .Include(c => c.Teachers)
+                .GetOne(Course.HasId(courseId));
+
+            var canExport =
+                await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+                || course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId);
+            if (!canExport)
+                throw new AccessDeniedException("Only teachers can export marks.");
+
+            var assignments = await _dbContext
+                .Publications.Where(p =>
+                    p.CourseId == courseId && p.Type == PublicationType.Assignment
+                )
+                .OrderBy(p => p.Id)
+                .ToListAsync();
+
+            var assignmentIds = assignments.Select(a => a.Id).ToList();
+
+            var submissions = await _dbContext
+                .Submissions.AsNoTracking()
+                .Where(s => assignmentIds.Contains(s.PublicationId))
+                .Select(s => new
+                {
+                    s.PublicationId,
+                    s.AuthorId,
+                    s.Mark,
+                })
+                .ToListAsync();
+
+            var markLookup = submissions.ToDictionary(
+                s => (s.PublicationId, s.AuthorId),
+                s => s.Mark
+            );
+
+            var sb = new StringBuilder();
+
+            // Header row
+            sb.Append("Студент");
+            foreach (var a in assignments)
+                sb.Append(';').Append(EscapeCsv(((AssignmentPayload)a.PublicationPayload).Title));
+            sb.AppendLine(";Средний балл");
+
+            // Data rows
+            foreach (var student in course.Students.OrderBy(s => s.LegalName))
+            {
+                sb.Append(EscapeCsv(student.LegalName));
+                var numericMarks = new List<double>();
+
+                foreach (var a in assignments)
+                {
+                    markLookup.TryGetValue((a.Id, student.Id), out var mark);
+                    sb.Append(';').Append(mark ?? "");
+                    if (TryParseMarkAsDouble(mark, out var d))
+                        numericMarks.Add(d);
+                }
+
+                var avg =
+                    numericMarks.Count > 0
+                        ? numericMarks.Average().ToString("0.##", CultureInfo.InvariantCulture)
+                        : "";
+                sb.AppendLine($";{avg}");
+            }
+
+            var bytes = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true).GetBytes(
+                sb.ToString()
+            );
+
+            return new FileContentResult(bytes, "text/csv; charset=utf-8")
+            {
+                FileDownloadName = $"Оценки {course.Title}.csv",
+            };
+        }
+
+        private static bool TryParseMarkAsDouble(string? mark, out double value)
+        {
+            value = 0;
+            if (string.IsNullOrEmpty(mark))
+                return false;
+
+            var s = mark.Trim();
+            double modifier = 0;
+            if (s.EndsWith('+'))
+            {
+                modifier = 0.3;
+                s = s[..^1];
+            }
+            else if (s.EndsWith('-'))
+            {
+                modifier = -0.3;
+                s = s[..^1];
+            }
+
+            if (!double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out var d))
+                return false;
+
+            value = d + modifier;
+            return true;
+        }
+
+        private static string EscapeCsv(string value)
+        {
+            if (value.Contains(';') || value.Contains('"') || value.Contains('\n'))
+                return $"\"{value.Replace("\"", "\"\"")}\"";
+            return value;
         }
 
         private async Task<Course> FindCourseOrThrow(int id)

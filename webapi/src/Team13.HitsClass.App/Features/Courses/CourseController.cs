@@ -101,4 +101,11 @@ public class CourseController
     {
         await _courseService.JoinCourseByInviteCode(inviteCode);
     }
+
+    /// <summary>
+    /// Export marks for all students in a course as CSV
+    /// </summary>
+    [HttpGet("{courseId:int}/marks/export")]
+    public async Task<FileContentResult> ExportMarks([FromRoute] int courseId) =>
+        await _courseService.ExportMarks(courseId);
 }
