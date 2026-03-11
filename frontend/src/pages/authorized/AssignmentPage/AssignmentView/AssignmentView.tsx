@@ -1,6 +1,6 @@
 import AssignmentIcon from 'assets/icons/list-ul.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
-import { AssignmentDto, SubmissionDto } from 'services/api/api-client.types';
+import { AssignmentPayload, PublicationDto, SubmissionDto } from 'services/api/api-client.types';
 import styles from './AssignmentView.module.scss';
 
 function formatDateUTC(date: Date): string {
@@ -17,12 +17,13 @@ function formatDateTimeUTC(date: Date): string {
 }
 
 export type AssignmentViewProps = {
-  assignment: AssignmentDto;
+  assignment: PublicationDto;
   submission?: SubmissionDto | null;
 };
 
 export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) => {
-  const { title, description, author, createdAtUTC, deadlineUTC } = assignment;
+  const { content, author, createdAtUTC } = assignment;
+  const { title, deadlineUtc } = assignment.publicationPayload as AssignmentPayload;
 
   return (
     <div className={styles.container}>
@@ -63,19 +64,19 @@ export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) 
               className={styles.metaValue}
               data-test-id="AssignmentView-deadline"
             >
-              {deadlineUTC ? formatDateTimeUTC(deadlineUTC) : 'Не указан'}
+              {deadlineUtc ? formatDateTimeUTC(deadlineUtc) : 'Не указан'}
             </span>
           </span>
         </div>
       </div>
 
       <div className={styles.body}>
-        {description != null && (
+        {content != null && (
           <div
             className={styles.description}
             data-test-id="AssignmentView-description"
           >
-            <LexicalViewer lexicalState={description} />
+            <LexicalViewer lexicalState={content} />
           </div>
         )}
 

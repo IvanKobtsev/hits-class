@@ -2,7 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, test, vi } from 'vitest';
 import { AssignmentView } from './AssignmentView';
 import {
-  AssignmentDto,
+  AssignmentPayload,
+  PublicationDto,
   SubmissionDto,
   SubmissionState,
   UserDto,
@@ -21,16 +22,19 @@ const mockAuthor: UserDto = {
   groupNumber: null,
 };
 
-const mockAssignment: AssignmentDto = {
+const mockAssignment: PublicationDto = {
   id: 1,
-  title: 'Домашнее задание по алгоритмам',
-  description: 'Реализуйте сортировку пузырьком',
+  content: 'Реализуйте сортировку пузырьком',
   author: mockAuthor,
-  deadlineUTC: new Date('2025-03-15T18:00:00Z'),
   createdAtUTC: new Date('2025-03-01T10:30:00Z'),
   lastUpdatedAtUTC: null,
   attachments: [],
-  comments: [],
+  type: 'Assignment' as any,
+  publicationPayload: {
+    publicationType: 'Assignment',
+    title: 'Домашнее задание по алгоритмам',
+    deadlineUtc: new Date('2025-03-15T18:00:00Z'),
+  } as AssignmentPayload,
 };
 
 const mockSubmission: SubmissionDto = {
@@ -45,7 +49,7 @@ const mockSubmission: SubmissionDto = {
 };
 
 function renderAssignmentView(props: {
-  assignment: AssignmentDto;
+  assignment: PublicationDto;
   submission?: SubmissionDto | null;
 }) {
   return render(<AssignmentView {...props} />);
@@ -125,7 +129,10 @@ describe('AssignmentView', () => {
 
   test('shows placeholder when deadline is not set', () => {
     renderAssignmentView({
-      assignment: { ...mockAssignment, deadlineUTC: null },
+      assignment: {
+        ...mockAssignment,
+        publicationPayload: { ...mockAssignment.publicationPayload, deadlineUtc: null } as AssignmentPayload,
+      },
     });
 
     expect(screen.getByTestId('AssignmentView-deadline')).toHaveTextContent(

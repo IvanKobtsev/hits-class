@@ -14,13 +14,16 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Create announcement (check permission)
+ * Create announcement
  */
-export function createAnnouncement(dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.AnnouncementDto> {
-    let url_ = getBaseUrl() + "/api/announcements";
+export function createAnnouncement(id: number, dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
+    let url_ = getBaseUrl() + "/api/courses/{id}/announcements";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializeCreateAnnouncementDto(dto);
+    const content_ = JSON.stringify(dto);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigCreateAnnouncement,
@@ -46,7 +49,7 @@ export function createAnnouncement(dto: Types.CreateAnnouncementDto, config?: Ax
     });
 }
 
-function processCreateAnnouncement(response: AxiosResponse): Promise<Types.AnnouncementDto> {
+function processCreateAnnouncement(response: AxiosResponse): Promise<Types.PublicationDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -67,27 +70,27 @@ function processCreateAnnouncement(response: AxiosResponse): Promise<Types.Annou
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initAnnouncementDto(resultData200);
-        return Promise.resolve<Types.AnnouncementDto>(result200);
+        result200 = Types.initPublicationDto(resultData200);
+        return Promise.resolve<Types.PublicationDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.AnnouncementDto>(null as any);
+    return Promise.resolve<Types.PublicationDto>(null as any);
 }
 
 /**
- * Update specific announcement (check permission)
+ * Update specific announcement
  */
-export function updateAnnouncement(id: number, dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<void> {
+export function updateAnnouncement(id: number, dto: Types.PatchAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
     let url_ = getBaseUrl() + "/api/announcements/{id}";
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = Types.serializeCreateAnnouncementDto(dto);
+    const content_ = JSON.stringify(dto);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigUpdateAnnouncement,
@@ -98,6 +101,7 @@ export function updateAnnouncement(id: number, dto: Types.CreateAnnouncementDto,
         headers: {
             ..._requestConfigUpdateAnnouncement?.headers,
             "Content-Type": "application/json",
+            "Accept": "application/json"
         }
     };
 
@@ -112,7 +116,7 @@ export function updateAnnouncement(id: number, dto: Types.CreateAnnouncementDto,
     });
 }
 
-function processUpdateAnnouncement(response: AxiosResponse): Promise<void> {
+function processUpdateAnnouncement(response: AxiosResponse): Promise<Types.PublicationDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -131,17 +135,20 @@ function processUpdateAnnouncement(response: AxiosResponse): Promise<void> {
 
     } else if (status === 200) {
         const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPublicationDto(resultData200);
+        return Promise.resolve<Types.PublicationDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<void>(null as any);
+    return Promise.resolve<Types.PublicationDto>(null as any);
 }
 
 /**
- * Delete specific announcement (check permission)
+ * Delete specific announcement
  */
 export function deleteAnnouncement(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/announcements/{id}";

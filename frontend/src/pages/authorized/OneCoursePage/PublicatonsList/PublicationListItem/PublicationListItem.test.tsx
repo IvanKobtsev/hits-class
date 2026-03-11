@@ -90,6 +90,7 @@ describe('PublicationListItem', () => {
           uuid: 'abc-123-def-456',
           fileName: 'Лекция_10_презентация.pptx',
           size: 2_500_000,
+          createdAt: new Date('2025-01-01'),
         },
       ],
     });

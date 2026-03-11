@@ -1,7 +1,8 @@
 import React, { useCallback, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
 import { Field } from 'components/uikit/Field';
-import { Input } from 'components/uikit/inputs/Input';
 import { TextArea } from 'components/uikit/inputs/TextArea';
 import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
 import { FormError } from 'components/uikit/FormError';
@@ -15,7 +16,7 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type { FileInfoDto } from 'services/api/api-client.types';
+import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
 import styles from './CreateAnnouncementModal.module.scss';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
@@ -24,9 +25,12 @@ function makeId(): string {
   return `file-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function fileInfoToAttachment(info: FileInfoDto): Attachment {
+  return { uuid: info.id, fileName: info.fileName, size: info.size, createdAt: info.createdAt };
+}
+
 type CreateAnnouncementForm = {
-  title: string;
-  description: string;
+  content: string;
 };
 
 export type CreateAnnouncementModalProps = {
@@ -38,25 +42,27 @@ export const CreateAnnouncementModal = ({
   isOpen,
   onClose,
 }: CreateAnnouncementModalProps) => {
-  const { mutateAsync, isPending } = useCreateAnnouncementMutation();
+  const { courseId } = useParams<{ courseId: string }>();
+  const { mutateAsync, isPending } = useCreateAnnouncementMutation(Number(courseId));
+  const queryClient = useQueryClient();
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [uploadedFileInfos, setUploadedFileInfos] = useState<
-    Record<string, FileInfoDto>
-  >({});
+  const [uploadedFileInfos, setUploadedFileInfos] = useState<Record<string, FileInfoDto>>({});
   const { mutate: uploadFile } = useUploadFileMutation();
 
-  const attachments = Object.values(uploadedFileInfos);
+  const attachments: Attachment[] = Object.values(uploadedFileInfos).map(fileInfoToAttachment);
 
   const form = useAdvancedForm<CreateAnnouncementForm>(
     async (data) => {
       try {
         await mutateAsync({
-          title: data.title,
-          description: data.description || null,
-          attachments,
+          content: data.content,
+          targetUsersIds: null,
+          attachments: attachments.length > 0 ? attachments : null,
+          payload: { publicationType: 'Announcement' },
         });
+        await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
       } catch {
         modal.showError({ text: 'Создание объявления не удалось' });
@@ -126,18 +132,17 @@ export const CreateAnnouncementModal = ({
     >
       <Loading loading={isPending}>
         <form onSubmit={form.handleSubmitDefault} className={styles.form}>
-          <Field title="Название" testId="CreateAnnouncement-title">
-            <Input
-              {...form.register('title', { ...requiredRule() })}
-              errorText={form.formState.errors.title?.message}
-              testId="CreateAnnouncement-title-input"
-            />
-          </Field>
-          <Field title="Описание">
+          <Field title="Содержание" testId="CreateAnnouncement-content">
             <TextArea
-              {...form.register('description')}
-              data-test-id="CreateAnnouncement-description"
+              {...form.register('content', { ...requiredRule() })}
+              data-test-id="CreateAnnouncement-content-input"
+              data-error={!!form.formState.errors.content}
             />
+            {form.formState.errors.content && (
+              <div data-error="true" className={styles.fieldError}>
+                {form.formState.errors.content.message}
+              </div>
+            )}
           </Field>
           <Field title="Прикреплённые файлы" testId="CreateAnnouncement-attachments">
             <AttachedFilesTable files={files} onRemove={handleRemoveFile} />

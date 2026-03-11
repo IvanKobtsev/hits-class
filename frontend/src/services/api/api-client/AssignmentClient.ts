@@ -79,8 +79,11 @@ function processGetAssignmentStatistics(response: AxiosResponse): Promise<Types.
 /**
  * Create assignment (check permission)
  */
-export function createAssignment(dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.AssignmentDto> {
-    let url_ = getBaseUrl() + "/api/assignments";
+export function createAssignment(courseId: number, dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
+    let url_ = getBaseUrl() + "/api/courses/{courseId}/assignments";
+    if (courseId === undefined || courseId === null)
+      throw new Error("The parameter 'courseId' must be defined.");
+    url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
       url_ = url_.replace(/[?&]$/, "");
 
     const content_ = JSON.stringify(dto);
@@ -109,7 +112,7 @@ export function createAssignment(dto: Types.CreateAssignmentDto, config?: AxiosR
     });
 }
 
-function processCreateAssignment(response: AxiosResponse): Promise<Types.AssignmentDto> {
+function processCreateAssignment(response: AxiosResponse): Promise<Types.PublicationDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -130,37 +133,38 @@ function processCreateAssignment(response: AxiosResponse): Promise<Types.Assignm
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initAssignmentDto(resultData200);
-        return Promise.resolve<Types.AssignmentDto>(result200);
+        result200 = Types.initPublicationDto(resultData200);
+        return Promise.resolve<Types.PublicationDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.AssignmentDto>(null as any);
+    return Promise.resolve<Types.PublicationDto>(null as any);
 }
 
 /**
  * Update specific assignment (check permission)
  */
-export function updateAssignment(id: number, dto: Types.CreateAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/assignments/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function patchAssignment(assignmentId: number, dto: Types.PatchAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{assignmentId}";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
       url_ = url_.replace(/[?&]$/, "");
 
     const content_ = JSON.stringify(dto);
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigUpdateAssignment,
+        ..._requestConfigPatchAssignment,
         ...config,
         data: content_,
         method: "PUT",
         url: url_,
         headers: {
-            ..._requestConfigUpdateAssignment?.headers,
+            ..._requestConfigPatchAssignment?.headers,
             "Content-Type": "application/json",
+            "Accept": "application/json"
         }
     };
 
@@ -171,11 +175,11 @@ export function updateAssignment(id: number, dto: Types.CreateAssignmentDto, con
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processUpdateAssignment(_response);
+        return processPatchAssignment(_response);
     });
 }
 
-function processUpdateAssignment(response: AxiosResponse): Promise<void> {
+function processPatchAssignment(response: AxiosResponse): Promise<Types.PublicationDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -194,23 +198,26 @@ function processUpdateAssignment(response: AxiosResponse): Promise<void> {
 
     } else if (status === 200) {
         const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPublicationDto(resultData200);
+        return Promise.resolve<Types.PublicationDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<void>(null as any);
+    return Promise.resolve<Types.PublicationDto>(null as any);
 }
 
 /**
  * Delete specific assignment (check permission)
  */
-export function deleteAssignment(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/assignments/{id}";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function deleteAssignment(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/assignments/{assignmentId}";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {
@@ -283,15 +290,15 @@ export function patchCreateAssignmentRequestConfig(patch: (value: Partial<AxiosR
   _requestConfigCreateAssignment = patch(_requestConfigCreateAssignment ?? {});
 }
 
-let _requestConfigUpdateAssignment: Partial<AxiosRequestConfig> | null;
-export function getUpdateAssignmentRequestConfig() {
-  return _requestConfigUpdateAssignment;
+let _requestConfigPatchAssignment: Partial<AxiosRequestConfig> | null;
+export function getPatchAssignmentRequestConfig() {
+  return _requestConfigPatchAssignment;
 }
-export function setUpdateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigUpdateAssignment = value;
+export function setPatchAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigPatchAssignment = value;
 }
-export function patchUpdateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigUpdateAssignment = patch(_requestConfigUpdateAssignment ?? {});
+export function patchPatchAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigPatchAssignment = patch(_requestConfigPatchAssignment ?? {});
 }
 
 let _requestConfigDeleteAssignment: Partial<AxiosRequestConfig> | null;
