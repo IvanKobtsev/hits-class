@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.Publications.Extensions;
@@ -106,6 +106,17 @@ public class PublicationService(
 
         var targetUsers = GetTargetUsersFromIds(createPublicationDto.TargetUsersIds, course);
 
+        if (
+            targetUsers.Count != 0
+            && publicationPayload.GetEventType() == PublicationType.Announcement
+            && course.Students.Any(s => s.Id == userId)
+        )
+        {
+            throw new ValidationException(
+                "Students are not allowed to set target users for announcements."
+            );
+        }
+
         var newPublication = new Publication(createPublicationDto.Content)
         {
             Type = publicationPayload.GetEventType(),
@@ -152,10 +163,18 @@ public class PublicationService(
 
         if (patchPublicationDto.IsFieldPresent(nameof(patchPublicationDto.TargetUsersIds)))
         {
-            publication.TargetUsers = GetTargetUsersFromIds(
-                patchPublicationDto.TargetUsersIds,
-                course
-            );
+            var targetUsers = GetTargetUsersFromIds(patchPublicationDto.TargetUsersIds, course);
+            if (
+                targetUsers.Count != 0
+                && publication.Type == PublicationType.Announcement
+                && course.Students.Any(s => s.Id == user.Id)
+            )
+            {
+                throw new ValidationException(
+                    "Students are not allowed to set target users for announcements."
+                );
+            }
+            publication.TargetUsers = targetUsers;
         }
 
         publication.Update(patchPublicationDto);

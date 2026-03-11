@@ -1,0 +1,51 @@
+@use 'src/styles/variables' as *;
+
+.panel {
+  background: $classroom-surface;
+  border: 1px solid $border-input;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.header {
+  padding: 14px 16px;
+  border-bottom: 1px solid $border-input;
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.addFileButton {
+  width: 100%;
+  justify-content: center;
+  border: 1px dashed $border-input !important;
+  background: $classroom-surface-alt !important;
+  color: $primary !important;
+  font-size: 13px !important;
+
+  &:hover {
+    border-color: $primary !important;
+    background: $primary-background !important;
+  }
+}
+
+.footer {
+  padding: 0 16px 16px;
+}
+
+.submitButton {
+  width: 100%;
+  justify-content: center;
+}

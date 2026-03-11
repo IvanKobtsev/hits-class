@@ -26,6 +26,12 @@ export * as SubmissionQuery from './api-client/SubmissionQuery';
 
 
 
+export * as PublicationsClient from './api-client/PublicationsClient';
+
+export * as PublicationsQuery from './api-client/PublicationsQuery';
+
+
+
 export * as FilesClient from './api-client/FilesClient';
 
 export * as FilesQuery from './api-client/FilesQuery';
@@ -174,6 +180,10 @@ export function initPersister() {
   addResultTypeFactory('SubmissionClient___getSubmission', (data: any) => Types.initSubmissionDto(data));
 
 
+  addResultTypeFactory('PublicationsClient___getPublications', (data: any) => Types.initPagedResultOfPublicationDto(data));
+  addResultTypeFactory('PublicationsClient___getPublicationById', (data: any) => Types.initPublicationDto(data));
+
+
 
 
   addResultTypeFactory('CourseClient___getCourses', (data: any) => Types.initPagedResultOfCourseListItemDto(data));
@@ -186,11 +196,9 @@ export function initPersister() {
   addResultTypeFactory('CommentClient___getPublicationComments', (data: any) => Types.initPagedResultOfCommentDto(data));
 
 
-  addResultTypeFactory('AssignmentClient___getAssignment', (data: any) => Types.initAssignmentDto(data));
   addResultTypeFactory('AssignmentClient___getAssignmentStatistics', (data: any) => Types.initAssignmentStatisticDto(data));
 
 
-  addResultTypeFactory('AnnouncementClient___getAnnouncement', (data: any) => Types.initAnnouncementDto(data));
 
 
 

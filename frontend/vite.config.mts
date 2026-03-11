@@ -30,7 +30,7 @@ export default defineConfig(({ command, mode }) => {
 
   return {
     plugins: [
-      mkcert(),
+      command === 'serve' && mkcert(),
       // react(),
       reactSwc(),
       tsconfigPaths(),
