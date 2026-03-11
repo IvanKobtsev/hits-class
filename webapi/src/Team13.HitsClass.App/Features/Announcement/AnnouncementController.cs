@@ -21,11 +21,11 @@ namespace Team13.HitsClass.App.Features.Announcement
         /// </summary>
         [HttpPost("/api/courses/{id:int}/announcements")]
         public async Task<PublicationDto> CreateAnnouncement(
-            [FromRoute] int courseId,
+            [FromRoute] int id,
             [FromBody] CreateAnnouncementDto dto
         )
         {
-            return await _announcementService.CreateAnnouncement(courseId, dto);
+            return await _announcementService.CreateAnnouncement(id, dto);
         }
 
         /// <summary>

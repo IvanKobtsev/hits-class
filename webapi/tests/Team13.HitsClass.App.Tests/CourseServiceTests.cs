@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using AwesomeAssertions.Equivalency.Tracing;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Courses.Dto;
@@ -80,16 +76,9 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task PatchCourse_UserIsNotOwner_ThrowsError()
         {
-            var student = new User("student@gmail.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description");
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () =>
@@ -299,15 +288,8 @@ namespace Team13.HitsClass.App.Tests
         {
             var ownerId = _defaultUser.Id;
             var createdCourse = await CreateCourse("Course1", "Description", ownerId);
-            var student = new User("student@gmail.com");
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(createdCourse.Id, student.Id);
 
             var result = await _courseService.GetCourseMembers(createdCourse.Id);
 
@@ -320,19 +302,11 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetCourseMembers_UserIsTeacher_ReturnsMembers()
         {
-            var teacher = new User("teacher@test.com");
-            var student = new User("student@gmail.com");
+            var teacher = await CreateUser("teacher@test.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .Include(c => c.Teachers)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                course.Teachers.Add(teacher);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
+            await AddTeacherToCourse(createdCourse.Id, teacher.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
             var result = await _courseService.GetCourseMembers(createdCourse.Id);
@@ -347,16 +321,9 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetCourseMembers_UserIsStudent_ThrowsException()
         {
-            var student = new User("student@gmail.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () => await _courseService.GetCourseMembers(createdCourse.Id);
@@ -402,16 +369,8 @@ namespace Team13.HitsClass.App.Tests
         public async Task JoinCourse_UserIsAlreadyStudent_ThrowsException()
         {
             var course = await CreateCourse("Course1", "Description");
-            var student = new User("student@gmail.com");
-
-            await WithDbContext(async db =>
-            {
-                var courseInDb = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstAsync(c => c.Id == course.Id);
-                courseInDb.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () =>
@@ -456,22 +415,438 @@ namespace Team13.HitsClass.App.Tests
         public async Task JoinCourse_UserIsAlreadyTeacher_ThrowsException()
         {
             var course = await CreateCourse("Course1", "Description");
-            var teacher = new User("teacher@gmail.com");
-
-            await WithDbContext(async db =>
-            {
-                var courseInDb = await db
-                    .Courses.Include(c => c.Teachers)
-                    .FirstAsync(c => c.Id == course.Id);
-                courseInDb.Teachers.Add(teacher);
-                await db.SaveChangesAsync();
-            });
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
             Func<Task> act = async () =>
                 await _courseService.JoinCourseByInviteCode(course.InviteCode);
 
             await act.Should().ThrowAsync<ConflictException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_AddedByOwner_AddsStudent()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+
+            await _courseService.AddStudentToCourse(course.Id, student.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Students)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Students.Should().Contain(s => s.Id == student.Id);
+            });
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_ByTeacher_AddsStudent()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+            await _courseService.AddStudentToCourse(course.Id, student.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Students)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Students.Should().Contain(s => s.Id == student.Id);
+            });
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_ByStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var student1 = await CreateUser("student1@gmail.com");
+            var student2 = await CreateUser("student2@gmail.com");
+            await AddStudentToCourse(course.Id, student1.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student1.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddStudentToCourse(course.Id, student2.Id);
+
+            await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_AddBannedStudent_AddsStudent()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.BannedStudents)
+                    .FirstAsync(c => c.Id == course.Id);
+                var studentInDb = await db.Users.FirstAsync(u => u.Id == student.Id);
+                courseInDb.BannedStudents.Add(studentInDb);
+                await db.SaveChangesAsync();
+            });
+
+            await _courseService.AddStudentToCourse(course.Id, student.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Students)
+                    .Include(c => c.BannedStudents)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Students.Should().Contain(s => s.Id == student.Id);
+                courseInDb.BannedStudents.Should().NotContain(s => s.Id == student.Id);
+            });
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_CourseDoesNotExist_ThrowsNotFoundException()
+        {
+            var student = await CreateUser("student@gmail.com");
+
+            Func<Task> act = async () => await _courseService.AddStudentToCourse(999, student.Id);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_UserDoesNotExist_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+
+            Func<Task> act = async () =>
+                await _courseService.AddStudentToCourse(course.Id, "notUser");
+
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_UserIsAlreadyStudent_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddStudentToCourse(course.Id, student.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_UserIsAlreadyTeacher_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddStudentToCourse(course.Id, teacher.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task AddStudentToCourse_UserIsOwner_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+
+            Func<Task> act = async () =>
+                await _courseService.AddStudentToCourse(course.Id, _defaultUser.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_ByOwner_AddsTeacher()
+        {
+            var course = await CreateCourse();
+            var teacher = await CreateUser("teacher@gmail.com");
+
+            await _courseService.AddTeacherToCourse(course.Id, teacher.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Teachers.Should().Contain(s => s.Id == teacher.Id);
+            });
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_ByTeacher_AddsTeacher()
+        {
+            var course = await CreateCourse();
+            var teacher1 = await CreateUser("teacher1@gmail.com");
+            var teacher2 = await CreateUser("teacher2@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher1.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher1.Id);
+
+            await _courseService.AddTeacherToCourse(course.Id, teacher2.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Teachers.Should().Contain(s => s.Id == teacher2.Id);
+            });
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_ByStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddTeacherToCourse(course.Id, teacher.Id);
+
+            await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_CourseDoesNotExist_ThrowsNotFoundException()
+        {
+            var teacher = await CreateUser("teacher@gmail.com");
+
+            Func<Task> act = async () => await _courseService.AddTeacherToCourse(999, teacher.Id);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_UserDoesNotExist_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+
+            Func<Task> act = async () =>
+                await _courseService.AddTeacherToCourse(course.Id, "notUser");
+
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_UserIsAlreadyStudent_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddTeacherToCourse(course.Id, student.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_UserIsAlreadyTeacher_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.AddTeacherToCourse(course.Id, teacher.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task AddTeacherToCourse_UserIsOwner_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+
+            Func<Task> act = async () =>
+                await _courseService.AddTeacherToCourse(course.Id, _defaultUser.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_ByOwner_BansStudent()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            await _courseService.BanStudentFromCourse(course.Id, student.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Students)
+                    .Include(c => c.BannedStudents)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Students.Should().NotContain(s => s.Id == student.Id);
+                courseInDb.BannedStudents.Should().Contain(s => s.Id == student.Id);
+            });
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_ByTeacher_BansStudent()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            await AddTeacherToCourse(course.Id, teacher.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+            await _courseService.BanStudentFromCourse(course.Id, student.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Students)
+                    .Include(c => c.BannedStudents)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Students.Should().NotContain(s => s.Id == student.Id);
+                courseInDb.BannedStudents.Should().Contain(s => s.Id == student.Id);
+            });
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_ByStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            var student1 = await CreateUser("student1@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            await AddStudentToCourse(course.Id, student1.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.BanStudentFromCourse(course.Id, student1.Id);
+
+            await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_CourseDoesNotExist_ThrowsNotFoundException()
+        {
+            var student = await CreateUser("student@gmail.com");
+            Func<Task> act = async () => await _courseService.BanStudentFromCourse(999, student.Id);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_UserDoesNotExist_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+            Func<Task> act = async () =>
+                await _courseService.BanStudentFromCourse(course.Id, "notUser");
+
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+        }
+
+        [Fact]
+        public async Task BanStudentFromCourse_UserIsNotStudent_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            Func<Task> act = async () =>
+                await _courseService.BanStudentFromCourse(course.Id, student.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_ByOwner_BansStudent()
+        {
+            var course = await CreateCourse();
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+
+            await _courseService.DeleteTeacherfromCourse(course.Id, teacher.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Teachers.Should().NotContain(s => s.Id == teacher.Id);
+            });
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_ByTeacher_BansStudent()
+        {
+            var course = await CreateCourse();
+            var teacher1 = await CreateUser("teacher1@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher1.Id);
+            var teacher2 = await CreateUser("teacher2@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher2.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher1.Id);
+
+            await _courseService.DeleteTeacherfromCourse(course.Id, teacher2.Id);
+
+            await WithDbContext(async db =>
+            {
+                var courseInDb = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == course.Id);
+                courseInDb.Teachers.Should().NotContain(s => s.Id == teacher2.Id);
+            });
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_ByStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@gmail.com");
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
+            await AddStudentToCourse(course.Id, student.Id);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            Func<Task> act = async () =>
+                await _courseService.DeleteTeacherfromCourse(course.Id, teacher.Id);
+
+            await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_CourseDoesNotExist_ThrowsNotFoundException()
+        {
+            var teacher = await CreateUser("teacher@gmail.com");
+            Func<Task> act = async () =>
+                await _courseService.DeleteTeacherfromCourse(999, teacher.Id);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_UserDoesNotExist_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+            Func<Task> act = async () =>
+                await _courseService.DeleteTeacherfromCourse(course.Id, "notUser");
+
+            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+        }
+
+        [Fact]
+        public async Task DeleteTeacherFromCourse_UserIsNotTeacher_ThrowsNotFoundException()
+        {
+            var course = await CreateCourse();
+            var teacher = await CreateUser("teacher@gmail.com");
+            Func<Task> act = async () =>
+                await _courseService.DeleteTeacherfromCourse(course.Id, teacher.Id);
+
+            await act.Should().ThrowAsync<ValidationException>();
         }
 
         private async Task<Course> CreateCourse(
@@ -501,6 +876,32 @@ namespace Team13.HitsClass.App.Tests
                 await db.SaveChangesAsync();
 
                 return user;
+            });
+        }
+
+        private async Task AddStudentToCourse(int courseId, string studentId)
+        {
+            await WithDbContext(async db =>
+            {
+                var course = await db
+                    .Courses.Include(c => c.Students)
+                    .FirstAsync(c => c.Id == courseId);
+                var student = await db.Users.FirstAsync(u => u.Id == studentId);
+                course.Students.Add(student);
+                await db.SaveChangesAsync();
+            });
+        }
+
+        private async Task AddTeacherToCourse(int courseId, string teacherId)
+        {
+            await WithDbContext(async db =>
+            {
+                var course = await db
+                    .Courses.Include(c => c.Teachers)
+                    .FirstAsync(c => c.Id == courseId);
+                var teacher = await db.Users.FirstAsync(u => u.Id == teacherId);
+                course.Teachers.Add(teacher);
+                await db.SaveChangesAsync();
             });
         }
     }
