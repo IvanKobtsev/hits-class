@@ -7,11 +7,13 @@ const mockAttachments = [
     uuid: 'abc-123',
     fileName: 'document1.pdf',
     size: 1024 * 1024,
+    createdAt: new Date('2025-01-01'),
   },
   {
     uuid: 'def-456',
     fileName: 'image.jpg',
     size: 512 * 1024,
+    createdAt: new Date('2025-01-01'),
   },
 ];
 

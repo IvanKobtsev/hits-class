@@ -82,12 +82,26 @@ function processCreateSubmission(response: AxiosResponse): Promise<Types.Submiss
 
 /**
  * Gets all submissions for an assignment (check permission)
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
  */
-export function getSubmissions(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfSubmissionListItem> {
-    let url_ = getBaseUrl() + "/api/assignments/{id}/submissions";
+export function getSubmissions(id: number, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfSubmissionListItem> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/submissions?";
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    if (offset !== undefined && offset !== null)
+        url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
+    if (limit !== undefined && limit !== null)
+        url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
+    if (sortBy !== undefined && sortBy !== null)
+        url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
+    if (sortOrder === null)
+        throw new Error("The parameter 'sortOrder' cannot be null.");
+    else if (sortOrder !== undefined)
+        url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
       url_ = url_.replace(/[?&]$/, "");
 
     let options_: AxiosRequestConfig = {

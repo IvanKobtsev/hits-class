@@ -1,7 +1,6 @@
 import { useParams } from 'react-router';
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
-import type { AssignmentDto } from 'services/api/api-client.types';
 import { AssignmentView } from './AssignmentView/AssignmentView';
 import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
@@ -22,7 +21,7 @@ export const AssignmentPage = () => {
       <div className={styles.layout}>
         <div className={styles.left}>
           <AssignmentView
-            assignment={publication as unknown as AssignmentDto}
+            assignment={publication}
             submission={submission}
           />
           <PublicCommentView />

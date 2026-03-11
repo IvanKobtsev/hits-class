@@ -22,12 +22,16 @@ export type GetAssignmentStatisticsAssignmentQueryParameters = {
   id: number ;
 }
 
-export type UpdateAssignmentAssignmentQueryParameters = {
-  id: number ;
+export type CreateAssignmentAssignmentQueryParameters = {
+  courseId: number ;
+}
+
+export type PatchAssignmentAssignmentQueryParameters = {
+  assignmentId: number ;
 }
 
 export type DeleteAssignmentAssignmentQueryParameters = {
-  id: number ;
+  assignmentId: number ;
 }
 
 export function getAssignmentStatisticsUrl(id: number): string {
@@ -122,117 +126,141 @@ export function setGetAssignmentStatisticsDataByQueryId(queryClient: QueryClient
   queryClient.setQueryData(queryKey, updater);
 }
     
-export function createAssignmentUrl(): string {
-  let url_ = getBaseUrl() + "/api/assignments";
+export function createAssignmentUrl(courseId: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{courseId}/assignments";
+if (courseId === undefined || courseId === null)
+  throw new Error("The parameter 'courseId' must be defined.");
+url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
   url_ = url_.replace(/[?&]$/, "");
   return url_;
 }
 
-export function createAssignmentMutationKey(): MutationKey {
+export function createAssignmentMutationKey(courseId: number): MutationKey {
   return trimArrayEnd([
       'AssignmentClient',
       'createAssignment',
+      courseId as any,
     ]);
 }
 
 /**
  * Create assignment (check permission)
  */
-export function useCreateAssignmentMutation<TContext>(options?: Omit<UseMutationOptions<Types.AssignmentDto, unknown, Types.CreateAssignmentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.AssignmentDto, unknown, Types.CreateAssignmentDto, TContext> {
-  const key = createAssignmentMutationKey();
+export function useCreateAssignmentMutation<TContext>(courseId: number, options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, Types.CreateAssignmentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PublicationDto, unknown, Types.CreateAssignmentDto, TContext> {
+  const key = createAssignmentMutationKey(courseId);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
   return useMutation({
     ...options,
-    mutationFn: (dto: Types.CreateAssignmentDto) => Client.createAssignment(dto),
+    mutationFn: (dto: Types.CreateAssignmentDto) => Client.createAssignment(courseId, dto),
     mutationKey: key,
   });
 }
   
-export function updateAssignmentUrl(id: number): string {
-  let url_ = getBaseUrl() + "/api/assignments/{id}";
-if (id === undefined || id === null)
-  throw new Error("The parameter 'id' must be defined.");
-url_ = url_.replace("{id}", encodeURIComponent("" + id));
-  url_ = url_.replace(/[?&]$/, "");
-  return url_;
-}
-
-export function updateAssignmentMutationKey(id: number): MutationKey {
-  return trimArrayEnd([
-      'AssignmentClient',
-      'updateAssignment',
-      id as any,
-    ]);
-}
-
-/**
- * Update specific assignment (check permission)
- */
-export function useUpdateAssignmentMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, Types.CreateAssignmentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.CreateAssignmentDto, TContext> {
-  const key = updateAssignmentMutationKey(id);
-  
-  const metaContext = useContext(QueryMetaContext);
-  options = addMetaToOptions(options, metaContext);
-  
-  return useMutation({
-    ...options,
-    mutationFn: (dto: Types.CreateAssignmentDto) => Client.updateAssignment(id, dto),
-    mutationKey: key,
-  });
-}
-  
-type UpdateAssignment__MutationParameters = UpdateAssignmentAssignmentQueryParameters & {
+type CreateAssignment__MutationParameters = CreateAssignmentAssignmentQueryParameters & {
   dto: Types.CreateAssignmentDto;
 }
 
 /**
- * Update specific assignment (check permission)
+ * Create assignment (check permission)
  */
-export function useUpdateAssignmentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, UpdateAssignment__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: UpdateAssignmentAssignmentQueryParameters}): UseMutationResult<void, unknown, UpdateAssignment__MutationParameters, TContext> {
-  const key = updateAssignmentMutationKey(options?.parameters?.id!);
+export function useCreateAssignmentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, CreateAssignment__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreateAssignmentAssignmentQueryParameters}): UseMutationResult<Types.PublicationDto, unknown, CreateAssignment__MutationParameters, TContext> {
+  const key = createAssignmentMutationKey(options?.parameters?.courseId!);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
 return useMutation({
   ...options, 
-  mutationFn: (data: UpdateAssignment__MutationParameters) => Client.updateAssignment(data.id ?? options?.parameters?.id!, data.dto),
+  mutationFn: (data: CreateAssignment__MutationParameters) => Client.createAssignment(data.courseId ?? options?.parameters?.courseId!, data.dto),
   mutationKey: key,
 });
 }
   
-export function deleteAssignmentUrl(id: number): string {
-  let url_ = getBaseUrl() + "/api/assignments/{id}";
-if (id === undefined || id === null)
-  throw new Error("The parameter 'id' must be defined.");
-url_ = url_.replace("{id}", encodeURIComponent("" + id));
+export function patchAssignmentUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{assignmentId}";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
   url_ = url_.replace(/[?&]$/, "");
   return url_;
 }
 
-export function deleteAssignmentMutationKey(id: number): MutationKey {
+export function patchAssignmentMutationKey(assignmentId: number): MutationKey {
   return trimArrayEnd([
       'AssignmentClient',
-      'deleteAssignment',
-      id as any,
+      'patchAssignment',
+      assignmentId as any,
     ]);
 }
 
 /**
- * Delete specific assignment (check permission)
+ * Update specific assignment (check permission)
  */
-export function useDeleteAssignmentMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
-  const key = deleteAssignmentMutationKey(id);
+export function usePatchAssignmentMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, Types.PatchAssignmentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PublicationDto, unknown, Types.PatchAssignmentDto, TContext> {
+  const key = patchAssignmentMutationKey(assignmentId);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
   return useMutation({
     ...options,
-    mutationFn: () => Client.deleteAssignment(id),
+    mutationFn: (dto: Types.PatchAssignmentDto) => Client.patchAssignment(assignmentId, dto),
+    mutationKey: key,
+  });
+}
+  
+type PatchAssignment__MutationParameters = PatchAssignmentAssignmentQueryParameters & {
+  dto: Types.PatchAssignmentDto;
+}
+
+/**
+ * Update specific assignment (check permission)
+ */
+export function usePatchAssignmentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, PatchAssignment__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: PatchAssignmentAssignmentQueryParameters}): UseMutationResult<Types.PublicationDto, unknown, PatchAssignment__MutationParameters, TContext> {
+  const key = patchAssignmentMutationKey(options?.parameters?.assignmentId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: PatchAssignment__MutationParameters) => Client.patchAssignment(data.assignmentId ?? options?.parameters?.assignmentId!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function deleteAssignmentUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{assignmentId}";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function deleteAssignmentMutationKey(assignmentId: number): MutationKey {
+  return trimArrayEnd([
+      'AssignmentClient',
+      'deleteAssignment',
+      assignmentId as any,
+    ]);
+}
+
+/**
+ * Delete specific assignment (check permission)
+ */
+export function useDeleteAssignmentMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
+  const key = deleteAssignmentMutationKey(assignmentId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.deleteAssignment(assignmentId),
     mutationKey: key,
   });
 }
@@ -243,14 +271,14 @@ type DeleteAssignment__MutationParameters = DeleteAssignmentAssignmentQueryParam
  * Delete specific assignment (check permission)
  */
 export function useDeleteAssignmentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, DeleteAssignment__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: DeleteAssignmentAssignmentQueryParameters}): UseMutationResult<void, unknown, DeleteAssignment__MutationParameters, TContext> {
-  const key = deleteAssignmentMutationKey(options?.parameters?.id!);
+  const key = deleteAssignmentMutationKey(options?.parameters?.assignmentId!);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
 return useMutation({
   ...options, 
-  mutationFn: (data: DeleteAssignment__MutationParameters) => Client.deleteAssignment(data.id ?? options?.parameters?.id!),
+  mutationFn: (data: DeleteAssignment__MutationParameters) => Client.deleteAssignment(data.assignmentId ?? options?.parameters?.assignmentId!),
   mutationKey: key,
 });
 }

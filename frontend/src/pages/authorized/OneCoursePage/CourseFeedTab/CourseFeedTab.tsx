@@ -11,15 +11,15 @@ type Props = {
   courseId: number;
   publications: PublicationDto[];
   role: CourseRole;
-  onCreateAssignment?: () => void;
-  onCreateAnnouncement?: () => void;
+  onCreateAnnouncement: () => void;
+  onCreateAssignment: () => void;
 };
 
 export const CourseFeedTab: React.FC<Props> = ({
   publications,
   role,
-  onCreateAssignment,
   onCreateAnnouncement,
+  onCreateAssignment,
 }) => {
   return (
     <Box className={styles.wrapper}>
