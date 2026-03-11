@@ -8,6 +8,7 @@ import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPag
 import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
 import { CoursesRoutes } from './authorized/CoursesPage/CoursesRoutes';
 import { AssignmentPage } from './authorized/AssignmentPage/AssignmentPage';
+import { OneCoursePage } from './authorized/OneCoursePage/OneCoursePage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
@@ -23,6 +24,10 @@ export const authorizedRoutes = () =>
           path: Links.Authorized.CourseRoutes.route,
           element: <CoursesRoutes />,
           children: [
+            {
+              index: true,
+              element: <OneCoursePage />,
+            },
             {
               path: Links.Authorized.CourseNotFound.route,
               element: <div>Course not found</div>,
