@@ -33,6 +33,10 @@ vi.mock('./CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal', () =>
   CreateAnnouncementModal: vi.fn(() => null),
 }));
 
+vi.mock('./CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal', () => ({
+  CreateAssignmentModal: vi.fn(() => null),
+}));
+
 vi.mock('./useCourseRole', () => ({
   useCourseRole: vi.fn(() => 'student'),
 }));
