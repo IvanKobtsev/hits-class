@@ -73,7 +73,7 @@ export const CreateAssignmentModal = ({
         await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
       } catch {
-        modal.showError({ text: 'Создание задания не удалось' });
+        void modal.showError({ text: 'Создание задания не удалось' });
       }
     },
     { shouldResetOnSuccess: true },

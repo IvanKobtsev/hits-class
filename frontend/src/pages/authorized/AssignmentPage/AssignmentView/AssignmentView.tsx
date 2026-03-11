@@ -3,6 +3,15 @@ import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import { AssignmentPayload, PublicationDto, SubmissionDto } from 'services/api/api-client.types';
 import styles from './AssignmentView.module.scss';
 
+function isValidJson(value: string): boolean {
+  try {
+    JSON.parse(value);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function formatDateUTC(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
   const m = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -22,8 +31,10 @@ export type AssignmentViewProps = {
 };
 
 export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) => {
-  const { content, author, createdAtUTC } = assignment;
-  const { title, deadlineUtc } = assignment.publicationPayload as AssignmentPayload;
+  const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
+  const createdAtUTC = new Date(createdAtUTCRaw);
+  const { title, deadlineUtc: deadlineUtcRaw } = assignment.publicationPayload as AssignmentPayload;
+  const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
   return (
     <div className={styles.container}>
@@ -76,7 +87,10 @@ export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) 
             className={styles.description}
             data-test-id="AssignmentView-description"
           >
-            <LexicalViewer lexicalState={content} />
+            {isValidJson(content)
+              ? <LexicalViewer lexicalState={content} />
+              : <span>{content}</span>
+            }
           </div>
         )}
 

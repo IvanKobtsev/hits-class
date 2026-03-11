@@ -65,7 +65,7 @@ export const CreateAnnouncementModal = ({
         await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
       } catch {
-        modal.showError({ text: 'Создание объявления не удалось' });
+        void modal.showError({ text: 'Создание объявления не удалось' });
       }
     },
     { shouldResetOnSuccess: true },
