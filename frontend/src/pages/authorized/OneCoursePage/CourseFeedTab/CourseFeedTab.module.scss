@@ -1,0 +1,26 @@
+@use '../../../../styles/base.scss' as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+}
+
+.btnPrimary {
+  text-transform: none !important;
+}
+
+.btnSecondary {
+  text-transform: none !important;
+}

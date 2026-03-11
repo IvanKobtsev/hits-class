@@ -1,0 +1,21 @@
+.page {
+  padding: 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: min(1200px, 100% - 16px);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.tabsWrapper {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs {
+  margin-bottom: -1px;
+}
+
+.content {
+  min-height: 200px;
+}

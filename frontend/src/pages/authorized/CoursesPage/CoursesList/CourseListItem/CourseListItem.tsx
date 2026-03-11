@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import styles from './CourseListItem.module.scss';
 import { clsx } from 'clsx';
+import { Links } from 'application/constants/links';
 
 type Props = {
   id: number;
@@ -30,7 +31,7 @@ const getColor = (str: string): string => {
 export const CourseListItem: React.FC<Props> = ({ id, title, description }) => {
   return (
     <Card variant="outlined" className={styles.card}>
-      <CardActionArea component={Link} to={`/courses/${id}`}>
+      <CardActionArea component={Link} to={Links.Authorized.CourseRoutes.link({ courseId: id })}>
         <Box
           sx={{
             height: 80,
