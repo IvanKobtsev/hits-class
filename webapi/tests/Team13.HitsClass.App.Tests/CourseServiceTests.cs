@@ -1,16 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
-using AwesomeAssertions.Equivalency.Tracing;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Courses.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Pagination;
 
@@ -1153,7 +1150,7 @@ namespace Team13.HitsClass.App.Tests
             return await WithDbContext(async db =>
             {
                 var author = await db.Users.FirstAsync(u => u.Id == _defaultUser.Id);
-                var publication = new Publication("Assignment content")
+                var publication = new Publication(LexicalStateBuilder.BuildLexicalState("Content"))
                 {
                     CourseId = courseId,
                     Type = PublicationType.Assignment,

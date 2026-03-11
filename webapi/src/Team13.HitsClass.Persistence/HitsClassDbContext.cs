@@ -87,6 +87,10 @@ public class HitsClassDbContext
         builder.Entity<Publication>(b =>
         {
             b.Property(p => p.PublicationPayloadJson).HasColumnType("jsonb");
+            b.Property(p => p.Content)
+                .HasConversion(v => v.Json, v => new LexicalState(v))
+                .HasColumnType("jsonb")
+                .IsRequired();
             b.HasOne(p => p.Author);
             b.HasMany(p => p.TargetUsers).WithMany();
             b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
@@ -117,6 +121,10 @@ public class HitsClassDbContext
         builder.Entity<SubmissionComment>(b =>
         {
             b.HasOne(c => c.Author).WithMany().HasForeignKey(c => c.AuthorId);
+            b.Property(sc => sc.Content)
+                .HasConversion(v => v.Json, v => new LexicalState(v))
+                .HasColumnType("jsonb")
+                .IsRequired();
         });
     }
 

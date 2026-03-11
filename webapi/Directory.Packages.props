@@ -28,6 +28,7 @@
     <PackageVersion Include="I18Next.Net.AspNetCore" Version="1.0.0" />
     <PackageVersion Include="I18Next.Net.Extensions" Version="1.0.0" />
     <PackageVersion Include="IdentityModel" Version="7.0.0" />
+    <PackageVersion Include="Jering.Javascript.NodeJS" Version="7.0.0" />
     <PackageVersion Include="JsonKnownTypes" Version="0.7.0" />
     <PackageVersion Include="MailKit" Version="4.14.1" />
     <PackageVersion Include="MartinCostello.Logging.XUnit" Version="0.7.0" />
