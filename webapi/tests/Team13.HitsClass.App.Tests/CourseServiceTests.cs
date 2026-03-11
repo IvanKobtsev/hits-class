@@ -76,16 +76,9 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task PatchCourse_UserIsNotOwner_ThrowsError()
         {
-            var student = new User("student@gmail.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description");
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () =>
@@ -295,15 +288,8 @@ namespace Team13.HitsClass.App.Tests
         {
             var ownerId = _defaultUser.Id;
             var createdCourse = await CreateCourse("Course1", "Description", ownerId);
-            var student = new User("student@gmail.com");
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(createdCourse.Id, student.Id);
 
             var result = await _courseService.GetCourseMembers(createdCourse.Id);
 
@@ -316,19 +302,11 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetCourseMembers_UserIsTeacher_ReturnsMembers()
         {
-            var teacher = new User("teacher@test.com");
-            var student = new User("student@gmail.com");
+            var teacher = await CreateUser("teacher@test.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .Include(c => c.Teachers)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                course.Teachers.Add(teacher);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
+            await AddTeacherToCourse(createdCourse.Id, teacher.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
             var result = await _courseService.GetCourseMembers(createdCourse.Id);
@@ -343,16 +321,9 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task GetCourseMembers_UserIsStudent_ThrowsException()
         {
-            var student = new User("student@gmail.com");
+            var student = await CreateUser("student@gmail.com");
             var createdCourse = await CreateCourse("Course1", "Description", _defaultUser.Id);
-            await WithDbContext(async db =>
-            {
-                var course = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstOrDefaultAsync(c => c.Id == createdCourse.Id);
-                course.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            await AddStudentToCourse(createdCourse.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () => await _courseService.GetCourseMembers(createdCourse.Id);
@@ -398,16 +369,8 @@ namespace Team13.HitsClass.App.Tests
         public async Task JoinCourse_UserIsAlreadyStudent_ThrowsException()
         {
             var course = await CreateCourse("Course1", "Description");
-            var student = new User("student@gmail.com");
-
-            await WithDbContext(async db =>
-            {
-                var courseInDb = await db
-                    .Courses.Include(c => c.Students)
-                    .FirstAsync(c => c.Id == course.Id);
-                courseInDb.Students.Add(student);
-                await db.SaveChangesAsync();
-            });
+            var student = await CreateUser("student@gmail.com");
+            await AddStudentToCourse(course.Id, student.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
             Func<Task> act = async () =>
@@ -452,16 +415,8 @@ namespace Team13.HitsClass.App.Tests
         public async Task JoinCourse_UserIsAlreadyTeacher_ThrowsException()
         {
             var course = await CreateCourse("Course1", "Description");
-            var teacher = new User("teacher@gmail.com");
-
-            await WithDbContext(async db =>
-            {
-                var courseInDb = await db
-                    .Courses.Include(c => c.Teachers)
-                    .FirstAsync(c => c.Id == course.Id);
-                courseInDb.Teachers.Add(teacher);
-                await db.SaveChangesAsync();
-            });
+            var teacher = await CreateUser("teacher@gmail.com");
+            await AddTeacherToCourse(course.Id, teacher.Id);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
             Func<Task> act = async () =>
@@ -558,7 +513,7 @@ namespace Team13.HitsClass.App.Tests
 
             Func<Task> act = async () => await _courseService.AddStudentToCourse(999, student.Id);
 
-            await act.Should().ThrowAsync<PersistenceResourceNotFoundException>();
+            await act.Should().ThrowAsync<NotFoundException>();
         }
 
         [Fact]
