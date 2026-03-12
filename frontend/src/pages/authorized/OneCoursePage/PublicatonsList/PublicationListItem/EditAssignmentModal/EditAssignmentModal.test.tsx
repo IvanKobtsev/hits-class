@@ -4,11 +4,11 @@ import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import type { Attachment } from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api/index.ts';
-import { EditAnnouncementModal } from './EditAnnouncementModal';
+import { EditAssignmentModal } from './EditAssignmentModal';
 
 const mockMutateAsync = vi.fn();
-vi.mock('services/api/api-client/AnnouncementQuery', () => ({
-  useUpdateAnnouncementMutation: () => ({
+vi.mock('services/api/api-client/AssignmentQuery', () => ({
+  usePatchAssignmentMutation: () => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   }),
@@ -42,6 +42,12 @@ vi.mock('services/api/api-client/FilesQuery', () => ({
   }),
 }));
 
+vi.mock('components/uikit/inputs/date-time/HookFormDatePicker', () => ({
+  HookFormDatePicker: ({ name }: { name: string; control: unknown }) => (
+    <input data-test-id={`EditAssignment-${name}`} type="date" readOnly />
+  ),
+}));
+
 vi.mock('components/uikit/suspense/Loading', () => ({
   Loading: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
@@ -67,8 +73,8 @@ vi.mock('components/uikit/modal/CustomModal', () => ({
 
 const mockAttachment: Attachment = {
   uuid: 'att-uuid-1',
-  fileName: 'document.pdf',
-  size: 1024,
+  fileName: 'task.pdf',
+  size: 2048,
   createdAt: new Date('2025-01-01'),
 };
 
@@ -77,32 +83,38 @@ function renderModal(
     isOpen?: boolean;
     onClose?: () => void;
     publicationId?: number;
+    initialTitle?: string;
     initialContent?: string;
+    initialDeadlineUtc?: Date | null;
     initialAttachments?: Attachment[];
   } = {},
 ) {
   const {
     isOpen = true,
     onClose = vi.fn(),
-    publicationId = 10,
+    publicationId = 20,
+    initialTitle = '',
     initialContent = '',
+    initialDeadlineUtc = null,
     initialAttachments = [],
   } = overrides;
 
   return render(
     <MemoryRouter>
-      <EditAnnouncementModal
+      <EditAssignmentModal
         isOpen={isOpen}
         onClose={onClose}
         publicationId={publicationId}
+        initialTitle={initialTitle}
         initialContent={initialContent}
+        initialDeadlineUtc={initialDeadlineUtc}
         initialAttachments={initialAttachments}
       />
     </MemoryRouter>,
   );
 }
 
-describe('EditAnnouncementModal', () => {
+describe('EditAssignmentModal', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -110,22 +122,36 @@ describe('EditAnnouncementModal', () => {
   test('renders modal title when open', () => {
     renderModal();
 
-    expect(screen.getByText('Редактировать объявление')).toBeInTheDocument();
+    expect(screen.getByText('Редактировать задание')).toBeInTheDocument();
   });
 
   test('does not render when closed', () => {
     renderModal({ isOpen: false });
 
+    expect(screen.queryByText('Редактировать задание')).not.toBeInTheDocument();
+  });
+
+  test('renders title field', () => {
+    renderModal();
+
     expect(
-      screen.queryByText('Редактировать объявление'),
-    ).not.toBeInTheDocument();
+      screen.getByTestId('EditAssignment-title-input'),
+    ).toBeInTheDocument();
   });
 
   test('renders content field', () => {
     renderModal();
 
     expect(
-      screen.getByTestId('EditAnnouncement-content-input'),
+      screen.getByTestId('EditAssignment-content-input'),
+    ).toBeInTheDocument();
+  });
+
+  test('renders deadline field', () => {
+    renderModal();
+
+    expect(
+      screen.getByTestId('EditAssignment-deadlineUtc'),
     ).toBeInTheDocument();
   });
 
@@ -133,7 +159,7 @@ describe('EditAnnouncementModal', () => {
     renderModal();
 
     expect(
-      screen.getByTestId('EditAnnouncement-attachments'),
+      screen.getByTestId('EditAssignment-attachments'),
     ).toBeInTheDocument();
   });
 
@@ -145,34 +171,50 @@ describe('EditAnnouncementModal', () => {
     ).toBeInTheDocument();
   });
 
-  test('pre-fills content field with initialContent', () => {
-    renderModal({ initialContent: 'Исходное содержание' });
+  test('pre-fills title field with initialTitle', () => {
+    renderModal({ initialTitle: 'Задание по алгебре' });
 
-    expect(screen.getByTestId('EditAnnouncement-content-input')).toHaveValue(
-      'Исходное содержание',
+    expect(screen.getByTestId('EditAssignment-title-input')).toHaveValue(
+      'Задание по алгебре',
+    );
+  });
+
+  test('pre-fills content field with initialContent', () => {
+    renderModal({ initialContent: 'Решить задачи 1–10' });
+
+    expect(screen.getByTestId('EditAssignment-content-input')).toHaveValue(
+      'Решить задачи 1–10',
     );
   });
 
   test('shows initial attachment names in the file table', () => {
     renderModal({ initialAttachments: [mockAttachment] });
 
-    expect(screen.getByText('document.pdf')).toBeInTheDocument();
+    expect(screen.getByText('task.pdf')).toBeInTheDocument();
   });
 
-  test('calls mutation with updated content on submit', async () => {
+  test('calls mutation with updated title and content on submit', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialContent: 'Старое содержание' });
+    renderModal({ initialTitle: 'Старое название', initialContent: 'Старое описание' });
 
-    const textarea = screen.getByTestId('EditAnnouncement-content-input');
-    await user.clear(textarea);
-    await user.type(textarea, 'Новое содержание');
+    const titleInput = screen.getByTestId('EditAssignment-title-input');
+    await user.clear(titleInput);
+    await user.type(titleInput, 'Новое название');
+
+    const contentInput = screen.getByTestId('EditAssignment-content-input');
+    await user.clear(contentInput);
+    await user.type(contentInput, 'Новое описание');
+
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
-          content: 'Новое содержание',
+          content: 'Новое описание',
+          payload: expect.objectContaining({
+            title: 'Новое название',
+          }),
         }),
       );
     });
@@ -182,7 +224,7 @@ describe('EditAnnouncementModal', () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialContent: 'Содержание', onClose });
+    renderModal({ initialTitle: 'Название', initialContent: 'Описание', onClose });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -194,7 +236,7 @@ describe('EditAnnouncementModal', () => {
   test('shows success alert after successful update', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialContent: 'Содержание' });
+    renderModal({ initialTitle: 'Название', initialContent: 'Описание' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -206,7 +248,7 @@ describe('EditAnnouncementModal', () => {
   test('invalidates publications queries after successful update', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialContent: 'Содержание' });
+    renderModal({ initialTitle: 'Название', initialContent: 'Описание' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -219,24 +261,37 @@ describe('EditAnnouncementModal', () => {
     });
   });
 
-  test('shows required error under content field when submit is pressed with empty content', async () => {
+  test('shows required error under title field when submit is pressed with empty title', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ initialContent: 'Описание' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('EditAnnouncement-content')).getByText(
+        within(screen.getByTestId('EditAssignment-title')).getByText(
           'Обязательное поле',
         ),
       ).toBeInTheDocument();
     });
   });
 
-  test('does not call mutation when content is empty', async () => {
+  test('shows required error under content field when submit is pressed with empty content', async () => {
     const user = userEvent.setup();
-    renderModal();
+    renderModal({ initialTitle: 'Название' });
+
+    await user.click(screen.getByRole('button', { name: /сохранить/i }));
+
+    await waitFor(() => {
+      const textarea = screen.getByTestId('EditAssignment-content-input');
+      expect(textarea.closest('div')).toHaveTextContent('Обязательное поле');
+      expect(textarea).toHaveAttribute('data-error', 'true');
+    });
+  });
+
+  test('does not call mutation when title is empty', async () => {
+    const user = userEvent.setup();
+    renderModal({ initialContent: 'Описание' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -247,7 +302,7 @@ describe('EditAnnouncementModal', () => {
     // TODO: specify the error reason in the popup text (e.g. network error, server error message)
     const user = userEvent.setup();
     mockMutateAsync.mockRejectedValue(new Error('Server error'));
-    renderModal({ initialContent: 'Содержание' });
+    renderModal({ initialTitle: 'Название', initialContent: 'Описание' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -260,7 +315,7 @@ describe('EditAnnouncementModal', () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     mockMutateAsync.mockRejectedValue(new Error('Server error'));
-    renderModal({ initialContent: 'Содержание', onClose });
+    renderModal({ initialTitle: 'Название', initialContent: 'Описание', onClose });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
