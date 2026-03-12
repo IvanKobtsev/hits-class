@@ -157,6 +157,7 @@ describe('CreateAssignmentModal', () => {
     renderModal(true, onClose);
 
     await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание');
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -170,10 +171,25 @@ describe('CreateAssignmentModal', () => {
     renderModal();
 
     await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание');
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: [] });
+    });
+  });
+
+  test('shows Required error under content field when submit is pressed with empty content', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.click(screen.getByRole('button', { name: /создать/i }));
+
+    await waitFor(() => {
+      const textarea = screen.getByTestId('CreateAssignment-content-input');
+      expect(textarea.closest('div')).toHaveTextContent('Required');
+      expect(textarea).toHaveAttribute('data-error', 'true');
     });
   });
 
@@ -206,6 +222,7 @@ describe('CreateAssignmentModal', () => {
     renderModal();
 
     await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание');
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {

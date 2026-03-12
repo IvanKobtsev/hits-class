@@ -4,6 +4,16 @@ import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { JoinCourseModal } from './JoinCourseModal.tsx';
 
 const mockMutateAsync = vi.fn();
+
+const mockInvalidateQueries = vi.fn();
+vi.mock('@tanstack/react-query', async (importActual) => {
+  const actual = await importActual<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  };
+});
+
 vi.mock('services/api/api-client/CourseQuery', () => ({
   useJoinCourseMutation: (_inviteCode: string) => ({
     mutateAsync: mockMutateAsync,
@@ -108,6 +118,19 @@ describe('JoinCourseModal', () => {
       expect(
         screen.getByText('Не удалось присоединиться к курсу'),
       ).toBeInTheDocument();
+    });
+  });
+
+  test('invalidates queries after successful join', async () => {
+    const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue(undefined);
+    renderModal();
+
+    await user.type(screen.getByTestId('JoinCourse-inviteCode'), 'ABC-123');
+    await user.click(screen.getByRole('button', { name: /записаться/i }));
+
+    await waitFor(() => {
+      expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: [] });
     });
   });
 

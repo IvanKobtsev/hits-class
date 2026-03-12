@@ -149,7 +149,8 @@ export const CreateAssignmentModal = ({
           </Field>
           <Field title="Описание">
             <TextArea
-              {...form.register('content')}
+              {...form.register('content', { ...requiredRule() })}
+              errorText={form.formState.errors.content?.message}
               data-test-id="CreateAssignment-content-input"
             />
           </Field>
