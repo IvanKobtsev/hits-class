@@ -178,6 +178,30 @@ describe('AttachedFilesTable', () => {
     expect(screen.queryByText('only.pdf')).not.toBeInTheDocument();
   });
 
+  // --- Read-only mode (no onRemove) ---
+
+  test('renders without remove buttons when onRemove is not provided', () => {
+    const files = [
+      { id: '1', name: 'report.pdf', size: 1024, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} />);
+
+    expect(
+      screen.queryByRole('button', { name: /remove|delete|удалить|remove file/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  test('renders remove buttons when onRemove is provided', () => {
+    const files = [
+      { id: '1', name: 'report.pdf', size: 1024, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} onRemove={vi.fn()} />);
+
+    expect(
+      screen.getByRole('button', { name: /remove|delete|удалить|remove file/i }),
+    ).toBeInTheDocument();
+  });
+
   // --- Total size over 1 GB → toast ---
 
   test('shows error "Файлы не должны весить больше 1GB в сумме" when total size exceeds 1 GB', () => {

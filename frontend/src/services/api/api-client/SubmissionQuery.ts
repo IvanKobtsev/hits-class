@@ -38,6 +38,14 @@ export type GetSubmissionSubmissionQueryParameters = {
   id: number ;
 }
 
+export type SaveDraftSubmissionQueryParameters = {
+  id: number ;
+}
+
+export type RetractSubmissionSubmissionQueryParameters = {
+  id: number ;
+}
+
 export type MarkSubmissionSubmissionQueryParameters = {
   id: number ;
 }
@@ -402,6 +410,110 @@ export function setGetSubmissionDataByQueryId(queryClient: QueryClient, queryKey
   queryClient.setQueryData(queryKey, updater);
 }
     
+export function saveDraftUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{id}/submission/draft";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function saveDraftMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'SubmissionClient',
+      'saveDraft',
+      id as any,
+    ]);
+}
+
+/**
+ * Save (upsert) draft submission
+ */
+export function useSaveDraftMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, Types.CreateSubmissionDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.SubmissionDto, unknown, Types.CreateSubmissionDto, TContext> {
+  const key = saveDraftMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.CreateSubmissionDto) => Client.saveDraft(id, dto),
+    mutationKey: key,
+  });
+}
+  
+type SaveDraft__MutationParameters = SaveDraftSubmissionQueryParameters & {
+  dto: Types.CreateSubmissionDto;
+}
+
+/**
+ * Save (upsert) draft submission
+ */
+export function useSaveDraftMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, SaveDraft__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: SaveDraftSubmissionQueryParameters}): UseMutationResult<Types.SubmissionDto, unknown, SaveDraft__MutationParameters, TContext> {
+  const key = saveDraftMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: SaveDraft__MutationParameters) => Client.saveDraft(data.id ?? options?.parameters?.id!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function retractSubmissionUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{id}/submission/retract";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function retractSubmissionMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'SubmissionClient',
+      'retractSubmission',
+      id as any,
+    ]);
+}
+
+/**
+ * Retract student's own submission (sets state back to Draft)
+ */
+export function useRetractSubmissionMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.SubmissionDto, unknown, void, TContext> {
+  const key = retractSubmissionMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.retractSubmission(id),
+    mutationKey: key,
+  });
+}
+  
+type RetractSubmission__MutationParameters = RetractSubmissionSubmissionQueryParameters
+
+/**
+ * Retract student's own submission (sets state back to Draft)
+ */
+export function useRetractSubmissionMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, RetractSubmission__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: RetractSubmissionSubmissionQueryParameters}): UseMutationResult<Types.SubmissionDto, unknown, RetractSubmission__MutationParameters, TContext> {
+  const key = retractSubmissionMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: RetractSubmission__MutationParameters) => Client.retractSubmission(data.id ?? options?.parameters?.id!),
+  mutationKey: key,
+});
+}
+  
 export function markSubmissionUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/submissions/{id}/mark";
 if (id === undefined || id === null)

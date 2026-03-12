@@ -39,15 +39,29 @@ public class SubmissionService(
         if (!publication.IsForEveryone && !publication.TargetUsers.Any(u => u.Id == userId))
             throw new AccessDeniedException("This assignment is not targeted at you.");
 
-        var duplicate = await dbContext.Submissions.AnyAsync(s =>
-            s.PublicationId == assignmentId && s.AuthorId == userId
-        );
-        if (duplicate)
-            throw new ValidationException("You have already submitted for this assignment.");
-
         var attachments = dto
             .Attachments.Select(a => new Attachment(a.Id, a.FileName, a.Size, a.CreatedAt))
             .ToList();
+
+        var existing = await dbContext
+            .Submissions.Include(s => s.Author)
+            .Include(s => s.Comments)
+                .ThenInclude(c => c.Author)
+            .FirstOrDefaultAsync(s => s.PublicationId == assignmentId && s.AuthorId == userId);
+
+        if (existing != null)
+        {
+            if (existing.State != SubmissionState.Draft)
+                throw new ValidationException("You have already submitted for this assignment.");
+
+            existing.Attachments = attachments;
+            existing.State = SubmissionState.Submitted;
+            existing.LastSubmittedAtUTC = DateTime.UtcNow;
+
+            await dbContext.SaveChangesAsync();
+
+            return existing.ToSubmissionDto();
+        }
 
         var submission = new DomainSubmission
         {
@@ -141,6 +155,89 @@ public class SubmissionService(
 
         if (!canView)
             throw new AccessDeniedException("You do not have permission to view this submission.");
+
+        return submission.ToSubmissionDto();
+    }
+
+    public async Task<SubmissionDto> SaveDraft(int assignmentId, CreateSubmissionDto dto)
+    {
+        var userId = userAccessor.GetUserId();
+
+        var publication = await dbContext
+            .Publications.Include(p => p.Course)
+                .ThenInclude(c => c.Students)
+            .Include(p => p.TargetUsers)
+            .GetOne(Publication.HasId(assignmentId));
+
+        if (!publication.Course.Students.Any(s => s.Id == userId))
+            throw new AccessDeniedException("You are not a student of this course.");
+
+        if (publication.Type != PublicationType.Assignment)
+            throw new ValidationException("Only assignments can have submissions.");
+
+        if (!publication.IsForEveryone && !publication.TargetUsers.Any(u => u.Id == userId))
+            throw new AccessDeniedException("This assignment is not targeted at you.");
+
+        var attachments = dto
+            .Attachments.Select(a => new Attachment(a.Id, a.FileName, a.Size, a.CreatedAt))
+            .ToList();
+
+        var existing = await dbContext
+            .Submissions.Include(s => s.Author)
+            .Include(s => s.Comments)
+                .ThenInclude(c => c.Author)
+            .FirstOrDefaultAsync(s => s.PublicationId == assignmentId && s.AuthorId == userId);
+
+        if (existing != null)
+        {
+            if (existing.State != SubmissionState.Draft)
+                throw new ValidationException("Cannot modify a submitted or accepted submission.");
+
+            existing.Attachments = attachments;
+            await dbContext.SaveChangesAsync();
+            return existing.ToSubmissionDto();
+        }
+
+        var submission = new DomainSubmission
+        {
+            PublicationId = assignmentId,
+            AuthorId = userId,
+            State = SubmissionState.Draft,
+            Attachments = attachments,
+            Comments = [],
+        };
+
+        dbContext.Submissions.Add(submission);
+        await dbContext.SaveChangesAsync();
+
+        var saved = await dbContext
+            .Submissions.Include(s => s.Author)
+            .Include(s => s.Comments)
+                .ThenInclude(c => c.Author)
+            .GetOne(DomainSubmission.HasId(submission.Id));
+
+        return saved.ToSubmissionDto();
+    }
+
+    public async Task<SubmissionDto> RetractSubmission(int assignmentId)
+    {
+        var userId = userAccessor.GetUserId();
+
+        var submission =
+            await dbContext
+                .Submissions.Include(s => s.Author)
+                .Include(s => s.Comments)
+                    .ThenInclude(c => c.Author)
+                .FirstOrDefaultAsync(s => s.PublicationId == assignmentId && s.AuthorId == userId)
+            ?? throw new PersistenceResourceNotFoundException("Submission not found.");
+
+        if (submission.State == SubmissionState.Accepted)
+            throw new ValidationException("Cannot retract an accepted submission.");
+
+        submission.State = SubmissionState.Draft;
+        submission.LastSubmittedAtUTC = null;
+
+        await dbContext.SaveChangesAsync();
 
         return submission.ToSubmissionDto();
     }

@@ -1,8 +1,14 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
 import { useUploadFileMutation } from 'services/api/api-client/FilesQuery';
-import { useCreateSubmissionMutation } from 'services/api/api-client/SubmissionQuery';
-import type { FileInfoDto } from 'services/api/api-client.types';
+import {
+  useCreateSubmissionMutation,
+  useRetractSubmissionMutation,
+  useSaveDraftMutation,
+  getMySubmissionQueryKey,
+} from 'services/api/api-client/SubmissionQuery';
+import type { FileInfoDto, SubmissionDto } from 'services/api/api-client.types';
 import {
   AttachedFileItem,
   AttachedFilesTable,
@@ -15,22 +21,66 @@ function makeId(): string {
   return `file-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function fileInfoToItem(f: FileInfoDto): AttachedFileItem {
+  return { id: f.id, name: f.fileName, size: f.size, status: 'uploaded' };
+}
+
+function draftFilesFromSubmission(submission: SubmissionDto | undefined): AttachedFileItem[] {
+  if (submission?.state === 'Draft') return submission.attachments.map(fileInfoToItem);
+  return [];
+}
+
+function draftInfosFromSubmission(
+  submission: SubmissionDto | undefined,
+): Record<string, FileInfoDto> {
+  if (submission?.state !== 'Draft') return {};
+  const infos: Record<string, FileInfoDto> = {};
+  submission.attachments.forEach((f) => {
+    infos[f.id] = f;
+  });
+  return infos;
+}
+
 export type SubmissionPanelProps = {
   assignmentId?: number;
+  submission?: SubmissionDto;
 };
 
 export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
   assignmentId,
+  submission,
 }) => {
+  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [uploadedFileInfos, setUploadedFileInfos] = useState<
-    Record<string, FileInfoDto>
-  >({});
+
+  // Pre-populate from Draft on mount (handles page-refresh-with-draft case)
+  const [files, setFiles] = useState<AttachedFileItem[]>(() =>
+    draftFilesFromSubmission(submission),
+  );
+  const [uploadedFileInfos, setUploadedFileInfos] = useState<Record<string, FileInfoDto>>(() =>
+    draftInfosFromSubmission(submission),
+  );
 
   const { mutate: uploadFile } = useUploadFileMutation();
   const { mutate: createSubmission, isPending: isSubmitting } =
     useCreateSubmissionMutation(assignmentId ?? 0);
+  const { mutate: retractSubmission, isPending: isCancelling } =
+    useRetractSubmissionMutation(assignmentId ?? 0);
+  const { mutate: saveDraft } = useSaveDraftMutation(assignmentId ?? 0);
+
+  const isFirstRender = useRef(true);
+
+  // Auto-save draft whenever uploadedFileInfos changes (skip initial render)
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (isSubmitted || assignmentId == null || Number.isNaN(assignmentId)) return;
+    saveDraft({ attachments: Object.values(uploadedFileInfos) });
+  }, [uploadedFileInfos]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const isSubmitted = submission?.state === 'Submitted';
 
   const handleFileInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,10 +152,55 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
         onSuccess: () => {
           setFiles([]);
           setUploadedFileInfos({});
+          void queryClient.invalidateQueries({
+            queryKey: getMySubmissionQueryKey(assignmentId),
+          });
         },
       },
     );
-  }, [assignmentId, attachments, canSubmit, createSubmission]);
+  }, [assignmentId, attachments, canSubmit, createSubmission, queryClient]);
+
+  const handleCancel = useCallback(() => {
+    if (assignmentId == null || !submission) return;
+    const previousAttachments = submission.attachments;
+    retractSubmission(undefined, {
+      onSuccess: () => {
+        const restoredFiles: AttachedFileItem[] = previousAttachments.map(fileInfoToItem);
+        const restoredInfos: Record<string, FileInfoDto> = {};
+        previousAttachments.forEach((f) => {
+          restoredInfos[f.id] = f;
+        });
+        setFiles(restoredFiles);
+        setUploadedFileInfos(restoredInfos);
+        void queryClient.invalidateQueries({
+          queryKey: getMySubmissionQueryKey(assignmentId),
+        });
+      },
+    });
+  }, [assignmentId, retractSubmission, queryClient, submission]);
+
+  if (isSubmitted) {
+    const submittedFiles = submission!.attachments.map(fileInfoToItem);
+    return (
+      <div className={styles.panel} data-test-id="add-attachment-panel">
+        <div className={styles.header}>Ваша работа</div>
+        <div className={styles.body}>
+          <AttachedFilesTable files={submittedFiles} />
+        </div>
+        <div className={styles.footer}>
+          <Button
+            title="Отменить сдачу"
+            color={ButtonColor.Default}
+            width={ButtonWidth.Fullwidth}
+            className={styles.submitButton}
+            disabled={isCancelling}
+            onClick={handleCancel}
+            aria-label="Отменить сдачу"
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.panel} data-test-id="add-attachment-panel">

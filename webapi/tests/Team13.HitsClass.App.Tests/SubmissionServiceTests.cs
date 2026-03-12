@@ -440,6 +440,231 @@ public class SubmissionServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region SaveDraft Tests
+
+    [Fact]
+    public async Task SaveDraft_WithNoExistingSubmission_CreatesDraftSubmission()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto { Attachments = [] };
+
+        // Act
+        var result = await Sut.SaveDraft(assignment.Id, dto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.State.Should().Be(SubmissionState.Draft);
+        result.LastSubmittedAtUTC.Should().BeNull();
+        result.Author.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task SaveDraft_WithExistingDraft_UpdatesAttachments()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateDraftDbSubmission(
+            assignment.Id,
+            student.Id,
+            [new Attachment("old-id", "old.pdf", 100, DateTime.UtcNow)]
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto
+        {
+            Attachments =
+            [
+                new FileInfoDto
+                {
+                    Id = "new-id",
+                    FileName = "new.pdf",
+                    Size = 200,
+                    CreatedAt = DateTime.UtcNow,
+                    Metadata = new FileMetadataDto(),
+                },
+            ],
+        };
+
+        // Act
+        var result = await Sut.SaveDraft(assignment.Id, dto);
+
+        // Assert
+        result.State.Should().Be(SubmissionState.Draft);
+        result.Attachments.Should().HaveCount(1);
+        result.Attachments.Should().Contain(a => a.Id == "new-id" && a.FileName == "new.pdf");
+        result.Attachments.Should().NotContain(a => a.Id == "old-id");
+    }
+
+    [Fact]
+    public async Task SaveDraft_WithExistingSubmittedSubmission_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto { Attachments = [] };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.SaveDraft(assignment.Id, dto)
+        );
+    }
+
+    [Fact]
+    public async Task SaveDraft_AsStudentNotInCourse_ThrowsAccessDeniedException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        var assignment = await CreateAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto { Attachments = [] };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await Sut.SaveDraft(assignment.Id, dto)
+        );
+    }
+
+    [Fact]
+    public async Task SaveDraft_ForAnnouncementPublication_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var announcement = await CreateAnnouncement(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto { Attachments = [] };
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.SaveDraft(announcement.Id, dto)
+        );
+    }
+
+    #endregion
+
+    #region RetractSubmission Tests
+
+    [Fact]
+    public async Task RetractSubmission_WithSubmittedSubmission_SetsStateToDraft()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act
+        var result = await Sut.RetractSubmission(assignment.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.State.Should().Be(SubmissionState.Draft);
+        result.LastSubmittedAtUTC.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task RetractSubmission_WithAcceptedSubmission_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateAcceptedDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.RetractSubmission(assignment.Id)
+        );
+    }
+
+    [Fact]
+    public async Task RetractSubmission_WithNoSubmission_ThrowsNotFoundException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
+            await Sut.RetractSubmission(assignment.Id)
+        );
+    }
+
+    [Fact]
+    public async Task RetractSubmission_RetainsAttachments()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateDbSubmission(
+            assignment.Id,
+            student.Id,
+            [new Attachment("uuid-1", "report.pdf", 1024, DateTime.UtcNow)]
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        // Act
+        var result = await Sut.RetractSubmission(assignment.Id);
+
+        // Assert
+        result.Attachments.Should().HaveCount(1);
+        result.Attachments.Should().Contain(a => a.Id == "uuid-1" && a.FileName == "report.pdf");
+    }
+
+    #endregion
+
+    #region CreateSubmission with existing Draft Tests
+
+    [Fact]
+    public async Task CreateSubmission_WithExistingDraft_UpgradesDraftToSubmitted()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id);
+        await CreateDraftDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateSubmissionDto { Attachments = [] };
+
+        // Act
+        var result = await Sut.CreateSubmission(assignment.Id, dto);
+
+        // Assert
+        result.State.Should().Be(SubmissionState.Submitted);
+        result.LastSubmittedAtUTC.Should().NotBeNull();
+    }
+
+    #endregion
+
     #region MarkSubmission Tests
 
     [Fact]
@@ -676,6 +901,53 @@ public class SubmissionServiceTests : AppServiceTestBase
                 State = SubmissionState.Submitted,
                 LastSubmittedAtUTC = DateTime.UtcNow,
                 Attachments = attachments ?? [],
+                Comments = [],
+            };
+
+            db.Submissions.Add(submission);
+            await db.SaveChangesAsync();
+            return submission;
+        });
+    }
+
+    private async Task<Domain.Submission> CreateDraftDbSubmission(
+        int publicationId,
+        string authorId,
+        List<Attachment>? attachments = null
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            var submission = new Domain.Submission
+            {
+                PublicationId = publicationId,
+                AuthorId = authorId,
+                State = SubmissionState.Draft,
+                Attachments = attachments ?? [],
+                Comments = [],
+            };
+
+            db.Submissions.Add(submission);
+            await db.SaveChangesAsync();
+            return submission;
+        });
+    }
+
+    private async Task<Domain.Submission> CreateAcceptedDbSubmission(
+        int publicationId,
+        string authorId
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            var submission = new Domain.Submission
+            {
+                PublicationId = publicationId,
+                AuthorId = authorId,
+                State = SubmissionState.Accepted,
+                LastSubmittedAtUTC = DateTime.UtcNow,
+                Mark = "5",
+                Attachments = [],
                 Comments = [],
             };
 

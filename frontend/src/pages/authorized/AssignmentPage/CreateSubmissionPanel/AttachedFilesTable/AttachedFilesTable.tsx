@@ -21,7 +21,7 @@ export type AttachedFileItem = {
 
 export type AttachedFilesTableProps = {
   files: AttachedFileItem[];
-  onRemove: (id: string) => void;
+  onRemove?: (id: string) => void;
 };
 
 export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
@@ -41,7 +41,7 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
               <th className={styles.colName}>Имя</th>
               <th className={styles.colSize}>Размер</th>
               <th className={styles.colProgress}>Статус</th>
-              <th className={styles.colAction} />
+              {onRemove && <th className={styles.colAction} />}
             </tr>
           </thead>
         )}
@@ -74,16 +74,18 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
                   <span className={styles.errorText}>Ошибка загрузки</span>
                 )}
               </td>
-              <td className={styles.cellAction}>
-                <button
-                  type="button"
-                  className={styles.removeButton}
-                  onClick={() => onRemove(file.id)}
-                  aria-label="Remove file"
-                >
-                  ×
-                </button>
-              </td>
+              {onRemove && (
+                <td className={styles.cellAction}>
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    onClick={() => onRemove(file.id)}
+                    aria-label="Remove file"
+                  >
+                    ×
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
