@@ -38,6 +38,41 @@ vi.mock(
   }),
 );
 
+const mockDeleteAnnouncementMutateAsync = vi.fn();
+vi.mock('services/api/api-client/AnnouncementQuery', () => ({
+  useDeleteAnnouncementMutation: () => ({
+    mutateAsync: mockDeleteAnnouncementMutateAsync,
+    isPending: false,
+  }),
+}));
+
+const mockDeleteAssignmentMutateAsync = vi.fn();
+vi.mock('services/api/api-client/AssignmentQuery', () => ({
+  useDeleteAssignmentMutation: () => ({
+    mutateAsync: mockDeleteAssignmentMutateAsync,
+    isPending: false,
+  }),
+}));
+
+const mockInvalidateQueries = vi.fn();
+vi.mock('@tanstack/react-query', async (importActual) => {
+  const actual = await importActual<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  };
+});
+
+const mockShowConfirm = vi.fn();
+vi.mock('components/uikit/modal/useModal', async (importActual) => {
+  const actual =
+    await importActual<typeof import('components/uikit/modal/useModal')>();
+  return {
+    ...actual,
+    useModal: () => ({ showConfirm: mockShowConfirm }),
+  };
+});
+
 const mockAuthor = {
   id: 'teacher-1',
   email: 'teacher@test.com',
@@ -328,6 +363,134 @@ describe('PublicationListItem', () => {
           initialContent: mockAssignment.content,
         }),
       );
+    });
+  });
+
+  // --- Delete button ---
+
+  test('menu contains Удалить option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /удалить/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Удалить opens confirmation dialog', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(false);
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockShowConfirm).toHaveBeenCalled();
+    });
+  });
+
+  test('cancelling confirmation does not call delete mutation', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(false);
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockShowConfirm).toHaveBeenCalled();
+    });
+    expect(mockDeleteAnnouncementMutateAsync).not.toHaveBeenCalled();
+  });
+
+  test('confirming deletion calls useDeleteAnnouncementMutation for announcement', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAnnouncementMutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  test('confirming deletion calls useDeleteAssignmentMutation for assignment', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAssignmentMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAssignmentMutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  test('successful deletion shows success snackbar', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Успешно удалено')).toBeInTheDocument();
+    });
+  });
+
+  test('successful deletion invalidates publications query', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockInvalidateQueries).toHaveBeenCalled();
+    });
+  });
+
+  test('failed deletion shows error snackbar', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockRejectedValue(new Error('Server error'));
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Возникла ошибка при удалении')).toBeInTheDocument();
     });
   });
 });
