@@ -7,7 +7,7 @@ import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Butto
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useModal } from 'components/uikit/modal/useModal';
 import { Avatar } from 'components/uikit/avatar/Avatar';
-import { PublicationType, UserDto } from 'services/api/api-client.types';
+import { PublicationType, type UserDto } from 'services/api/api-client.types';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useUpdateAnnouncementMutation } from 'services/api/api-client/AnnouncementQuery';
 import { usePatchAssignmentMutation } from 'services/api/api-client/AssignmentQuery';
@@ -59,17 +59,6 @@ export const EditTargetUsersModal = ({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const teachers: UserDto[] = useMemo(() => {
-    if (!course) return [];
-    const all = [course.owner, ...course.teachers];
-    const seen = new Set<string>();
-    return all.filter((u) => {
-      if (seen.has(u.id)) return false;
-      seen.add(u.id);
-      return true;
-    });
-  }, [course]);
-
   const students: UserDto[] = useMemo(() => {
     if (!course) return [];
     return [...course.students].sort((a, b) => {
@@ -88,10 +77,6 @@ export const EditTargetUsersModal = ({
   }, [students]);
 
   const searchLower = search.toLowerCase();
-
-  const filteredTeachers = teachers.filter((u) =>
-    u.legalName.toLowerCase().includes(searchLower),
-  );
 
   const filteredStudents = students.filter((u) => {
     const matchesSearch = u.legalName.toLowerCase().includes(searchLower);
@@ -185,23 +170,9 @@ export const EditTargetUsersModal = ({
           </div>
 
           <div className={styles.userList}>
-            {filteredTeachers.length > 0 && (
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>Преподаватели</div>
-                {filteredTeachers.map((u) => (
-                  <UserRow key={u.id} user={u} />
-                ))}
-              </div>
-            )}
-
-            {filteredStudents.length > 0 && (
-              <div className={styles.section}>
-                <div className={styles.sectionHeader}>Студенты</div>
-                {filteredStudents.map((u) => (
-                  <UserRow key={u.id} user={u} />
-                ))}
-              </div>
-            )}
+            {filteredStudents.map((u) => (
+              <UserRow key={u.id} user={u} />
+            ))}
           </div>
 
           <div className={styles.footer}>

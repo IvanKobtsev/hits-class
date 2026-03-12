@@ -150,29 +150,18 @@ describe('EditTargetUsersModal', () => {
     ).not.toBeInTheDocument();
   });
 
-  test('renders teachers section header', () => {
-    renderModal();
-
-    expect(screen.getByText('Преподаватели')).toBeInTheDocument();
-  });
-
-  test('renders students section header', () => {
-    renderModal();
-
-    expect(screen.getByText('Студенты')).toBeInTheDocument();
-  });
-
-  test('renders teacher names from course data', () => {
-    renderModal();
-
-    expect(screen.getByText('Иванов Иван')).toBeInTheDocument();
-  });
-
   test('renders student names from course data', () => {
     renderModal();
 
     expect(screen.getByText('Студент Альфа')).toBeInTheDocument();
     expect(screen.getByText('Студент Бета')).toBeInTheDocument();
+  });
+
+  test('does not render teachers section', () => {
+    renderModal();
+
+    expect(screen.queryByText('Преподаватели')).not.toBeInTheDocument();
+    expect(screen.queryByText('Иванов Иван')).not.toBeInTheDocument();
   });
 
   test('renders Сохранить button', () => {
