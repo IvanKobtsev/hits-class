@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { vi, test, expect, describe } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import {
   initAnnouncementPayload,
@@ -14,6 +15,28 @@ vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return { ...actual };
 });
+
+const mockEditAnnouncementModal = vi.fn();
+vi.mock(
+  './EditAnnouncementModal/EditAnnouncementModal',
+  () => ({
+    EditAnnouncementModal: (props: { isOpen: boolean }) => {
+      mockEditAnnouncementModal(props);
+      return props.isOpen ? <div data-test-id="EditAnnouncementModal" /> : null;
+    },
+  }),
+);
+
+const mockEditAssignmentModal = vi.fn();
+vi.mock(
+  './EditAssignmentModal/EditAssignmentModal',
+  () => ({
+    EditAssignmentModal: (props: { isOpen: boolean }) => {
+      mockEditAssignmentModal(props);
+      return props.isOpen ? <div data-test-id="EditAssignmentModal" /> : null;
+    },
+  }),
+);
 
 const mockAuthor = {
   id: 'teacher-1',
@@ -59,6 +82,10 @@ function renderPublicationListItem(props = mockAnnouncement) {
 }
 
 describe('PublicationListItem', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   // --- Rendering ---
 
   test('renders author name', () => {
@@ -201,5 +228,106 @@ describe('PublicationListItem', () => {
     renderPublicationListItem(mockAssignment);
     const avatar = screen.getByTestId(`PublicationItem-type-icon-${mockAssignment.id}`);
     expect(avatar.className).toMatch(/typeIconAssignment/);
+  });
+
+  // --- Menu button ---
+
+  test('renders menu button', () => {
+    renderPublicationListItem();
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is outside the navigation link', () => {
+    renderPublicationListItem();
+
+    const link = screen.getByRole('link');
+    const menuButton = screen.getByTestId(
+      `PublicationItem-menu-button-${mockAnnouncement.id}`,
+    );
+    expect(link).not.toContainElement(menuButton);
+  });
+
+  test('clicking menu button opens menu with Редактировать option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /редактировать/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Редактировать on announcement opens EditAnnouncementModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditAnnouncementModal')).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Редактировать on assignment opens EditAssignmentModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditAssignmentModal')).toBeInTheDocument();
+    });
+  });
+
+  test('EditAnnouncementModal receives pre-filled props from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(mockEditAnnouncementModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          publicationId: mockAnnouncement.id,
+          initialContent: mockAnnouncement.content,
+        }),
+      );
+    });
+  });
+
+  test('EditAssignmentModal receives pre-filled props from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(mockEditAssignmentModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          publicationId: mockAssignment.id,
+          initialContent: mockAssignment.content,
+        }),
+      );
+    });
   });
 });

@@ -1,0 +1,20 @@
+@use 'src/styles/variables' as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 360px;
+}
+
+.fileInput {
+  display: none;
+}
+
+.addFileButton {
+  margin-top: 8px;
+}
+
+.footer {
+  margin-top: 8px;
+}
