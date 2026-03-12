@@ -100,6 +100,7 @@
     <PackageVersion Include="OpenIddict.Server" Version="7.2.0" />
     <PackageVersion Include="Polly.Core" Version="8.6.5" />
     <PackageVersion Include="Polly.Extensions" Version="8.6.5" />
+    <PackageVersion Include="PreMailer.Net" Version="2.7.2" />
     <PackageVersion Include="Roslyn.Analyzers" Version="1.0.3.4" />
     <PackageVersion Include="Sentry.AspNetCore" Version="6.0.0" />
     <PackageVersion Include="Sentry.Serilog" Version="6.0.0" />

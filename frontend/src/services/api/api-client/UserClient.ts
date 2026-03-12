@@ -74,6 +74,63 @@ function processRegister(response: AxiosResponse): Promise<void> {
     return Promise.resolve<void>(null as any);
 }
 
+export function sendVerificationCode(dto: Types.VerificationDto, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/users/email-verification";
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeVerificationDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigSendVerificationCode,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigSendVerificationCode?.headers,
+            "Content-Type": "application/json",
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processSendVerificationCode(_response);
+    });
+}
+
+function processSendVerificationCode(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
 /**
  * Confirms user's email address.
 This endpoint is called when the user clicks the confirmation link in the email.
@@ -402,6 +459,17 @@ export function setRegisterRequestConfig(value: Partial<AxiosRequestConfig>) {
 }
 export function patchRegisterRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigRegister = patch(_requestConfigRegister ?? {});
+}
+
+let _requestConfigSendVerificationCode: Partial<AxiosRequestConfig> | null;
+export function getSendVerificationCodeRequestConfig() {
+  return _requestConfigSendVerificationCode;
+}
+export function setSendVerificationCodeRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigSendVerificationCode = value;
+}
+export function patchSendVerificationCodeRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigSendVerificationCode = patch(_requestConfigSendVerificationCode ?? {});
 }
 
 let _requestConfigConfirmEmail: Partial<AxiosRequestConfig> | null;

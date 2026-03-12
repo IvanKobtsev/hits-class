@@ -95,6 +95,27 @@ export function prepareSerializeRegisterUserDto(_data: RegisterUserDto): Registe
   const data: Record<string, any> = { ..._data };
   return data as RegisterUserDto;
 }
+export interface VerificationDto  {
+  email: string;
+}
+export function deserializeVerificationDto(json: string): VerificationDto {
+  const data = JSON.parse(json) as VerificationDto;
+  initVerificationDto(data);
+  return data;
+}
+export function initVerificationDto(_data: VerificationDto) {
+    return _data;
+}
+export function serializeVerificationDto(_data: VerificationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeVerificationDto(_data as VerificationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeVerificationDto(_data: VerificationDto): VerificationDto {
+  const data: Record<string, any> = { ..._data };
+  return data as VerificationDto;
+}
 export interface UserDto  {
   id: string;
   email: string;

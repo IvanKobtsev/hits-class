@@ -144,7 +144,8 @@ public class MailSender : IMailSender
             }
         }
 
-        bodyBuilder.HtmlBody = text;
+        var preMailerResult = PreMailer.Net.PreMailer.MoveCssInline(text);
+        bodyBuilder.HtmlBody = preMailerResult.Html;
         message.Subject = subject;
 
         message.Body = bodyBuilder.ToMessageBody();
