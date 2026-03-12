@@ -17,19 +17,25 @@ vi.mock('./SidebarExpandableDropdown/SidebarExpandableDropdown', () => ({
   SidebarExpandableDropdown: ({
     title,
     isExpandedHorizontally,
+    onClick,
     children,
   }: {
     title: string;
     isExpandedHorizontally: boolean;
+    onClick?: () => void;
     children?: ReactNode;
     [key: string]: unknown;
-  }) =>
-    isExpandedHorizontally ? (
-      <>
-        <span>{title}</span>
-        {children}
-      </>
-    ) : null,
+  }) => (
+    <>
+      <button aria-label={title} onClick={onClick} />
+      {isExpandedHorizontally && (
+        <>
+          <span>{title}</span>
+          {children}
+        </>
+      )}
+    </>
+  ),
 }));
 
 vi.mock('./CourseListItemInSidebar/CourseListItemInSidebar', () => ({
@@ -261,6 +267,84 @@ describe('Sidebar', () => {
     await user.click(screen.getByText('Записаться на курс'));
 
     expect(screen.getByTestId('join-course-modal')).toBeInTheDocument();
+  });
+
+  // --- Auto-expand sidebar when dropdown is opened ---
+
+  test('expands sidebar when studying dropdown is opened while sidebar is collapsed', async () => {
+    const user = userEvent.setup();
+    const toggle = vi.fn();
+    mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Курсы, на которых я обучаюсь' }),
+    );
+
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  test('expands sidebar when teaching dropdown is opened while sidebar is collapsed', async () => {
+    const user = userEvent.setup();
+    const toggle = vi.fn();
+    mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Курсы, которые я преподаю' }),
+    );
+
+    expect(toggle).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not toggle sidebar when expanding dropdown while sidebar is already expanded', async () => {
+    const user = userEvent.setup();
+    const toggle = vi.fn();
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      screen.getByRole('button', { name: 'Курсы, на которых я обучаюсь' }),
+    );
+
+    expect(toggle).not.toHaveBeenCalled();
+  });
+
+  test('does not toggle sidebar when collapsing an already-open dropdown', async () => {
+    const user = userEvent.setup();
+    const toggle = vi.fn();
+    mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    const studyingButton = screen.getByRole('button', {
+      name: 'Курсы, на которых я обучаюсь',
+    });
+
+    await user.click(studyingButton); // open → toggle called once
+    toggle.mockClear();
+
+    await user.click(studyingButton); // close → toggle must NOT be called again
+    expect(toggle).not.toHaveBeenCalled();
   });
 
   test('hides course items when collapsed', () => {
