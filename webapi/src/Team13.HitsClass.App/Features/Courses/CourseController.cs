@@ -65,7 +65,7 @@ public class CourseController
     /// <summary>
     /// Creates a new course. Only teachers can create courses.
     /// </summary>
-    [Authorize(Roles = UserRoles.Teacher)]
+    [Authorize(Roles = $"{UserRoles.Teacher},{UserRoles.Admin}")]
     [HttpPost]
     public async Task<CourseDto> CreateCourse([FromBody] CreateCourseDto courseDto)
     {

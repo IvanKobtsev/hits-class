@@ -286,11 +286,28 @@ namespace Team13.HitsClass.App.Tests
         public async Task DeleteCourse_UserIsNotOwner_ThrowsError()
         {
             var course = await CreateCourse("Course1", "Description");
+            var user = await CreateUser("someUser@gmail.com");
 
-            _userAccessorMock.Setup(x => x.GetUserId()).Returns("someUserId");
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(user.Id);
             Func<Task> act = async () => await _courseService.DeleteCourse(course.Id);
 
             await act.Should().ThrowAsync<AccessDeniedException>();
+        }
+
+        [Fact]
+        public async Task DeleteCourse_UserIsAdmin_DeletesCourse()
+        {
+            var course = await CreateCourse("Course1", "Description");
+            var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+            ;
+            await _courseService.DeleteCourse(course.Id);
+
+            await WithDbContext(async db =>
+            {
+                var exists = await db.Courses.AnyAsync(c => c.Id == course.Id);
+                exists.Should().BeFalse();
+            });
         }
 
         [Fact]
