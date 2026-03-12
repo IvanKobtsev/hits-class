@@ -1,0 +1,25 @@
+.card {
+  border-radius: 0.75rem !important;
+  overflow: hidden !important;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  align-items: center;
+  gap: 8px; // gap: 1 = 8px
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
