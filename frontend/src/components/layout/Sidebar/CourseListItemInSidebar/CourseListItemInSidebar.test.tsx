@@ -30,7 +30,7 @@ describe('CourseListItemInSidebar', () => {
 
   // --- Navigation ---
 
-  test('links to /course/:id', () => {
+  test('links to /courses/:id', () => {
     renderItem();
 
     expect(screen.getByRole('link')).toHaveAttribute(
