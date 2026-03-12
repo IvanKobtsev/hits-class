@@ -152,7 +152,7 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
         onSuccess: () => {
           setFiles([]);
           setUploadedFileInfos({});
-          queryClient.invalidateQueries({
+          void queryClient.invalidateQueries({
             queryKey: getMySubmissionQueryKey(assignmentId),
           });
         },
@@ -172,7 +172,7 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
         });
         setFiles(restoredFiles);
         setUploadedFileInfos(restoredInfos);
-        queryClient.invalidateQueries({
+        void queryClient.invalidateQueries({
           queryKey: getMySubmissionQueryKey(assignmentId),
         });
       },
