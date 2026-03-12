@@ -8,6 +8,7 @@ import { ServerSideLoginPage } from './unauthorized/LoginPage/ServerSideLoginPag
 import { CoursesPage } from './authorized/CoursesPage/CoursesPage';
 import { CoursesRoutes } from './authorized/CoursesPage/CoursesRoutes';
 import { AssignmentPage } from './authorized/AssignmentPage/AssignmentPage';
+import { AnnouncementPage } from './authorized/AnnouncementPage/AnnouncementPage';
 import { OneCoursePage } from './authorized/OneCoursePage/OneCoursePage';
 import { EmailConfirmPage } from './unauthorized/EmailConfirmPage/EmailConfirmPage';
 import { PageNotFound } from './authorized/PageNotFound/PageNotFound';
@@ -49,6 +50,10 @@ export const authorizedRoutes = () =>
             {
               path: Links.Authorized.AssignmentRoutes.route,
               element: <AssignmentPage />,
+            },
+            {
+              path: Links.Authorized.AnnouncementRoutes.route,
+              element: <AnnouncementPage />,
             },
           ],
         },
