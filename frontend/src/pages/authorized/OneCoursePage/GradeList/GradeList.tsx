@@ -11,7 +11,7 @@ export const GradeList: React.FC<GradeListProps> = ({ publications }) => {
   const assignments = publications
     .filter((p) => p.type === PublicationType.Assignment)
     .slice()
-    .reverse();
+    .sort((a, b) => new Date(b.createdAtUTC).getTime() - new Date(a.createdAtUTC).getTime());
 
   if (assignments.length === 0) {
     return (

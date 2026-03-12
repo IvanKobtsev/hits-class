@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { vi, test, expect, describe, beforeEach } from 'vitest';
+import { vi, test, expect, describe } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { GradeList } from './GradeList';
 import { AssignmentPayload, PublicationDto, PublicationType } from 'services/api/api-client.types';
