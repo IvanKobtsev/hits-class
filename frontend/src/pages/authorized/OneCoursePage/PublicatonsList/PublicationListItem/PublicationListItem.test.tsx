@@ -100,6 +100,19 @@ describe('PublicationListItem', () => {
     ).toBeInTheDocument();
   });
 
+  test('attachments list is rendered outside the navigation link', () => {
+    renderPublicationListItem({
+      ...mockAnnouncement,
+      attachments: [
+        { uuid: 'f1', fileName: 'file.pdf', size: 100, createdAt: new Date('2025-01-01') },
+      ],
+    });
+
+    const link = screen.getByRole('link');
+    const attachmentsList = screen.getByTestId(`AttachmentsList-${mockAnnouncement.id}`);
+    expect(link).not.toContainElement(attachmentsList);
+  });
+
   // --- Assignment specific test ---
   test('renders assignment title when type is Assignment', () => {
     renderPublicationListItem(mockAssignment);
