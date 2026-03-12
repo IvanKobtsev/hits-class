@@ -4854,55 +4854,55 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface ICommentClient : IBaseClient
     {
-            /// <summary>Retrieves all Comments of the specified Assignment.</summary>
+            /// <summary>Retrieves all Comments of the current user's submission for the specified Assignment.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters)
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters)
         {
             return GetAssignmentCommentsAsync(parameters, System.Threading.CancellationToken.None);
         }
 
-            /// <summary>Retrieves all Comments of the specified Assignment.</summary>
+            /// <summary>Retrieves all Comments of the current user's submission for the specified Assignment.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return GetAssignmentCommentsAsync(parameters.assignmentId, cancellationToken);
         }
 
             /// <summary>Retrieves all Comments of the specified Publication.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters)
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters)
         {
             return GetPublicationCommentsAsync(parameters, System.Threading.CancellationToken.None);
         }
 
             /// <summary>Retrieves all Comments of the specified Publication.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return GetPublicationCommentsAsync(parameters.publicationId, cancellationToken);
         }
         /// <summary>
-        /// Retrieves all Comments of the specified Assignment.
+        /// Retrieves all Comments of the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(int assignmentId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(int assignmentId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Retrieves all Comments of the specified Assignment.
+        /// Retrieves all Comments of the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
-        /// Adds a Comment to the specified Assignment.
+        /// Adds a Comment to the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<CommentDto> AddCommentToAssignmentAsync(int assignmentId, CreateCommentDto createCommentDto);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Adds a Comment to the specified Assignment.
+        /// Adds a Comment to the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<CommentDto> AddCommentToAssignmentAsync(int assignmentId, CreateCommentDto createCommentDto, System.Threading.CancellationToken cancellationToken);
@@ -4911,14 +4911,14 @@ namespace Team13.HitsClass.Http.Generated
         /// Retrieves all Comments of the specified Publication.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(int publicationId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(int publicationId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Retrieves all Comments of the specified Publication.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(int publicationId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(int publicationId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds a Comment to the specified Publication.
@@ -5007,20 +5007,20 @@ namespace Team13.HitsClass.Http.Generated
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
 
         /// <summary>
-        /// Retrieves all Comments of the specified Assignment.
+        /// Retrieves all Comments of the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(int assignmentId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(int assignmentId)
         {
             return GetAssignmentCommentsAsync(assignmentId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Retrieves all Comments of the specified Assignment.
+        /// Retrieves all Comments of the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken)
         {
             if (assignmentId == null)
                 throw new System.ArgumentNullException("assignmentId");
@@ -5071,7 +5071,7 @@ namespace Team13.HitsClass.Http.Generated
                         else
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<PagedResultOfCommentDto>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CommentDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -5099,7 +5099,7 @@ namespace Team13.HitsClass.Http.Generated
         }
 
         /// <summary>
-        /// Adds a Comment to the specified Assignment.
+        /// Adds a Comment to the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<CommentDto> AddCommentToAssignmentAsync(int assignmentId, CreateCommentDto createCommentDto)
@@ -5109,7 +5109,7 @@ namespace Team13.HitsClass.Http.Generated
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Adds a Comment to the specified Assignment.
+        /// Adds a Comment to the current user's submission for the specified Assignment.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<CommentDto> AddCommentToAssignmentAsync(int assignmentId, CreateCommentDto createCommentDto, System.Threading.CancellationToken cancellationToken)
@@ -5201,7 +5201,7 @@ namespace Team13.HitsClass.Http.Generated
         /// Retrieves all Comments of the specified Publication.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(int publicationId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(int publicationId)
         {
             return GetPublicationCommentsAsync(publicationId, System.Threading.CancellationToken.None);
         }
@@ -5211,7 +5211,7 @@ namespace Team13.HitsClass.Http.Generated
         /// Retrieves all Comments of the specified Publication.
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(int publicationId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(int publicationId, System.Threading.CancellationToken cancellationToken)
         {
             if (publicationId == null)
                 throw new System.ArgumentNullException("publicationId");
@@ -5262,7 +5262,7 @@ namespace Team13.HitsClass.Http.Generated
                         else
                         if (status_ == 200)
                         {
-                            var objectResponse_ = await ReadObjectResponseAsync<PagedResultOfCommentDto>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<CommentDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
                             if (objectResponse_.Object == null)
                             {
                                 throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
@@ -5667,30 +5667,30 @@ namespace Team13.HitsClass.Http.Generated
             var result = System.Convert.ToString(value, cultureInfo);
             return result == null ? "" : result;
         }
-            /// <summary>Retrieves all Comments of the specified Assignment.</summary>
+            /// <summary>Retrieves all Comments of the current user's submission for the specified Assignment.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters)
         {
             return GetAssignmentCommentsAsync(parameters, System.Threading.CancellationToken.None);
         }
 
-            /// <summary>Retrieves all Comments of the specified Assignment.</summary>
+            /// <summary>Retrieves all Comments of the current user's submission for the specified Assignment.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetAssignmentCommentsAsync(CommentClientGetAssignmentCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return GetAssignmentCommentsAsync(parameters.assignmentId, cancellationToken);
         }
 
             /// <summary>Retrieves all Comments of the specified Publication.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters)
         {
             return GetPublicationCommentsAsync(parameters, System.Threading.CancellationToken.None);
         }
 
             /// <summary>Retrieves all Comments of the specified Publication.</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task<PagedResultOfCommentDto> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<CommentDto>> GetPublicationCommentsAsync(CommentClientGetPublicationCommentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return GetPublicationCommentsAsync(parameters.publicationId, cancellationToken);
         }
@@ -8477,23 +8477,6 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Description { get; set; }
-
-    }
-
-    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
-    public partial class PagedResultOfCommentDto
-    {
-
-        [System.Text.Json.Serialization.JsonPropertyName("data")]
-
-        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        [System.ComponentModel.DataAnnotations.Required]
-        public System.Collections.Generic.ICollection<CommentDto> Data { get; set; } = new System.Collections.ObjectModel.Collection<CommentDto>();
-
-        [System.Text.Json.Serialization.JsonPropertyName("totalCount")]
-
-        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public int TotalCount { get; set; }
 
     }
 

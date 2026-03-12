@@ -11,6 +11,15 @@ vi.mock('lottie-web', () => ({
   default: { loadAnimation: vi.fn(() => ({ destroy: vi.fn() })) },
 }));
 
+vi.mock('components/functionality-parts/DelAndEditCourseButtons/DelAndEditCourseButtons', () => ({
+  DelAndEditCourseButtons: vi.fn(({ courseId }) => (
+    <div data-test-id={`mock-edit-buttons-${courseId}`}>
+      Mock Edit Buttons
+    </div>
+  )),
+}));
+
+
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery.ts';
 
 const mockedUseGetMyCoursesQuery = vi.mocked(useGetMyCoursesQuery);

@@ -4,6 +4,7 @@ import { Tabs, Tab } from '@mui/material';
 import { QueryFactory } from 'services/api';
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
+import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useCourseRole } from 'pages/authorized/OneCoursePage/useCourseRole';
 import { AssignmentView } from './AssignmentView/AssignmentView';
 import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
@@ -24,9 +25,15 @@ export const AssignmentPage = () => {
   const { data: course } = QueryFactory.CourseQuery.useGetCourseQuery(numCourseId);
   const role = useCourseRole(course);
   const isTeacher = role === 'teacher';
+  const { assignmentId, courseId } = useParams();
+  const id = Number(assignmentId);
+  const cid = Number(courseId);
 
   const { data: publication } = useGetPublicationByIdQuery(id);
   const { data: submission } = useGetMySubmissionQuery(id);
+  const { data: course } = useGetCourseQuery(cid);
+  const role = useCourseRole(course);
+  const isTeacher = role === 'teacher';
 
   if (!publication) return null;
 
@@ -67,6 +74,21 @@ export const AssignmentPage = () => {
           <StudentSubmissionsTab assignmentId={id} />
         </div>
       )}
+      <div className={styles.layout}>
+        <div className={styles.left}>
+          <AssignmentView
+            assignment={publication}
+            submission={submission}
+          />
+          <PublicCommentView publicationId={id} />
+        </div>
+        {!isTeacher && (
+          <div className={styles.right}>
+            <SubmissionPanel assignmentId={id} submission={submission} />
+            <PrivateCommentView assignmentId={id} comments={submission?.comments ?? []} />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

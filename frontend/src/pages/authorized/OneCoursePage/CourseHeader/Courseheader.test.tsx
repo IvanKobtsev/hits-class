@@ -8,6 +8,14 @@ vi.mock('../../../../components/lexical/icons/copy.svg?react', () => ({
   default: () => <svg data-test-id="copy-icon" />,
 }));
 
+vi.mock('components/functionality-parts/DelAndEditCourseButtons/DelAndEditCourseButtons', () => ({
+  DelAndEditCourseButtons: vi.fn(({ courseId }) => (
+    <div data-test-id={`mock-edit-buttons-${courseId}`}>
+      Mock Edit Buttons
+    </div>
+  )),
+}));
+
 const mockCourse: CourseDto = {
   id: 1,
   createdAt: new Date('2024-01-01'),

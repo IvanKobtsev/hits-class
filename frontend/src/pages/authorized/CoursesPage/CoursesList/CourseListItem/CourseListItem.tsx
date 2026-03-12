@@ -10,6 +10,7 @@ import {
 import styles from './CourseListItem.module.scss';
 import { clsx } from 'clsx';
 import { Links } from 'application/constants/links';
+import { DelAndEditCourseButtons } from 'components/functionality-parts/DelAndEditCourseButtons/DelAndEditCourseButtons';
 
 type Props = {
   id: number;
@@ -31,34 +32,38 @@ const getColor = (str: string): string => {
 export const CourseListItem: React.FC<Props> = ({ id, title, description }) => {
   return (
     <Card variant="outlined" className={styles.card}>
-      <CardActionArea component={Link} to={Links.Authorized.CourseRoutes.link({ courseId: id })}>
-        <Box
-          sx={{
-            height: 80,
-            bgcolor: getColor(title),
-            position: 'relative',
-          }}
-        />
-        <CardContent className={styles.content}>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            data-test-id={`CourseListItem-title-${id}`}
-            className={clsx(styles.title, styles.shortened_title)}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            data-test-id={`CourseListItem-description-${id}`}
-            data-clamp="true"
-            className={clsx(styles.description, styles.shortened_description)}
-          >
-            {description}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
+      <Box sx={{ position: 'relative' }}>
+        <CardActionArea
+          component={Link}
+          to={Links.Authorized.CourseRoutes.link({ courseId: id })}
+        >
+          <Box sx={{ height: 80, bgcolor: getColor(title) }} />
+          <CardContent className={styles.content}>
+            <Typography
+              variant="h6"
+              fontWeight={600}
+              data-test-id={`CourseListItem-title-${id}`}
+              className={clsx(styles.title, styles.shortened_title)}
+            >
+              {title}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              data-test-id={`CourseListItem-description-${id}`}
+              data-clamp="true"
+              className={clsx(styles.description, styles.shortened_description)}
+            >
+              {description}
+            </Typography>
+          </CardContent>
+        </CardActionArea>
+        
+        <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+          <DelAndEditCourseButtons courseId={id} />
+        </Box>
+
+      </Box>
     </Card>
   );
 };
