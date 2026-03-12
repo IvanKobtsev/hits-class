@@ -49,6 +49,7 @@ type EditAssignmentForm = {
 export type EditAssignmentModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   publicationId: number;
   initialTitle: string;
   initialContent: string;
@@ -59,6 +60,7 @@ export type EditAssignmentModalProps = {
 export const EditAssignmentModal = ({
   isOpen,
   onClose,
+  onSuccess,
   publicationId,
   initialTitle,
   initialContent,
@@ -95,7 +97,7 @@ export const EditAssignmentModal = ({
 
       await mutateAsync({
         content: data.content,
-        attachments: allAttachments.length > 0 ? allAttachments : null,
+        attachments: allAttachments,
         payload: {
           title: data.title,
           deadlineUtc: data.deadlineUtc ?? null,
@@ -107,7 +109,7 @@ export const EditAssignmentModal = ({
         }).slice(0, 1),
       });
       onClose();
-      void modal.showAlert({ title: 'Успех', text: 'Задание обновлено' });
+      onSuccess?.();
     } catch {
       void modal.showError({ text: 'Обновление задания не удалось' });
     }

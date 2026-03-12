@@ -13,6 +13,7 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Snackbar,
 } from '@mui/material';
 import DotsIcon from 'assets/icons/dots.svg?react';
 import {
@@ -60,6 +61,8 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
@@ -74,6 +77,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   const handleEditClick = () => {
     handleMenuClose();
     setIsEditModalOpen(true);
+  };
+
+  const handleEditSuccess = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
   };
 
   return (
@@ -190,6 +198,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         <EditAnnouncementModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => handleEditSuccess('Объявление обновлено')}
           publicationId={id}
           initialContent={content ?? ''}
           initialAttachments={attachments ?? []}
@@ -199,6 +208,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         <EditAssignmentModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => handleEditSuccess('Задание обновлено')}
           publicationId={id}
           initialTitle={assignmentData?.title ?? ''}
           initialContent={content ?? ''}
@@ -206,6 +216,13 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialAttachments={attachments ?? []}
         />
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      />
     </>
   );
 };

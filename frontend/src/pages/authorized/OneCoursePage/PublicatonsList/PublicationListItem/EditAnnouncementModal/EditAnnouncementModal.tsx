@@ -54,6 +54,7 @@ type EditAnnouncementForm = {
 export type EditAnnouncementModalProps = {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess?: () => void;
   publicationId: number;
   initialContent: string;
   initialAttachments: Attachment[];
@@ -62,6 +63,7 @@ export type EditAnnouncementModalProps = {
 export const EditAnnouncementModal = ({
   isOpen,
   onClose,
+  onSuccess,
   publicationId,
   initialContent,
   initialAttachments,
@@ -96,7 +98,7 @@ export const EditAnnouncementModal = ({
 
       await mutateAsync({
         content: data.content,
-        attachments: allAttachments.length > 0 ? allAttachments : null,
+        attachments: allAttachments,
       });
       await queryClient.invalidateQueries({
         queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
@@ -104,7 +106,7 @@ export const EditAnnouncementModal = ({
         }).slice(0, 1),
       });
       onClose();
-      void modal.showAlert({ title: 'Успех', text: 'Объявление обновлено' });
+      onSuccess?.();
     } catch {
       void modal.showError({ text: 'Обновление объявления не удалось' });
     }

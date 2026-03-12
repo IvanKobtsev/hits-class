@@ -24,13 +24,12 @@ vi.mock('@tanstack/react-query', async (importActual) => {
 });
 
 const mockShowError = vi.fn();
-const mockShowAlert = vi.fn();
 vi.mock('components/uikit/modal/useModal', async (importActual) => {
   const actual =
     await importActual<typeof import('components/uikit/modal/useModal')>();
   return {
     ...actual,
-    useModal: () => ({ showError: mockShowError, showAlert: mockShowAlert }),
+    useModal: () => ({ showError: mockShowError }),
   };
 });
 
@@ -76,6 +75,7 @@ function renderModal(
   overrides: {
     isOpen?: boolean;
     onClose?: () => void;
+    onSuccess?: () => void;
     publicationId?: number;
     initialContent?: string;
     initialAttachments?: Attachment[];
@@ -84,6 +84,7 @@ function renderModal(
   const {
     isOpen = true,
     onClose = vi.fn(),
+    onSuccess = vi.fn(),
     publicationId = 10,
     initialContent = '',
     initialAttachments = [],
@@ -94,6 +95,7 @@ function renderModal(
       <EditAnnouncementModal
         isOpen={isOpen}
         onClose={onClose}
+        onSuccess={onSuccess}
         publicationId={publicationId}
         initialContent={initialContent}
         initialAttachments={initialAttachments}
@@ -191,15 +193,16 @@ describe('EditAnnouncementModal', () => {
     });
   });
 
-  test('shows success alert after successful update', async () => {
+  test('calls onSuccess callback after successful update', async () => {
     const user = userEvent.setup();
+    const onSuccess = vi.fn();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialContent: 'Содержание' });
+    renderModal({ initialContent: 'Содержание', onSuccess });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
-      expect(mockShowAlert).toHaveBeenCalled();
+      expect(onSuccess).toHaveBeenCalled();
     });
   });
 
