@@ -35,14 +35,13 @@ describe('CourseListItemInSidebar', () => {
 
     expect(screen.getByRole('link')).toHaveAttribute(
       'href',
-      `/course/${mockCourse.id}`,
+      `/courses/${mockCourse.id}`,
     );
   });
 
   test('link href changes when a different id is passed', () => {
     renderItem({ ...mockCourse, id: 99 });
 
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/course/99');
+    expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/99');
   });
-
 });
