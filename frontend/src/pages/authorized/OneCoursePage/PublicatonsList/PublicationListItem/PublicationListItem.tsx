@@ -65,11 +65,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     lastUpdatedAtUTC &&
     formatDate(createdAtUTC) !== formatDate(lastUpdatedAtUTC);
 
-  const { courseId: courseIdParam } = useParams();
-  const courseId = Number(courseIdParam);
-  const link = isAssignment
-    ? Links.Authorized.AssignmentRoutes.link({ courseId, assignmentId: id })
-    : Links.Authorized.AnnouncementRoutes.link({ courseId, announcementId: id });
+  const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
 
   const modal = useModal();
   const queryClient = useQueryClient();
@@ -137,15 +133,26 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   return (
     <>
-      <Card variant="outlined" className={styles.card} data-test-id={`PublicationItem-${id}`} sx={{ position: 'relative' }}>
+      <Card
+        variant="outlined"
+        className={styles.card}
+        data-test-id={`PublicationItem-${id}`}
+        sx={{ position: 'relative' }}
+      >
         <CardActionArea
           component={Link}
           to={link}
           className={styles.actionArea}
           data-test-id={`PublicationItem-action-area-${id}`}
         >
-          <CardContent className={styles.content} data-test-id={`PublicationItem-content-container-${id}`}>
-            <Box className={styles.header} data-test-id={`PublicationItem-header-${id}`}>
+          <CardContent
+            className={styles.content}
+            data-test-id={`PublicationItem-content-container-${id}`}
+          >
+            <Box
+              className={styles.header}
+              data-test-id={`PublicationItem-header-${id}`}
+            >
               <Avatar
                 data-test-id={`PublicationItem-type-icon-${id}`}
                 className={clsx(
@@ -234,8 +241,16 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
-              <MenuItem onClick={handleTargetUsersClick}>Изменить целевых пользователей</MenuItem>
-              <MenuItem onClick={() => { void handleDeleteClick(); }}>Удалить</MenuItem>
+              <MenuItem onClick={handleTargetUsersClick}>
+                Изменить целевых пользователей
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  void handleDeleteClick();
+                }}
+              >
+                Удалить
+              </MenuItem>
             </Menu>
           </>
         )}
@@ -269,7 +284,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           publicationId={id}
           initialTitle={assignmentData?.title ?? ''}
           initialContent={content ?? ''}
-          initialDeadlineUtc={assignmentData?.deadlineUtc ? new Date(assignmentData.deadlineUtc) : null}
+          initialDeadlineUtc={
+            assignmentData?.deadlineUtc
+              ? new Date(assignmentData.deadlineUtc)
+              : null
+          }
           initialAttachments={attachments ?? []}
         />
       )}
