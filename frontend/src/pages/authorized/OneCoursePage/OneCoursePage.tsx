@@ -7,6 +7,7 @@ import { useCourseRole } from './useCourseRole';
 import { CourseFeedTab } from './CourseFeedTab/CourseFeedTab';
 import { CreateAnnouncementModal } from './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal';
 import { CreateAssignmentModal } from './CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal';
+import { CourseMembersTab } from './CourseMembersTab/CourseMembersTab';
 import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
 import { Navigate } from 'react-router-dom';
@@ -117,9 +118,7 @@ export const OneCoursePage: React.FC = () => {
               </div>
             )}
             {activeTab === 'members' && (
-              <div data-test-id="OneCoursePage-members">
-                Участники — в разработке
-              </div>
+              <CourseMembersTab course={course} />
             )}
           </div>
         </div>
