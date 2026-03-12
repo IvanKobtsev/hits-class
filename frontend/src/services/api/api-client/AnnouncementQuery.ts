@@ -19,8 +19,7 @@ export { Client };
 import type { AxiosRequestConfig } from 'axios';
 
 export type CreateAnnouncementAnnouncementQueryParameters = {
-  courseId: number ;
-  id: string ;
+  id: number ;
 }
 
 export type UpdateAnnouncementAnnouncementQueryParameters = {
@@ -31,11 +30,8 @@ export type DeleteAnnouncementAnnouncementQueryParameters = {
   id: number ;
 }
 
-export function createAnnouncementUrl(courseId: number, id: string): string {
+export function createAnnouncementUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/courses/{id}/announcements";
-if (courseId === undefined || courseId === null)
-  throw new Error("The parameter 'courseId' must be defined.");
-url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
 if (id === undefined || id === null)
   throw new Error("The parameter 'id' must be defined.");
 url_ = url_.replace("{id}", encodeURIComponent("" + id));
@@ -43,11 +39,10 @@ url_ = url_.replace("{id}", encodeURIComponent("" + id));
   return url_;
 }
 
-export function createAnnouncementMutationKey(courseId: number, id: string): MutationKey {
+export function createAnnouncementMutationKey(id: number): MutationKey {
   return trimArrayEnd([
       'AnnouncementClient',
       'createAnnouncement',
-      courseId as any,
       id as any,
     ]);
 }
@@ -55,15 +50,15 @@ export function createAnnouncementMutationKey(courseId: number, id: string): Mut
 /**
  * Create announcement
  */
-export function useCreateAnnouncementMutation<TContext>(courseId: number, id: string, options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, Types.CreateAnnouncementDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PublicationDto, unknown, Types.CreateAnnouncementDto, TContext> {
-  const key = createAnnouncementMutationKey(courseId, id);
+export function useCreateAnnouncementMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, Types.CreateAnnouncementDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PublicationDto, unknown, Types.CreateAnnouncementDto, TContext> {
+  const key = createAnnouncementMutationKey(id);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
   return useMutation({
     ...options,
-    mutationFn: (dto: Types.CreateAnnouncementDto) => Client.createAnnouncement(courseId, dto, id),
+    mutationFn: (dto: Types.CreateAnnouncementDto) => Client.createAnnouncement(id, dto),
     mutationKey: key,
   });
 }
@@ -76,14 +71,14 @@ type CreateAnnouncement__MutationParameters = CreateAnnouncementAnnouncementQuer
  * Create announcement
  */
 export function useCreateAnnouncementMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, CreateAnnouncement__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreateAnnouncementAnnouncementQueryParameters}): UseMutationResult<Types.PublicationDto, unknown, CreateAnnouncement__MutationParameters, TContext> {
-  const key = createAnnouncementMutationKey(options?.parameters?.courseId!, options?.parameters?.id!);
+  const key = createAnnouncementMutationKey(options?.parameters?.id!);
   
   const metaContext = useContext(QueryMetaContext);
   options = addMetaToOptions(options, metaContext);
   
 return useMutation({
   ...options, 
-  mutationFn: (data: CreateAnnouncement__MutationParameters) => Client.createAnnouncement(data.courseId ?? options?.parameters?.courseId!, data.dto, data.id ?? options?.parameters?.id!),
+  mutationFn: (data: CreateAnnouncement__MutationParameters) => Client.createAnnouncement(data.id ?? options?.parameters?.id!, data.dto),
   mutationKey: key,
 });
 }

@@ -32,7 +32,7 @@ export function requiredRule() {
   return {
     required: {
       value: true,
-      message: i18n.t('translation:uikit.inputs.required'),
+      message: 'Обязательное поле',
     },
   };
 }

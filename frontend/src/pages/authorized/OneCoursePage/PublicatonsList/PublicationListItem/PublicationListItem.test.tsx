@@ -90,6 +90,7 @@ describe('PublicationListItem', () => {
           uuid: 'abc-123-def-456',
           fileName: 'Лекция_10_презентация.pptx',
           size: 2_500_000,
+          createdAt: new Date('2025-01-01'),
         },
       ],
     });
@@ -97,6 +98,19 @@ describe('PublicationListItem', () => {
     expect(
       screen.getByTestId(`AttachmentsList-${mockAnnouncement.id}`),
     ).toBeInTheDocument();
+  });
+
+  test('attachments list is rendered outside the navigation link', () => {
+    renderPublicationListItem({
+      ...mockAnnouncement,
+      attachments: [
+        { uuid: 'f1', fileName: 'file.pdf', size: 100, createdAt: new Date('2025-01-01') },
+      ],
+    });
+
+    const link = screen.getByRole('link');
+    const attachmentsList = screen.getByTestId(`AttachmentsList-${mockAnnouncement.id}`);
+    expect(link).not.toContainElement(attachmentsList);
   });
 
   // --- Assignment specific test ---

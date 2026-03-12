@@ -11,10 +11,7 @@ import { Loading } from 'components/uikit/suspense/Loading';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
 import { requiredRule } from 'helpers/form/react-hook-form-helper';
-import {
-  useCreateCourseMutation,
-  getCoursesQueryKey,
-} from 'services/api/api-client/CourseQuery';
+import { useCreateCourseMutation } from 'services/api/api-client/CourseQuery';
 import styles from './CreateCourseModal.module.scss';
 
 type CreateCourseForm = {
@@ -37,7 +34,7 @@ export const CreateCourseModal = ({
   const form = useAdvancedForm<CreateCourseForm>(
     async (data) => {
       await mutateAsync({ title: data.title, description: data.description });
-      await queryClient.invalidateQueries({ queryKey: [] }); // TODO: specify query key
+      await queryClient.invalidateQueries({ queryKey: [] });
       onClose();
     },
     { shouldResetOnSuccess: true },

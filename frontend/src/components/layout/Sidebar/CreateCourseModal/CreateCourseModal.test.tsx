@@ -10,7 +10,6 @@ vi.mock('services/api/api-client/CourseQuery', () => ({
     mutateAsync: mockMutateAsync,
     isPending: false,
   }),
-  getCoursesQueryKey: () => ['CourseClient', 'getCourses'],
 }));
 
 const mockInvalidateQueries = vi.fn();
@@ -138,7 +137,7 @@ describe('CreateCourseModal', () => {
 
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({
-        queryKey: ['CourseClient', 'getCourses'],
+        queryKey: [],
       });
     });
   });

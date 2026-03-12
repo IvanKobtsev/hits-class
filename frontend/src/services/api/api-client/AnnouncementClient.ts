@@ -16,11 +16,8 @@ import { getAxios, getBaseUrl } from './helpers';
 /**
  * Create announcement
  */
-export function createAnnouncement(courseId: number, dto: Types.CreateAnnouncementDto, id: string, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
+export function createAnnouncement(id: number, dto: Types.CreateAnnouncementDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
     let url_ = getBaseUrl() + "/api/courses/{id}/announcements";
-    if (courseId === undefined || courseId === null)
-      throw new Error("The parameter 'courseId' must be defined.");
-    url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));

@@ -119,14 +119,8 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               </Typography>
             )}
 
-            <AttachmentsList
-              attachments={attachments}
-              onError={(error) => console.error('File download error:', error)}
-              data-test-id={`AttachmentsList-${id}`}
-            />
-
             {assignmentData?.deadlineUtc && (
-              <Box 
+              <Box
                 className={styles.deadlineSection}
                 data-test-id={`PublicationItem-deadline-section-${id}`}
               >
@@ -139,6 +133,15 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             )}
           </CardContent>
         </CardActionArea>
+        {attachments && attachments.length > 0 && (
+          <CardContent>
+            <AttachmentsList
+              attachments={attachments}
+              onError={(error) => console.error('File download error:', error)}
+              data-test-id={`AttachmentsList-${id}`}
+            />
+          </CardContent>
+        )}
       </Card>
     </>
   );

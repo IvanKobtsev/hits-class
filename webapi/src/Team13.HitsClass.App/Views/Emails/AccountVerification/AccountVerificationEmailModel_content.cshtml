@@ -1,0 +1,63 @@
+@model Team13.HitsClass.App.Views.Emails.AccountVerification.AccountVerificationEmailModel
+
+<!DOCTYPE html>
+<style>
+  * {
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    width: 100%;
+    height: fit-content;
+    background-color: white;
+  }
+
+  .header,
+  .section,
+  .footer {
+    width: 100%;
+    height: fit-content;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .verify-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 14px;
+    background-color: #2563eb;
+    color: #ffffff !important;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  .muted {
+    color: #6b7280;
+  }
+</style>
+<html lang="en">
+<head>
+  <title>Hello</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="header">
+  <h1 class="title">Подтверждение аккаунта</h1>
+</div>
+<div class="section">
+  <p>Пожалуйста, подтвердите ваш аккаунт для дальнейшей работы в HitsClass,<br /> нажав на кнопку ниже.</p>
+  <a class="verify-link" href="@Model.VerificationLink">Подтвердить аккаунт</a>
+  <p class="muted">Если вы не регистрировались в HitsClass, проигноруйте это сообщение.</p>
+</div>
+<div class="footer">
+  Уведомления HitsClass.<br />
+  Все права защищены.
+</div>
+</body>
+</html>
+
