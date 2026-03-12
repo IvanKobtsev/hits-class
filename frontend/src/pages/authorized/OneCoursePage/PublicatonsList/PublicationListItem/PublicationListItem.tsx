@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './PublicationListItem.module.scss';
 import AnnouncementIcon from 'assets/icons/announcement.svg?react';
 import AssignmentIcon from 'assets/icons/assignment.svg?react';
@@ -10,7 +10,11 @@ import {
   Avatar,
   Chip,
   CardActionArea,
+  IconButton,
+  Menu,
+  MenuItem,
 } from '@mui/material';
+import DotsIcon from 'assets/icons/dots.svg?react';
 import {
   PublicationDto,
   PublicationType,
@@ -18,6 +22,8 @@ import {
 } from 'services/api/api-client.types';
 import { clsx } from 'clsx';
 import { AttachmentsList } from './AttachmentsList/AttachmentsList';
+import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
+import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
 import { Link } from 'react-router';
 
 const formatDate = (date: Date | string) => {
@@ -52,9 +58,27 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
 
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuAnchor(e.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleEditClick = () => {
+    handleMenuClose();
+    setIsEditModalOpen(true);
+  };
+
   return (
     <>
-      <Card variant="outlined" className={styles.card} data-test-id={`PublicationItem-${id}`} >
+      <Card variant="outlined" className={styles.card} data-test-id={`PublicationItem-${id}`} sx={{ position: 'relative' }}>
         <CardActionArea
           component={Link}
           to={link}
@@ -76,21 +100,21 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               </Avatar>
 
               <Box data-test-id={`PublicationItem-author-container-${id}`}>
-                <Typography 
+                <Typography
                   className={styles.authorName}
                   data-test-id={`PublicationItem-author-${id}`}
                 >
                   {author.legalName}
                 </Typography>
-                <Typography 
-                  variant="caption" 
+                <Typography
+                  variant="caption"
                   className={styles.date}
                   data-test-id={`PublicationItem-date-${id}`}
                 >
                   {formatDate(createdAtUTC)}
                   {hasUpdates && (
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       component="span"
                       data-test-id={`PublicationItem-updated-date-${id}`}
                     >
@@ -102,7 +126,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             </Box>
 
             {assignmentData?.title && (
-              <Typography 
+              <Typography
                 className={styles.assignmentTitle}
                 data-test-id={`PublicationItem-title-${id}`}
               >
@@ -111,7 +135,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             )}
 
             {content && (
-              <Typography 
+              <Typography
                 className={styles.contentText}
                 data-test-id={`PublicationItem-content-${id}`}
               >
@@ -133,6 +157,24 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             )}
           </CardContent>
         </CardActionArea>
+
+        <IconButton
+          data-test-id={`PublicationItem-menu-button-${id}`}
+          onClick={handleMenuOpen}
+          size="small"
+          sx={{ position: 'absolute', top: 8, right: 8 }}
+        >
+          <DotsIcon width={16} height={16} />
+        </IconButton>
+
+        <Menu
+          anchorEl={menuAnchor}
+          open={Boolean(menuAnchor)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
+        </Menu>
+
         {attachments && attachments.length > 0 && (
           <CardContent>
             <AttachmentsList
@@ -143,6 +185,27 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           </CardContent>
         )}
       </Card>
+
+      {isEditModalOpen && !isAssignment && (
+        <EditAnnouncementModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          publicationId={id}
+          initialContent={content ?? ''}
+          initialAttachments={attachments ?? []}
+        />
+      )}
+      {isEditModalOpen && isAssignment && (
+        <EditAssignmentModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          publicationId={id}
+          initialTitle={assignmentData?.title ?? ''}
+          initialContent={content ?? ''}
+          initialDeadlineUtc={assignmentData?.deadlineUtc ? new Date(assignmentData.deadlineUtc) : null}
+          initialAttachments={attachments ?? []}
+        />
+      )}
     </>
   );
 };

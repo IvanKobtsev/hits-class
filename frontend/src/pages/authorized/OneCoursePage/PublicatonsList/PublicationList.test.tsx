@@ -1,7 +1,17 @@
 import { render, screen } from '@testing-library/react';
-import { test, expect, describe } from 'vitest';
+import { vi, test, expect, describe } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { PublicationList } from './PublicationList';
+
+vi.mock(
+  './PublicationListItem/EditAnnouncementModal/EditAnnouncementModal',
+  () => ({ EditAnnouncementModal: () => null }),
+);
+
+vi.mock(
+  './PublicationListItem/EditAssignmentModal/EditAssignmentModal',
+  () => ({ EditAssignmentModal: () => null }),
+);
 import {
   initAnnouncementPayload,
   initAssignmentPayload,
