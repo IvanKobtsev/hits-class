@@ -38,6 +38,7 @@ const mockAssignment: PublicationDto = {
   createdAtUTC: new Date('2025-03-01T10:30:00Z'),
   lastUpdatedAtUTC: null,
   attachments: [],
+  targetUserIds: [],
   type: 'Assignment' as any,
   publicationPayload: {
     publicationType: 'Assignment',

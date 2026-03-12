@@ -15,7 +15,7 @@ import { JoinCourseModal } from './JoinCourseModal/JoinCourseModal';
 import styles from './Sidebar.module.scss';
 
 export const Sidebar: React.FC = () => {
-  const { isExpanded } = useSidebar();
+  const { isExpanded, toggle } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -50,7 +50,10 @@ export const Sidebar: React.FC = () => {
         <SidebarExpandableDropdown
           title="Курсы, на которых я обучаюсь"
           icon={SchoolIcon}
-          onClick={() => setIsStudyingExpanded((prev) => !prev)}
+          onClick={() => {
+            if (!isStudyingExpanded && !isExpanded) toggle();
+            setIsStudyingExpanded((prev) => !prev);
+          }}
           isExpandedVertically={isStudyingExpanded}
           isExpandedHorizontally={isExpanded}
         >
@@ -61,7 +64,10 @@ export const Sidebar: React.FC = () => {
         <SidebarExpandableDropdown
           title="Курсы, которые я преподаю"
           icon={PeopleIcon}
-          onClick={() => setIsTeachingExpanded((prev) => !prev)}
+          onClick={() => {
+            if (!isTeachingExpanded && !isExpanded) toggle();
+            setIsTeachingExpanded((prev) => !prev);
+          }}
           isExpandedVertically={isTeachingExpanded}
           isExpandedHorizontally={isExpanded}
         >

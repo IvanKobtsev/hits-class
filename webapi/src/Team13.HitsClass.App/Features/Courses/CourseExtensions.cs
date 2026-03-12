@@ -31,6 +31,7 @@ namespace Team13.HitsClass.App.Features.Courses
                 Description = course.Description,
                 Owner = course.Owner.ToUserDto(),
                 Teachers = course.Teachers.Select(t => t.ToUserDto()).ToList(),
+                Students = course.Students.Select(s => s.ToUserDto()).ToList(),
             };
         }
     }

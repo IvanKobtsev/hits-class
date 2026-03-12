@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { vi, test, expect, describe } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import {
   initAnnouncementPayload,
@@ -14,6 +15,84 @@ vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return { ...actual };
 });
+
+const mockEditAnnouncementModal = vi.fn();
+vi.mock(
+  './EditAnnouncementModal/EditAnnouncementModal',
+  () => ({
+    EditAnnouncementModal: (props: { isOpen: boolean }) => {
+      mockEditAnnouncementModal(props);
+      return props.isOpen ? <div data-test-id="EditAnnouncementModal" /> : null;
+    },
+  }),
+);
+
+const mockEditAssignmentModal = vi.fn();
+vi.mock(
+  './EditAssignmentModal/EditAssignmentModal',
+  () => ({
+    EditAssignmentModal: (props: { isOpen: boolean }) => {
+      mockEditAssignmentModal(props);
+      return props.isOpen ? <div data-test-id="EditAssignmentModal" /> : null;
+    },
+  }),
+);
+
+const mockEditTargetUsersModal = vi.fn();
+vi.mock(
+  './EditTargetUsersModal/EditTargetUsersModal',
+  () => ({
+    EditTargetUsersModal: (props: { isOpen: boolean }) => {
+      mockEditTargetUsersModal(props);
+      return props.isOpen ? <div data-test-id="EditTargetUsersModal" /> : null;
+    },
+  }),
+);
+
+const mockDeleteAnnouncementMutateAsync = vi.fn();
+vi.mock('services/api/api-client/AnnouncementQuery', () => ({
+  useDeleteAnnouncementMutation: () => ({
+    mutateAsync: mockDeleteAnnouncementMutateAsync,
+    isPending: false,
+  }),
+}));
+
+const mockDeleteAssignmentMutateAsync = vi.fn();
+vi.mock('services/api/api-client/AssignmentQuery', () => ({
+  useDeleteAssignmentMutation: () => ({
+    mutateAsync: mockDeleteAssignmentMutateAsync,
+    isPending: false,
+  }),
+}));
+
+const mockInvalidateQueries = vi.fn();
+vi.mock('@tanstack/react-query', async (importActual) => {
+  const actual = await importActual<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: mockInvalidateQueries }),
+  };
+});
+
+const mockShowConfirm = vi.fn();
+vi.mock('components/uikit/modal/useModal', () => ({
+  useModal: () => ({ showConfirm: mockShowConfirm }),
+}));
+
+const defaultMockCurrentUser = {
+  id: 'teacher-1',
+  email: 'teacher@test.com',
+  legalName: 'Иванов Иван Иванович',
+  groupNumber: null,
+  username: 'ivanov',
+  isTeacherSystemWide: true,
+  isAdmin: false,
+};
+let mockCurrentUserData = { ...defaultMockCurrentUser };
+
+vi.mock('services/api/api-client/UserQuery', () => ({
+  useGetCurrentUserInfoQuery: () => ({ data: mockCurrentUserData }),
+}));
 
 const mockAuthor = {
   id: 'teacher-1',
@@ -33,6 +112,7 @@ const mockAnnouncement: PublicationDto = {
   content: 'Тестовое объявление',
   author: mockAuthor,
   attachments: [],
+  targetUserIds: ['user-1', 'user-2'],
   publicationPayload: initAnnouncementPayload({} as any),
 };
 
@@ -44,6 +124,7 @@ const mockAssignment: PublicationDto = {
   content: 'Тестовое задание',
   author: mockAuthor,
   attachments: [],
+  targetUserIds: [],
   publicationPayload: initAssignmentPayload({
     title: 'Важное задание',
     deadlineUtc: '2024-04-01T13:59:00Z',
@@ -59,6 +140,11 @@ function renderPublicationListItem(props = mockAnnouncement) {
 }
 
 describe('PublicationListItem', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCurrentUserData = { ...defaultMockCurrentUser };
+  });
+
   // --- Rendering ---
 
   test('renders author name', () => {
@@ -201,5 +287,347 @@ describe('PublicationListItem', () => {
     renderPublicationListItem(mockAssignment);
     const avatar = screen.getByTestId(`PublicationItem-type-icon-${mockAssignment.id}`);
     expect(avatar.className).toMatch(/typeIconAssignment/);
+  });
+
+  // --- Menu button ---
+
+  test('renders menu button', () => {
+    renderPublicationListItem();
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is outside the navigation link', () => {
+    renderPublicationListItem();
+
+    const link = screen.getByRole('link');
+    const menuButton = screen.getByTestId(
+      `PublicationItem-menu-button-${mockAnnouncement.id}`,
+    );
+    expect(link).not.toContainElement(menuButton);
+  });
+
+  test('clicking menu button opens menu with Редактировать option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /редактировать/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Редактировать on announcement opens EditAnnouncementModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditAnnouncementModal')).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Редактировать on assignment opens EditAssignmentModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditAssignmentModal')).toBeInTheDocument();
+    });
+  });
+
+  test('EditAnnouncementModal receives pre-filled props from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(mockEditAnnouncementModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          publicationId: mockAnnouncement.id,
+          initialContent: mockAnnouncement.content,
+        }),
+      );
+    });
+  });
+
+  test('EditAssignmentModal receives pre-filled props from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /редактировать/i }));
+
+    await waitFor(() => {
+      expect(mockEditAssignmentModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          publicationId: mockAssignment.id,
+          initialContent: mockAssignment.content,
+        }),
+      );
+    });
+  });
+
+  // --- Delete button ---
+
+  test('menu contains Удалить option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /удалить/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Удалить opens confirmation dialog', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(false);
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockShowConfirm).toHaveBeenCalled();
+    });
+  });
+
+  test('cancelling confirmation does not call delete mutation', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(false);
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockShowConfirm).toHaveBeenCalled();
+    });
+    expect(mockDeleteAnnouncementMutateAsync).not.toHaveBeenCalled();
+  });
+
+  test('confirming deletion calls useDeleteAnnouncementMutation for announcement', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAnnouncementMutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  test('confirming deletion calls useDeleteAssignmentMutation for assignment', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAssignmentMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAssignment);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAssignment.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockDeleteAssignmentMutateAsync).toHaveBeenCalled();
+    });
+  });
+
+  test('successful deletion shows success snackbar', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Успешно удалено')).toBeInTheDocument();
+    });
+  });
+
+  test('successful deletion invalidates publications query', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockResolvedValue(undefined);
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(mockInvalidateQueries).toHaveBeenCalled();
+    });
+  });
+
+  test('failed deletion shows error snackbar', async () => {
+    const user = userEvent.setup();
+    mockShowConfirm.mockResolvedValue(true);
+    mockDeleteAnnouncementMutateAsync.mockRejectedValue(new Error('Server error'));
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Возникла ошибка при удалении')).toBeInTheDocument();
+    });
+  });
+
+  // --- Изменить целевых пользователей ---
+
+  test('menu contains Изменить целевых пользователей option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Изменить целевых пользователей opens EditTargetUsersModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(
+      screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditTargetUsersModal')).toBeInTheDocument();
+    });
+  });
+
+  test('EditTargetUsersModal receives initialTargetUserIds from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(
+      screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+    );
+
+    await waitFor(() => {
+      expect(mockEditTargetUsersModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialTargetUserIds: mockAnnouncement.targetUserIds,
+          publicationId: mockAnnouncement.id,
+          publicationType: PublicationType.Announcement,
+        }),
+      );
+    });
+  });
+
+  // --- Menu button visibility ---
+
+  test('menu button is hidden for a regular student who did not create the publication', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'student-99',
+      isTeacherSystemWide: false,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.queryByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).not.toBeInTheDocument();
+  });
+
+  test('menu button is visible for the author of the publication', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: mockAuthor.id,
+      isTeacherSystemWide: false,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is visible for a system-wide teacher', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'some-other-user',
+      isTeacherSystemWide: true,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is visible for an admin', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'some-other-user',
+      isTeacherSystemWide: false,
+      isAdmin: true,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
   });
 });

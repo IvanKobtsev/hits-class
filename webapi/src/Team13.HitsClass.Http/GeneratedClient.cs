@@ -7873,6 +7873,16 @@ namespace Team13.HitsClass.Http.Generated
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Username { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isTeacherSystemWide")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public bool IsTeacherSystemWide { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isAdmin")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public bool IsAdmin { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8214,6 +8224,12 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
         public PublicationType Type { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("targetUserIds")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<string> TargetUserIds { get; set; } = new System.Collections.ObjectModel.Collection<string>();
+
         [System.Text.Json.Serialization.JsonPropertyName("publicationPayload")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
@@ -8367,6 +8383,12 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required]
         public System.Collections.Generic.ICollection<UserDto> Teachers { get; set; } = new System.Collections.ObjectModel.Collection<UserDto>();
+
+        [System.Text.Json.Serialization.JsonPropertyName("students")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required]
+        public System.Collections.Generic.ICollection<UserDto> Students { get; set; } = new System.Collections.ObjectModel.Collection<UserDto>();
 
         [System.Text.Json.Serialization.JsonPropertyName("inviteCode")]
 

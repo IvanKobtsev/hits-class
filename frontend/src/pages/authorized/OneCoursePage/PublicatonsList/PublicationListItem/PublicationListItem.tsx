@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './PublicationListItem.module.scss';
 import AnnouncementIcon from 'assets/icons/announcement.svg?react';
 import AssignmentIcon from 'assets/icons/assignment.svg?react';
@@ -10,14 +10,27 @@ import {
   Avatar,
   Chip,
   CardActionArea,
+  IconButton,
+  Menu,
+  MenuItem,
+  Snackbar,
 } from '@mui/material';
+import DotsIcon from 'assets/icons/dots.svg?react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   PublicationDto,
   PublicationType,
   AssignmentPayload,
 } from 'services/api/api-client.types';
 import { clsx } from 'clsx';
+import { useModal } from 'components/uikit/modal/useModal';
+import { useDeleteAnnouncementMutation } from 'services/api/api-client/AnnouncementQuery';
+import { useDeleteAssignmentMutation } from 'services/api/api-client/AssignmentQuery';
+import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { AttachmentsList } from './AttachmentsList/AttachmentsList';
+import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
+import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
+import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
 import { Link } from 'react-router';
 
 const formatDate = (date: Date | string) => {
@@ -38,6 +51,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   content,
   author,
   attachments = [],
+  targetUserIds,
   publicationPayload,
 }) => {
   const isAssignment = type === PublicationType.Assignment;
@@ -52,9 +66,73 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
 
+  const modal = useModal();
+  const queryClient = useQueryClient();
+  const { mutateAsync: deleteAnnouncement } = useDeleteAnnouncementMutation(id);
+  const { mutateAsync: deleteAssignment } = useDeleteAssignmentMutation(id);
+  const { data: currentUser } = useGetCurrentUserInfoQuery();
+
+  const canManagePublication =
+    currentUser?.isTeacherSystemWide ||
+    currentUser?.isAdmin ||
+    currentUser?.id === author.id;
+
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isTargetUsersModalOpen, setIsTargetUsersModalOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuAnchor(e.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleEditClick = () => {
+    handleMenuClose();
+    setIsEditModalOpen(true);
+  };
+
+  const handleTargetUsersClick = () => {
+    handleMenuClose();
+    setIsTargetUsersModalOpen(true);
+  };
+
+  const handleDeleteClick = async () => {
+    handleMenuClose();
+    const confirmed = await modal.showConfirm({
+      title: 'Удаление публикации',
+      text: 'Вы уверены, что хотите удалить эту публикацию?',
+      okButtonText: 'Удалить',
+      cancelButtonText: 'Отмена',
+    });
+    if (!confirmed) return;
+    try {
+      if (isAssignment) {
+        await deleteAssignment();
+      } else {
+        await deleteAnnouncement();
+      }
+      await queryClient.invalidateQueries({ queryKey: [] });
+      showSnackbar('Успешно удалено');
+    } catch {
+      showSnackbar('Возникла ошибка при удалении');
+    }
+  };
+
   return (
     <>
-      <Card variant="outlined" className={styles.card} data-test-id={`PublicationItem-${id}`} >
+      <Card variant="outlined" className={styles.card} data-test-id={`PublicationItem-${id}`} sx={{ position: 'relative' }}>
         <CardActionArea
           component={Link}
           to={link}
@@ -76,21 +154,21 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               </Avatar>
 
               <Box data-test-id={`PublicationItem-author-container-${id}`}>
-                <Typography 
+                <Typography
                   className={styles.authorName}
                   data-test-id={`PublicationItem-author-${id}`}
                 >
                   {author.legalName}
                 </Typography>
-                <Typography 
-                  variant="caption" 
+                <Typography
+                  variant="caption"
                   className={styles.date}
                   data-test-id={`PublicationItem-date-${id}`}
                 >
                   {formatDate(createdAtUTC)}
                   {hasUpdates && (
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       component="span"
                       data-test-id={`PublicationItem-updated-date-${id}`}
                     >
@@ -102,7 +180,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             </Box>
 
             {assignmentData?.title && (
-              <Typography 
+              <Typography
                 className={styles.assignmentTitle}
                 data-test-id={`PublicationItem-title-${id}`}
               >
@@ -111,7 +189,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             )}
 
             {content && (
-              <Typography 
+              <Typography
                 className={styles.contentText}
                 data-test-id={`PublicationItem-content-${id}`}
               >
@@ -133,6 +211,30 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             )}
           </CardContent>
         </CardActionArea>
+
+        {canManagePublication && (
+          <>
+            <IconButton
+              data-test-id={`PublicationItem-menu-button-${id}`}
+              onClick={handleMenuOpen}
+              size="small"
+              sx={{ position: 'absolute', top: 8, right: 8 }}
+            >
+              <DotsIcon width={16} height={16} />
+            </IconButton>
+
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
+              <MenuItem onClick={handleTargetUsersClick}>Изменить целевых пользователей</MenuItem>
+              <MenuItem onClick={() => { void handleDeleteClick(); }}>Удалить</MenuItem>
+            </Menu>
+          </>
+        )}
+
         {attachments && attachments.length > 0 && (
           <CardContent>
             <AttachmentsList
@@ -143,6 +245,46 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           </CardContent>
         )}
       </Card>
+
+      {isEditModalOpen && !isAssignment && (
+        <EditAnnouncementModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => showSnackbar('Объявление обновлено')}
+          publicationId={id}
+          initialContent={content ?? ''}
+          initialAttachments={attachments ?? []}
+        />
+      )}
+      {isEditModalOpen && isAssignment && (
+        <EditAssignmentModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => showSnackbar('Задание обновлено')}
+          publicationId={id}
+          initialTitle={assignmentData?.title ?? ''}
+          initialContent={content ?? ''}
+          initialDeadlineUtc={assignmentData?.deadlineUtc ? new Date(assignmentData.deadlineUtc) : null}
+          initialAttachments={attachments ?? []}
+        />
+      )}
+      {isTargetUsersModalOpen && (
+        <EditTargetUsersModal
+          isOpen={isTargetUsersModalOpen}
+          onClose={() => setIsTargetUsersModalOpen(false)}
+          onSuccess={() => showSnackbar('Успешно')}
+          publicationId={id}
+          publicationType={type}
+          initialTargetUserIds={targetUserIds ?? []}
+        />
+      )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      />
     </>
   );
 };

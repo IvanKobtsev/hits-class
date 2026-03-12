@@ -355,7 +355,9 @@ namespace Team13.HitsClass.App.Features.Courses
 
             if (searchDto.WhereImTeacher == true)
             {
-                query = query.Where(c => c.Teachers.Any(t => t.Id == currentUserId));
+                query = query.Where(c =>
+                    c.Teachers.Any(t => t.Id == currentUserId) || c.OwnerId == currentUserId
+                );
             }
 
             if (searchDto.WhereImStudent == true)

@@ -90,6 +90,7 @@ const mockCourse: CourseDto = {
       groupNumber: null,
     },
   ],
+  students: [],
 };
 
 const mockPublication: PublicationDto = {
@@ -104,6 +105,7 @@ const mockPublication: PublicationDto = {
     groupNumber: null,
   },
   attachments: [],
+  targetUserIds: [],
   type: 'Announcement' as any,
   publicationPayload: { publicationType: 'Announcement' } as any,
 };
