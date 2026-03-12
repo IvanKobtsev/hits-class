@@ -50,7 +50,7 @@ describe('AvatarMenu', () => {
     await user.click(screen.getByTestId('avatar-menu-button'));
 
     expect(screen.getByRole('menu')).toBeInTheDocument();
-    expect(screen.getByText('Logout')).toBeInTheDocument();
+    expect(screen.getByText('Выйти из аккаунта')).toBeInTheDocument();
   });
 
   test('hides dropdown when clicking logout', async () => {
@@ -60,7 +60,7 @@ describe('AvatarMenu', () => {
     await user.click(screen.getByTestId('avatar-menu-button'));
     expect(screen.getByRole('menu')).toBeInTheDocument();
 
-    await user.click(screen.getByText('Logout'));
+    await user.click(screen.getByText('Выйти из аккаунта'));
 
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
@@ -70,7 +70,7 @@ describe('AvatarMenu', () => {
     renderAvatarMenu();
 
     await user.click(screen.getByTestId('avatar-menu-button'));
-    await user.click(screen.getByText('Logout'));
+    await user.click(screen.getByText('Выйти из аккаунта'));
 
     expect(mockedLogOut).toHaveBeenCalledOnce();
   });

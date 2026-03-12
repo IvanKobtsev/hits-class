@@ -50,7 +50,7 @@ export const AvatarMenu: React.FC<AvatarMenuProps> = ({ user }) => {
             className={styles.logout}
             onClick={() => void handleLogout()}
           >
-            Logout
+            Выйти из аккаунта
           </button>
         </div>
       )}

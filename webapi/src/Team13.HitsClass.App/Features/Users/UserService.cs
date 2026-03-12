@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Users.Dto;
 using Team13.HitsClass.App.Services.Authentication;
 using Team13.HitsClass.Common;
@@ -16,16 +17,19 @@ public class UserService
     private readonly HitsClassDbContext _dbContext;
     private readonly UserManager<User> _userManager;
     private readonly IUserAccessor _userAccessor;
+    private readonly NotificationService _notificationService;
 
     public UserService(
         HitsClassDbContext dbContext,
         UserManager<User> userManager,
-        IUserAccessor userAccessor
+        IUserAccessor userAccessor,
+        NotificationService notificationService
     )
     {
         _dbContext = dbContext;
         _userManager = userManager;
         _userAccessor = userAccessor;
+        _notificationService = notificationService;
     }
 
     public async Task<CurrentUserDto> GetCurrentUserInfo()
@@ -53,6 +57,8 @@ public class UserService
                 newPasswordFieldName: nameof(dto.Password)
             );
         }
+
+        await SendEmailConfirmationLink(dto.Email);
     }
 
     public async Task ConfirmEmail(string userId)
@@ -108,5 +114,18 @@ public class UserService
             throw new ValidationException($"User doesn't have {role} role");
 
         await _userManager.RemoveFromRoleAsync(user, role);
+    }
+
+    public async Task SendEmailConfirmationLink(string email)
+    {
+        var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user == null)
+            throw new PersistenceResourceNotFoundException("User with such email not found");
+
+        if (user.EmailConfirmed)
+            throw new ValidationException("Email is already confirmed");
+
+        await _notificationService.AccountVerificationNotification(user);
     }
 }

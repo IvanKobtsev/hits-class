@@ -46,7 +46,7 @@ public static partial class SetupAuth
         services
             .AddDefaultIdentity<User>(options =>
             {
-                options.SignIn.RequireConfirmedAccount = false;
+                options.SignIn.RequireConfirmedAccount = true;
                 options.Lockout.AllowedForNewUsers = false;
 
                 // configure password security rules

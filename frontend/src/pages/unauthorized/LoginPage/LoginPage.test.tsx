@@ -36,22 +36,20 @@ describe('LoginPage', () => {
     const user = userEvent.setup();
     renderLoginPage();
 
-    await user.click(
-      screen.getByRole('button', { name: /^create an account$/i }),
-    );
+    await user.click(screen.getByRole('button', { name: /^Создать аккаунт/i }));
 
-    expect(screen.getByText(/already have an account\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/Уже есть аккаунт\?/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^login$/i }),
+      screen.getByRole('button', { name: /^Войти$/i }),
     ).toBeInTheDocument();
   });
 
   test('renders "Dont have an account?" text and "Create an account" button after switching to register form', async () => {
     renderLoginPage();
 
-    expect(screen.getByText(/don't have an account\?/i)).toBeInTheDocument();
+    expect(screen.getByText(/У вас нет аккаунта\?/i)).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /^create an account$/i }),
+      screen.getByRole('button', { name: /^Создать аккаунт/i }),
     ).toBeInTheDocument();
   });
 });

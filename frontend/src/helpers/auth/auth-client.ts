@@ -129,5 +129,7 @@ export function handleLoginErrors(e: unknown): never {
     }
   }
 
-  throw new Error('Login_Unknown_Failure');
+  throw new Error(
+    'Ошибка авторизации. Убедитесь, что ваш аккаунт подтверждён.',
+  );
 }

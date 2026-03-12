@@ -18,6 +18,7 @@ import * as Client from './UserClient'
 export { Client };
 import type { AxiosRequestConfig } from 'axios';
 
+
 export type ConfirmEmailUserQueryParameters = {
   userId: string ;
 }
@@ -63,6 +64,32 @@ export function useRegisterMutation<TContext>(options?: Omit<UseMutationOptions<
   return useMutation({
     ...options,
     mutationFn: (dto: Types.RegisterUserDto) => Client.register(dto),
+    mutationKey: key,
+  });
+}
+  
+export function sendVerificationCodeUrl(): string {
+  let url_ = getBaseUrl() + "/api/users/email-verification";
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function sendVerificationCodeMutationKey(): MutationKey {
+  return trimArrayEnd([
+      'UserClient',
+      'sendVerificationCode',
+    ]);
+}
+
+export function useSendVerificationCodeMutation<TContext>(options?: Omit<UseMutationOptions<void, unknown, Types.VerificationDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.VerificationDto, TContext> {
+  const key = sendVerificationCodeMutationKey();
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.VerificationDto) => Client.sendVerificationCode(dto),
     mutationKey: key,
   });
 }

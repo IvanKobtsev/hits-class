@@ -25,6 +25,11 @@ public class UserController
     [HttpPost("register")]
     public async Task Register([FromBody] RegisterUserDto dto) => await _userService.Register(dto);
 
+    [AllowAnonymous]
+    [HttpPost("email-verification")]
+    public async Task SendVerificationCode([FromBody] VerificationDto dto) =>
+        await _userService.SendEmailConfirmationLink(dto.Email);
+
     /// <summary>
     /// Confirms user's email address.
     /// This endpoint is called when the user clicks the confirmation link in the email.

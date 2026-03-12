@@ -48,7 +48,7 @@ describe('LoginForm', () => {
 
     expect(screen.getByTestId('Login')).toBeInTheDocument();
     expect(screen.getByTestId('Password')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /login/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Войти/i })).toBeInTheDocument();
   });
 
   // --- Validation ---
@@ -57,7 +57,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderLoginForm();
 
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     expect(
       within(screen.getByTestId('Login')).getByText('Обязательное поле'),
@@ -68,7 +68,7 @@ describe('LoginForm', () => {
     const user = userEvent.setup();
     renderLoginForm();
 
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     expect(
       within(screen.getByTestId('Password')).getByText('Обязательное поле'),
@@ -93,7 +93,7 @@ describe('LoginForm', () => {
 
     await user.type(loginInput, 'admin');
     await user.type(passwordInput, 'mypass');
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     await waitFor(() => {
       expect(mockedSendLogin).toHaveBeenCalledWith('admin', 'mypass');
@@ -116,7 +116,7 @@ describe('LoginForm', () => {
 
     await user.type(loginInput, 'admin');
     await user.type(passwordInput, 'password');
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     await waitFor(() => {
       expect(vi.mocked(queryClient.resetQueries)).toHaveBeenCalled();
@@ -144,7 +144,7 @@ describe('LoginForm', () => {
 
     await user.type(loginInput, 'admin');
     await user.type(passwordInput, 'password');
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     expect(await screen.findByTestId('loading')).toBeInTheDocument();
 
@@ -174,7 +174,7 @@ describe('LoginForm', () => {
 
     await user.type(loginInput, 'admin');
     await user.type(passwordInput, 'wrongpass');
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     expect(
       await screen.findByText('Invalid login or password'),
@@ -193,7 +193,7 @@ describe('LoginForm', () => {
 
     await user.type(loginInput, 'admin');
     await user.type(passwordInput, 'password');
-    await user.click(screen.getByRole('button', { name: /login/i }));
+    await user.click(screen.getByRole('button', { name: /Войти/i }));
 
     expect(
       await screen.findByText('Authentication failed'),

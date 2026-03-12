@@ -15,7 +15,7 @@ test('ApiException with urn', () => {
         null,
       ),
     ),
-  ).toBe('External service is unavailable now, please retry later.');
+  ).toBe('Внешний сервис сейчас недоступен, повторите попытку позже.');
 });
 
 // this is what is passed on form submit
@@ -25,7 +25,7 @@ test('error with urn', () => {
       status: 503,
       type: 'urn:team13:external-service-is-unavailable',
     }),
-  ).toBe('External service is unavailable now, please retry later.');
+  ).toBe('Внешний сервис сейчас недоступен, повторите попытку позже.');
 });
 
 test('401 ApiException with urn', () => {
@@ -39,7 +39,7 @@ test('401 ApiException with urn', () => {
         null,
       ),
     ),
-  ).toBe('Unauthorized');
+  ).toBe('Не авторизован');
 });
 
 test('403 ApiException with urn', () => {
@@ -53,7 +53,7 @@ test('403 ApiException with urn', () => {
         null,
       ),
     ),
-  ).toBe('Access Denied');
+  ).toBe('Доступ запрещен');
 });
 
 test('Regular exception with message with urn', () => {

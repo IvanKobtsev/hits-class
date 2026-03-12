@@ -1,12 +1,15 @@
 import {
   createRoute,
   RequiredNumberParam,
-  StringParam,
+  RequiredStringParam,
 } from 'react-router-url-params';
 
 export const Links = {
   Unauthorized: {
     Login: createRoute('/login'),
+    ConfirmEmail: createRoute('/confirm-email/:userId', {
+      userId: RequiredStringParam,
+    }),
   },
   Authorized: {
     Dashboard: createRoute('/'),

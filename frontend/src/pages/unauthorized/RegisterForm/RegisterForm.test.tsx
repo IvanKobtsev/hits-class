@@ -47,7 +47,7 @@ describe('RegisterForm', () => {
     expect(screen.getByTestId('GroupNumber')).toBeInTheDocument();
     expect(screen.getByTestId('Password')).toBeInTheDocument();
     expect(
-      screen.getByRole('button', { name: /register/i }),
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
     ).toBeInTheDocument();
   });
 
@@ -57,7 +57,9 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderRegisterForm();
 
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       within(screen.getByTestId('Email')).getByText('Обязательное поле'),
@@ -68,7 +70,9 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderRegisterForm();
 
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       within(screen.getByTestId('LegalName')).getByText('Обязательное поле'),
@@ -79,7 +83,9 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderRegisterForm();
 
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       within(screen.getByTestId('GroupNumber')).queryByText(
@@ -92,7 +98,9 @@ describe('RegisterForm', () => {
     const user = userEvent.setup();
     renderRegisterForm();
 
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       within(screen.getByTestId('Password')).getByText('Обязательное поле'),
@@ -119,7 +127,9 @@ describe('RegisterForm', () => {
       '871021',
     );
     await user.type(getPasswordInput(), 'i1mc91mzc');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     await waitFor(() => {
       expect(mockedRegister).toHaveBeenCalledWith({
@@ -145,7 +155,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'i1mc91mzc');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     await waitFor(() => {
       expect(mockedRegister).toHaveBeenCalledWith({
@@ -171,7 +183,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'i1mc91mzc');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(await screen.findByTestId('register-success')).toBeInTheDocument();
   });
@@ -195,7 +209,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'i1mc91mzc');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(await screen.findByTestId('loading')).toBeInTheDocument();
 
@@ -226,7 +242,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'validPass1');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       await within(screen.getByTestId('Email')).findByText(
@@ -254,7 +272,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'ab');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       await within(screen.getByTestId('Password')).findByText(
@@ -282,7 +302,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'a'.repeat(65));
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       await within(screen.getByTestId('Password')).findByText(
@@ -310,7 +332,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'valid?Pass');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(
       await within(screen.getByTestId('Password')).findByText(
@@ -335,7 +359,9 @@ describe('RegisterForm', () => {
       'John Doe',
     );
     await user.type(getPasswordInput(), 'i1mc91mzc');
-    await user.click(screen.getByRole('button', { name: /register/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Зарегистрироваться/i }),
+    );
 
     expect(await screen.findByText('Registration_Failed')).toBeInTheDocument();
   });
