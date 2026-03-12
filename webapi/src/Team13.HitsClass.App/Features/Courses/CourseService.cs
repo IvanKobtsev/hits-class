@@ -125,7 +125,11 @@ namespace Team13.HitsClass.App.Features.Courses
             var course = await FindCourseOrThrow(courseId);
 
             var userId = _userAccessor.GetUserId();
-            if (course.OwnerId != userId)
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess =
+                course.OwnerId == userId
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin]);
+            if (!hasAccess)
             {
                 throw new AccessDeniedException("Only owner can modify course.");
             }

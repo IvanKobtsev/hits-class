@@ -101,6 +101,33 @@ namespace Team13.HitsClass.App.Tests
         }
 
         [Fact]
+        public async Task PatchCourse_UserIsAdmin_CourseHasNewTitleAndDescription()
+        {
+            var course = await CreateCourse();
+            var newCourseTitle = "Course with changed name";
+            var newCourseDescription = "This course is made for testing.";
+            var patchCourseDto = new PatchCourseDto()
+            {
+                Title = newCourseTitle,
+                Description = newCourseDescription,
+            };
+            var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
+
+            var patchedCourse = await _courseService.PatchCourse(course.Id, patchCourseDto);
+
+            Assert.NotNull(patchedCourse);
+
+            // title and description are changed
+            Assert.Equal(newCourseTitle, patchedCourse.Title);
+            Assert.Equal(newCourseDescription, patchedCourse.Description);
+
+            // everything else remains the same
+            Assert.Equal(course.OwnerId, patchedCourse.Owner.Id);
+            Assert.Equal(course.InviteCode, patchedCourse.InviteCode);
+        }
+
+        [Fact]
         public async Task GetCourseById_CourseExists_ReturnsCourse()
         {
             var course = await CreateCourse();
@@ -300,7 +327,7 @@ namespace Team13.HitsClass.App.Tests
             var course = await CreateCourse("Course1", "Description");
             var admin = await CreateUserWithRole("admin@test.com", UserRoles.Admin);
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
-            ;
+
             await _courseService.DeleteCourse(course.Id);
 
             await WithDbContext(async db =>
