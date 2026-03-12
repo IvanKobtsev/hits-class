@@ -44,5 +44,4 @@ describe('CourseListItemInSidebar', () => {
 
     expect(screen.getByRole('link')).toHaveAttribute('href', '/courses/99');
   });
-
 });
