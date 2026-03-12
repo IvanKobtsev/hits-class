@@ -420,6 +420,7 @@ export interface SubmissionListItem  {
   id: number;
   state: SubmissionState;
   mark: string | null;
+  lastSubmittedAtUTC: Date | null;
   author: UserDto;
 }
 export function deserializeSubmissionListItem(json: string): SubmissionListItem {
@@ -430,6 +431,7 @@ export function deserializeSubmissionListItem(json: string): SubmissionListItem 
 export function initSubmissionListItem(_data: SubmissionListItem) {
   if (_data) {
     _data.state = _data["state"];
+    _data.lastSubmittedAtUTC = _data["lastSubmittedAtUTC"] ? new Date(_data["lastSubmittedAtUTC"].toString()) : <any>null;
     _data.author = _data["author"] && initUserDto(_data["author"]);
   }
   return _data;

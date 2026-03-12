@@ -59,12 +59,19 @@ function formatDate(date: Date | null | undefined): string {
   return `${day}.${month}.${d.getFullYear()} ${hours}:${minutes}`;
 }
 
+function isSubmittedLate(submittedAt: Date | null, deadline: Date | null): boolean {
+  if (!submittedAt || !deadline) return false;
+  return new Date(submittedAt) > new Date(deadline);
+}
+
 type StudentSubmissionsTabProps = {
   assignmentId: number;
+  deadlineUtc: Date | null;
 };
 
 export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   assignmentId,
+  deadlineUtc,
 }) => {
   const queryClient = useQueryClient();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
@@ -148,10 +155,15 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
             </button>
           </div>
           <div className={styles.selectedBody}>
-            <div>
+            <div className={styles.statusRow}>
               <span className={`${styles.statusBadge} ${statusClass(selectedSubmission.state)}`}>
                 {statusLabel(selectedSubmission.state)}
               </span>
+              {isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) && (
+                <span className={`${styles.statusBadge} ${styles.statusLate}`}>
+                  Сдано с опозданием
+                </span>
+              )}
             </div>
 
             {selectedSubmission.attachments.length > 0 && (
@@ -231,6 +243,11 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               <span className={`${styles.statusBadge} ${statusClass(sub.state)}`}>
                 {statusLabel(sub.state)}
               </span>
+              {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) && (
+                <span className={`${styles.statusBadge} ${styles.statusLate}`}>
+                  Сдано с опозданием
+                </span>
+              )}
               <div className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}>
                 {sub.mark ?? '—'}
               </div>

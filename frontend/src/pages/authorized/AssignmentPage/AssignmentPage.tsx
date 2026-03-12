@@ -5,6 +5,7 @@ import { useGetPublicationByIdQuery } from 'services/api/api-client/Publications
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useCourseRole } from 'pages/authorized/OneCoursePage/useCourseRole';
+import type { AssignmentPayload } from 'services/api/api-client.types';
 import { AssignmentView } from './AssignmentView/AssignmentView';
 import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
@@ -65,7 +66,10 @@ export const AssignmentPage = () => {
 
       {activeTab === 'submissions' && isTeacher && (
         <div className={styles.submissionsLayout}>
-          <StudentSubmissionsTab assignmentId={id} />
+          <StudentSubmissionsTab
+            assignmentId={id}
+            deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
+          />
         </div>
       )}
     </div>

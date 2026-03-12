@@ -127,6 +127,18 @@
   color: $classroom-blue;
 }
 
+.statusLate {
+  background: rgba(#dc2626, 0.1);
+  color: #dc2626;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
 .statusNotSubmitted {
   background: rgba($classroom-danger, 0.06);
   color: $classroom-danger;
