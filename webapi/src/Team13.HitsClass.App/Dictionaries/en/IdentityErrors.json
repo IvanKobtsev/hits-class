@@ -3,7 +3,7 @@
   "DefaultError": "Произошла неизвестная ошибка.",
   "DuplicateEmail": "Электронная почта '{{email}}' уже занята.",
   "DuplicateRoleName": "Имя роли '{{role}}' уже занято.",
-  "DuplicateUserName": "Имя пользователя '{{userName}}' уже занято.",
+  "DuplicateUserName": "Почта '{{userName}}' уже занята.",
   "InvalidEmail": "Электронная почта '{{email}}' недействительна.",
   "InvalidRoleName": "Имя роли '{{role}}' недействительно.",
   "InvalidToken": "Недействительный токен.",
