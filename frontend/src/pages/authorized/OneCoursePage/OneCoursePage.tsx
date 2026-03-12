@@ -118,7 +118,9 @@ export const OneCoursePage: React.FC = () => {
               </div>
             )}
             {activeTab === 'members' && (
-              <CourseMembersTab course={course} />
+              <div data-test-id="OneCoursePage-members">
+                <CourseMembersTab course={course} />
+              </div>
             )}
           </div>
         </div>
