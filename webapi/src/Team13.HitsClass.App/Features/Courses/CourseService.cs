@@ -469,7 +469,7 @@ namespace Team13.HitsClass.App.Features.Courses
                 foreach (var a in assignments)
                 {
                     markLookup.TryGetValue((a.Id, student.Id), out var mark);
-                    sb.Append(';').Append(mark ?? "");
+                    sb.Append(';').Append(mark ?? "Не сдано");
                     if (TryParseMarkAsDouble(mark, out var d))
                         numericMarks.Add(d);
                 }
