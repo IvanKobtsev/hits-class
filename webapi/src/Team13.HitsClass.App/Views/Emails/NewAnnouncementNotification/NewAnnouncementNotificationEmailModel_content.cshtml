@@ -1,0 +1,73 @@
+@model Team13.HitsClass.App.Views.Emails.NewAnnouncementNotification.NewAnnouncementNotificationEmailModel
+
+<!DOCTYPE html>
+<style>
+  * {
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    width: 100%;
+    height: fit-content;
+    background-color: white;
+  }
+
+  .header,
+  .section,
+  .footer {
+    width: 100%;
+    height: fit-content;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .section p {
+    margin: 0 0 12px;
+    color: #1f2937;
+    line-height: 1.5;
+  }
+
+  .publication-link {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 10px 14px;
+    background-color: #2563eb;
+    color: #ffffff !important;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  .publication-link-text {
+    margin-top: 12px;
+    word-break: break-all;
+  }
+</style>
+<html lang="en">
+  <head>
+    <title>Новое объявление в "@Model.CourseTitle" - "@Model.PublicationAuthorName"</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="header">
+      <h1 class="title">Новое объявление в "@Model.CourseTitle" - "@Model.PublicationAuthorName"</h1>
+    </div>
+    <div class="section">
+      <p>Пользователь @Model.PublicationAuthorName создал новое объявление в "@Model.CourseTitle".</p>
+      <p>Мы можете перейти к нему, используя кнопку:</p>
+      <a class="publication-link" href="@Model.PublicationUrl">Перейти к объявлению</a>
+      <p class="publication-link-text">
+        Если кнопка не работает, скопируйте прямую ссылку:<br />
+        <a href="@Model.PublicationUrl">@Model.PublicationUrl</a>
+      </p>
+    </div>
+  <div class="footer">
+    Уведомления HitsClass.<br />
+    Все права защищены.
+  </div>
+  </body>
+</html>

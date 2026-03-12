@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Announcement.Dto;
+using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Domain;
@@ -14,10 +15,15 @@ namespace Team13.HitsClass.App.Features.Announcement
     public class AnnouncementService
     {
         private readonly PublicationService _publicationService;
+        private readonly NotificationService _notificationService;
 
-        public AnnouncementService(PublicationService publicationService)
+        public AnnouncementService(
+            PublicationService publicationService,
+            NotificationService notificationService
+        )
         {
             _publicationService = publicationService;
+            _notificationService = notificationService;
         }
 
         public async Task<PublicationDto> CreateAnnouncement(
@@ -25,7 +31,15 @@ namespace Team13.HitsClass.App.Features.Announcement
             CreateAnnouncementDto dto
         )
         {
-            return await _publicationService.CreateNewPublication(courseId, dto, dto.Payload);
+            var newAnnouncement = await _publicationService.CreateNewPublication(
+                courseId,
+                dto,
+                dto.Payload
+            );
+
+            await _notificationService.NewAnnouncementNotification(newAnnouncement.Id);
+
+            return newAnnouncement;
         }
 
         public async Task<PublicationDto> PatchAnnouncement(int id, PatchAnnouncementDto dto)
