@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=hits_class
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
 
   web:
     image: 'ghcr.io/ivankobtsev/hits-class:latest'
