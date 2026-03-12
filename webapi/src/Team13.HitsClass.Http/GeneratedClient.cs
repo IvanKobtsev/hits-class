@@ -2882,14 +2882,14 @@ namespace Team13.HitsClass.Http.Generated
 
             /// <summary>Export marks for all students in a course as CSV</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ExportMarksAsync(CourseClientExportMarksParametersDto parameters)
+        System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(CourseClientExportMarksParametersDto parameters)
         {
             return ExportMarksAsync(parameters, System.Threading.CancellationToken.None);
         }
 
             /// <summary>Export marks for all students in a course as CSV</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task ExportMarksAsync(CourseClientExportMarksParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(CourseClientExportMarksParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return ExportMarksAsync(parameters.courseId, cancellationToken);
         }
@@ -3021,14 +3021,14 @@ namespace Team13.HitsClass.Http.Generated
         /// Export marks for all students in a course as CSV
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ExportMarksAsync(int courseId);
+        System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(int courseId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Export marks for all students in a course as CSV
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task ExportMarksAsync(int courseId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(int courseId, System.Threading.CancellationToken cancellationToken);
 
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task AddStudentAsync(int id, string studentId);
@@ -4008,7 +4008,7 @@ namespace Team13.HitsClass.Http.Generated
         /// Export marks for all students in a course as CSV
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task ExportMarksAsync(int courseId)
+        public virtual System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(int courseId)
         {
             return ExportMarksAsync(courseId, System.Threading.CancellationToken.None);
         }
@@ -4018,7 +4018,7 @@ namespace Team13.HitsClass.Http.Generated
         /// Export marks for all students in a course as CSV
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task ExportMarksAsync(int courseId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(int courseId, System.Threading.CancellationToken cancellationToken)
         {
             if (courseId == null)
                 throw new System.ArgumentNullException("courseId");
@@ -4034,6 +4034,7 @@ namespace Team13.HitsClass.Http.Generated
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
                     request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/octet-stream"));
 
                     PrepareRequest(client_, request_, urlBuilder_);
 
@@ -4066,9 +4067,12 @@ namespace Team13.HitsClass.Http.Generated
                             throw new ApiException<ValidationProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
                         }
                         else
-                        if (status_ == 200)
+                        if (status_ == 200 || status_ == 206)
                         {
-                            return;
+                            var responseStream_ = response_.Content == null ? System.IO.Stream.Null : await response_.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                            var fileResponse_ = new FileResponse(status_, headers_, responseStream_, null, response_);
+                            disposeClient_ = false; disposeResponse_ = false; // response and client are disposed by FileResponse
+                            return fileResponse_;
                         }
                         else
                         {
@@ -4616,14 +4620,14 @@ namespace Team13.HitsClass.Http.Generated
 
             /// <summary>Export marks for all students in a course as CSV</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task ExportMarksAsync(CourseClientExportMarksParametersDto parameters)
+        public System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(CourseClientExportMarksParametersDto parameters)
         {
             return ExportMarksAsync(parameters, System.Threading.CancellationToken.None);
         }
 
             /// <summary>Export marks for all students in a course as CSV</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public System.Threading.Tasks.Task ExportMarksAsync(CourseClientExportMarksParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        public System.Threading.Tasks.Task<FileResponse> ExportMarksAsync(CourseClientExportMarksParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
             return ExportMarksAsync(parameters.courseId, cancellationToken);
         }
