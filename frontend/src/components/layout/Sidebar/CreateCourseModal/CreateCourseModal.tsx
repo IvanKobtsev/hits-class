@@ -13,6 +13,7 @@ import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
 import { requiredRule } from 'helpers/form/react-hook-form-helper';
 import { useCreateCourseMutation } from 'services/api/api-client/CourseQuery';
 import styles from './CreateCourseModal.module.scss';
+import { QueryFactory } from 'services/api';
 
 type CreateCourseForm = {
   title: string;
@@ -34,8 +35,10 @@ export const CreateCourseModal = ({
   const form = useAdvancedForm<CreateCourseForm>(
     async (data) => {
       await mutateAsync({ title: data.title, description: data.description });
-      await queryClient.invalidateQueries({ queryKey: [] });
       onClose();
+      await queryClient.invalidateQueries({
+        queryKey: QueryFactory.CourseQuery.getCoursesQueryKey({}).slice(0, 1),
+      });
     },
     { shouldResetOnSuccess: true },
   );

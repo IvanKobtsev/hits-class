@@ -14,12 +14,16 @@ vi.mock('@tanstack/react-query', async (importActual) => {
   };
 });
 
-vi.mock('services/api/api-client/CourseQuery', () => ({
-  useJoinCourseMutation: (_inviteCode: string) => ({
-    mutateAsync: mockMutateAsync,
-    isPending: false,
-  }),
-}));
+vi.mock('services/api/api-client/CourseQuery', async (importActual) => {
+  const actual = await importActual<typeof import('services/api/api-client/CourseQuery')>();
+  return {
+    ...actual,
+    useJoinCourseMutation: (_inviteCode: string) => ({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+    }),
+  };
+});
 
 vi.mock('components/uikit/suspense/Loading', () => ({
   Loading: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -130,7 +134,7 @@ describe('JoinCourseModal', () => {
     await user.click(screen.getByRole('button', { name: /записаться/i }));
 
     await waitFor(() => {
-      expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: [] });
+      expect(mockInvalidateQueries).toHaveBeenCalledWith({ queryKey: ['CourseClient'] });
     });
   });
 
