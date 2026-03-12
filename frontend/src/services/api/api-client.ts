@@ -192,8 +192,8 @@ export function initPersister() {
   addResultTypeFactory('CourseClient___getCourseMembers', (data: any) => Types.initPagedResultOfCourseMemberDto(data));
 
 
-  addResultTypeFactory('CommentClient___getAssignmentComments', (data: any) => Types.initPagedResultOfCommentDto(data));
-  addResultTypeFactory('CommentClient___getPublicationComments', (data: any) => Types.initPagedResultOfCommentDto(data));
+  addResultTypeFactory('CommentClient___getAssignmentComments', (data: any) => Types.initCommentDto(data));
+  addResultTypeFactory('CommentClient___getPublicationComments', (data: any) => Types.initCommentDto(data));
 
 
   addResultTypeFactory('AssignmentClient___getAssignmentStatistics', (data: any) => Types.initAssignmentStatisticDto(data));
