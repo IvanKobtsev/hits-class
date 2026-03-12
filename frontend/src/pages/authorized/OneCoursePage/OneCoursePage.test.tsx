@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { MemoryRouter, Route, Routes } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { OneCoursePage } from './OneCoursePage.tsx';
 import { CourseDto, PublicationDto } from 'services/api/api-client';
 
