@@ -67,7 +67,9 @@ function renderModal(isOpen = true, onClose = vi.fn()) {
       <Routes>
         <Route
           path="/courses/:courseId"
-          element={<CreateAnnouncementModal isOpen={isOpen} onClose={onClose} />}
+          element={
+            <CreateAnnouncementModal isOpen={isOpen} onClose={onClose} />
+          }
         />
       </Routes>
     </MemoryRouter>,
@@ -94,19 +96,25 @@ describe('CreateAnnouncementModal', () => {
   test('renders content field', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAnnouncement-content-input')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+    ).toBeInTheDocument();
   });
 
   test('renders attachments section', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAnnouncement-attachments')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAnnouncement-attachments'),
+    ).toBeInTheDocument();
   });
 
   test('renders submit button with Создать title', () => {
     renderModal();
 
-    expect(screen.getByRole('button', { name: /создать/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /создать/i }),
+    ).toBeInTheDocument();
   });
 
   test('calls mutation with content and empty attachments on submit', async () => {
@@ -114,7 +122,10 @@ describe('CreateAnnouncementModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAnnouncement-content-input'), 'Текст объявления');
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст объявления',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -132,7 +143,10 @@ describe('CreateAnnouncementModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAnnouncement-content-input'), 'Текст');
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -146,7 +160,10 @@ describe('CreateAnnouncementModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal(true, onClose);
 
-    await user.type(screen.getByTestId('CreateAnnouncement-content-input'), 'Текст');
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -162,7 +179,9 @@ describe('CreateAnnouncementModal', () => {
 
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('CreateAnnouncement-content')).getByText('Required'),
+        within(screen.getByTestId('CreateAnnouncement-content')).getByText(
+          'Обязательное поле',
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -182,7 +201,10 @@ describe('CreateAnnouncementModal', () => {
     mockMutateAsync.mockRejectedValue(new Error('Server error'));
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAnnouncement-content-input'), 'Текст');
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {

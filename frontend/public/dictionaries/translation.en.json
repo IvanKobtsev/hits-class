@@ -1,46 +1,46 @@
 {
   "Components": {
     "LexicalToolbar": {
-      "bold": "Bold",
-      "italic": "Italic",
-      "underline": "Underline",
-      "strikethrough": "Strikethrough",
-      "add_link": "Insert link",
-      "remove_link": "Remove link",
-      "link_field": "Address",
-      "add_attachment": "Add attachment",
-      "add_new_step": "Add new step",
-      "numbered_list": "Numbered list",
-      "bulleted_list": "Bulleted list",
+      "bold": "Жирный",
+      "italic": "Курсив",
+      "underline": "Подчеркнутый",
+      "strikethrough": "Зачеркнутый",
+      "add_link": "Вставить ссылку",
+      "remove_link": "Удалить ссылку",
+      "link_field": "Адрес",
+      "add_attachment": "Добавить вложение",
+      "add_new_step": "Добавить новый шаг",
+      "numbered_list": "Нумерованный список",
+      "bulleted_list": "Маркированный список",
       "InsertNewStep": {
-        "text": "Insert test step",
+        "text": "Вставить тестовый шаг",
         "hotkey": "Ctrl+Enter"
       },
       "InsertSharedSteps": {
-        "text": "Insert shared steps"
+        "text": "Вставить общие шаги"
       },
       "DeleteStep": {
-        "text": "Delete step",
+        "text": "Удалить шаг",
         "hotkey": "Ctrl+Del"
       },
       "MoveStepUp": {
-        "text": "Move step up",
+        "text": "Переместить шаг вверх",
         "hotkey": "Alt+↑"
       },
       "MoveStepDown": {
-        "text": "Move step down",
+        "text": "Переместить шаг вниз",
         "hotkey": "Alt+↓"
       },
       "DuplicateStep": {
-        "text": "Duplicate step",
+        "text": "Дублировать шаг",
         "hotkey": "Ctrl+D"
       },
       "Undo": {
-        "text": "Undo",
+        "text": "Отменить",
         "hotkey": "Ctrl+Z"
       },
       "Redo": {
-        "text": "Redo",
+        "text": "Повторить",
         "hotkey": "Ctrl+Y"
       }
     }
@@ -52,95 +52,95 @@
   "Page": {
     "LoginPage": {
       "app_name": "HitsClass",
-      "no_account_text": "Don't have an account?",
-      "create_account_button": "Create an account",
-      "have_account_text": "Already have an account?",
-      "go_to_login_button": "Login"
+      "no_account_text": "У вас нет аккаунта?",
+      "create_account_button": "Создать аккаунт",
+      "have_account_text": "Уже есть аккаунт?",
+      "go_to_login_button": "Войти"
     },
     "RegisterForm": {
-      "email_field": "Email",
-      "legal_name_field": "Full name",
-      "group_number_field": "Group number (optional)",
-      "password_filed": "Password",
-      "register_button": "Register",
-      "success_title": "Registration successful",
-      "success_message": "Please check your email to confirm your account."
+      "email_field": "Электронная почта",
+      "legal_name_field": "Полное имя",
+      "group_number_field": "Номер группы (необязательно)",
+      "password_filed": "Пароль",
+      "register_button": "Зарегистрироваться",
+      "success_title": "Регистрация прошла успешно",
+      "success_message": "Пожалуйста, проверьте вашу почту для подтверждения аккаунта."
     },
     "LoginForm": {
-      "login_field": "Login",
-      "password_field": "Password",
-      "login_button": "Login",
-      "login_unknown_failure": "Authentication failed",
-      "login_failed": "Invalid login or password",
-      "login_user_locked": "User is locked",
-      "login_failed_or_user_is_locked": "Invalid login attempt or user is locked",
-      "network_error": "Network error",
-      "no_account_text": "Don't have an account?",
-      "create_account_button": "Create an account"
+      "login_field": "Логин",
+      "password_field": "Пароль",
+      "login_button": "Войти",
+      "login_unknown_failure": "Ошибка аутентификации",
+      "login_failed": "Неверный логин или пароль",
+      "login_user_locked": "Пользователь заблокирован",
+      "login_failed_or_user_is_locked": "Неверная попытка входа или пользователь заблокирован",
+      "network_error": "Ошибка сети",
+      "no_account_text": "У вас нет аккаунта?",
+      "create_account_button": "Создать аккаунт"
     },
     "Products": {
       "Create": {
-        "create_button": "Create",
-        "title": "Title",
-        "product_type": "Product Type",
-        "lastStockUpdatedAt": "Last Stock Update",
+        "create_button": "Создать",
+        "title": "Название",
+        "product_type": "Тип продукта",
+        "lastStockUpdatedAt": "Последнее обновление остатков",
         "unsaved_changes_prompt": {
-          "title": "Unsaved changes",
-          "text": "You have unsaved changes. Are you sure you want to leave?"
+          "title": "Несохраненные изменения",
+          "text": "У вас есть несохраненные изменения. Вы уверены, что хотите уйти?"
         }
       },
       "Edit": {
-        "save_button": "Save",
-        "title": "Title",
-        "product_type": "Product Type",
-        "lastStockUpdatedAt": "Last Stock Update",
+        "save_button": "Сохранить",
+        "title": "Название",
+        "product_type": "Тип продукта",
+        "lastStockUpdatedAt": "Последнее обновление остатков",
         "unsaved_changes_prompt": {
-          "title": "Unsaved changes",
-          "text": "You have unsaved changes. Are you sure you want to leave?"
+          "title": "Несохраненные изменения",
+          "text": "У вас есть несохраненные изменения. Вы уверены, что хотите уйти?"
         }
       },
       "list": {
-        "column_title": "Title"
+        "column_title": "Название"
       }
     },
     "uikit": {
-      "input": "Input",
-      "password": "Password",
-      "dropdown": "Dropdown",
-      "time": "Time",
-      "date": "Date",
-      "combobox": "Combobox",
-      "submit_button_title": "Submit",
-      "multi_select_dropdown": "Multi select",
-      "hook_form_dropdown_complex_option": "Dropdown where Option is a complex object, but we only want to store `id` in a form"
+      "input": "Поле ввода",
+      "password": "Пароль",
+      "dropdown": "Выпадающий список",
+      "time": "Время",
+      "date": "Дата",
+      "combobox": "Комбобокс",
+      "submit_button_title": "Отправить",
+      "multi_select_dropdown": "Множественный выбор",
+      "hook_form_dropdown_complex_option": "Выпадающий список, где Option - это сложный объект, но в форме мы хотим хранить только `id`"
     }
   },
   "uikit": {
     "inputs": {
-      "required": "Required",
-      "nothing_selected": "No selection",
-      "all_selected": "All selected",
-      "some_selected": "Some selected",
-      "select_all_button": "ALL",
-      "select_none_button": "NONE"
+      "required": "Обязательное поле",
+      "nothing_selected": "Ничего не выбрано",
+      "all_selected": "Выбрано все",
+      "some_selected": "Выбрано частично",
+      "select_all_button": "ВСЕ",
+      "select_none_button": "НИЧЕГО"
     },
     "dialog": {
-      "ok_button": "Ok",
-      "cancel_button": "Cancel",
-      "error_title": "Error"
+      "ok_button": "Ок",
+      "cancel_button": "Отмена",
+      "error_title": "Ошибка"
     }
   },
   "suspense": {
-    "reload": "Reload",
-    "server_updated": "Seems like the server was updated to newer version. Try reloading the page (all your changes will be lost)"
+    "reload": "Перезагрузить",
+    "server_updated": "Похоже, сервер обновился до новой версии. Попробуйте перезагрузить страницу (все ваши изменения будут потеряны)"
   },
-  "Login_Failed": "Login failed",
-  "Login_User_Locked": "User locked",
-  "Login_Unknown_Failure": "Unknown error",
-  "Network Error": "No network",
-  "Error_Unauthorized": "Unauthorized",
-  "Error_AccessDenied": "Access Denied",
-  "Error_ExternalServiceUnavailable": "External service is unavailable now, please retry later.",
-  "password_validation_error": "Use Latin letters, numbers, or !@#$%^&*.()",
-  "password_validation_trim_error": "Spaces not allowed at start or end"
+  "Login_Failed": "Ошибка входа",
+  "Login_User_Locked": "Пользователь заблокирован",
+  "Login_Unknown_Failure": "Неизвестная ошибка",
+  "Network Error": "Нет сети",
+  "Error_Unauthorized": "Не авторизован",
+  "Error_AccessDenied": "Доступ запрещен",
+  "Error_ExternalServiceUnavailable": "Внешний сервис сейчас недоступен, повторите попытку позже.",
+  "password_validation_error": "Используйте латинские буквы, цифры или !@#$%^&*.()",
+  "password_validation_trim_error": "Пробелы в начале или конце не допускаются"
 }

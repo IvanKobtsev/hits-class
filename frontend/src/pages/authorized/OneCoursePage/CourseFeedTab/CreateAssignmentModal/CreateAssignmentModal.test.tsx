@@ -39,7 +39,13 @@ vi.mock('services/api/api-client/FilesQuery', () => ({
 }));
 
 vi.mock('components/uikit/inputs/date-time/HookFormDatePicker', () => ({
-  HookFormDatePicker: ({ name, control }: { name: string; control: unknown }) => (
+  HookFormDatePicker: ({
+    name,
+    control,
+  }: {
+    name: string;
+    control: unknown;
+  }) => (
     <input data-test-id={`CreateAssignment-${name}`} type="date" readOnly />
   ),
 }));
@@ -100,31 +106,41 @@ describe('CreateAssignmentModal', () => {
   test('renders title field', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAssignment-title-input')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAssignment-title-input'),
+    ).toBeInTheDocument();
   });
 
   test('renders content field', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAssignment-content-input')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAssignment-content-input'),
+    ).toBeInTheDocument();
   });
 
   test('renders deadline field', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAssignment-deadlineUtc')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAssignment-deadlineUtc'),
+    ).toBeInTheDocument();
   });
 
   test('renders attachments section', () => {
     renderModal();
 
-    expect(screen.getByTestId('CreateAssignment-attachments')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CreateAssignment-attachments'),
+    ).toBeInTheDocument();
   });
 
   test('renders submit button with Создать title', () => {
     renderModal();
 
-    expect(screen.getByRole('button', { name: /создать/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /создать/i }),
+    ).toBeInTheDocument();
   });
 
   test('calls mutation with title, content and empty attachments on submit', async () => {
@@ -132,8 +148,14 @@ describe('CreateAssignmentModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
-    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание задания');
+    await user.type(
+      screen.getByTestId('CreateAssignment-title-input'),
+      'Задание 1',
+    );
+    await user.type(
+      screen.getByTestId('CreateAssignment-content-input'),
+      'Описание задания',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -156,7 +178,10 @@ describe('CreateAssignmentModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal(true, onClose);
 
-    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(
+      screen.getByTestId('CreateAssignment-title-input'),
+      'Задание 1',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -169,7 +194,10 @@ describe('CreateAssignmentModal', () => {
     mockMutateAsync.mockResolvedValue({});
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(
+      screen.getByTestId('CreateAssignment-title-input'),
+      'Задание 1',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
@@ -185,7 +213,9 @@ describe('CreateAssignmentModal', () => {
 
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('CreateAssignment-title')).getByText('Required'),
+        within(screen.getByTestId('CreateAssignment-title')).getByText(
+          'Обязательное поле',
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -205,7 +235,10 @@ describe('CreateAssignmentModal', () => {
     mockMutateAsync.mockRejectedValue(new Error('Server error'));
     renderModal();
 
-    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(
+      screen.getByTestId('CreateAssignment-title-input'),
+      'Задание 1',
+    );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {

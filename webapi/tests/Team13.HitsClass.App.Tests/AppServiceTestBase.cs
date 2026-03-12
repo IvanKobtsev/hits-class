@@ -10,11 +10,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Moq;
 using Team13.HitsClass.App.Setup;
 using Team13.HitsClass.App.Utils.Localization;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
+using Team13.Mailing;
 using Team13.Testing;
 
 namespace Team13.HitsClass.App.Tests;
@@ -25,6 +27,7 @@ namespace Team13.HitsClass.App.Tests;
 public class AppServiceTestBase : TestBase<HitsClassDbContext>
 {
     protected User _defaultUser;
+    protected Mock<IMailSender> _mailSenderMock = new();
     public override bool InsertLoggerInEf => true;
 
     protected AppServiceTestBase(
@@ -50,6 +53,17 @@ public class AppServiceTestBase : TestBase<HitsClassDbContext>
                     _defaultUser = await db.Users.FirstAsync(x => x.Email == "default@test.test");
                 });
                 _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+                _mailSenderMock
+                    .Setup(x =>
+                        x.Send(
+                            It.IsAny<string>(),
+                            It.IsAny<string>(),
+                            It.IsAny<string>(),
+                            It.IsAny<string>(),
+                            It.IsAny<List<string>>()
+                        )
+                    )
+                    .Returns(Task.CompletedTask);
             });
         }
     }
@@ -86,6 +100,7 @@ public class AppServiceTestBase : TestBase<HitsClassDbContext>
             .AddRoles<IdentityRole>()
             .AddRoleManager<RoleManager<IdentityRole>>()
             .AddEntityFrameworkStores<HitsClassDbContext>();
+        services.AddSingleton(_mailSenderMock.Object);
 
         // Here you could override type registration (e.g. mock http clients that call other microservices).
         // Most probably you'd need to remove existing registration before registering new one.
