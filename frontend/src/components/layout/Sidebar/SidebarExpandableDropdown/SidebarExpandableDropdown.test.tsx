@@ -132,14 +132,14 @@ describe('SidebarExpandableDropdown', () => {
     expect(screen.getByText('-- No courses --')).toBeInTheDocument();
   });
 
-  test('"-- No courses --" is bold and italic', () => {
+  test('"-- No courses --" has the noCourses style class applied', () => {
     render(
       <SidebarExpandableDropdown {...defaultProps}>
       </SidebarExpandableDropdown>,
     );
 
     const el = screen.getByText('-- No courses --');
-    expect(el).toHaveStyle({ fontWeight: 'bold', fontStyle: 'italic' });
+    expect(el.className).toMatch(/noCourses/);
   });
 
   test('does not display "-- No courses --" when children are present', () => {

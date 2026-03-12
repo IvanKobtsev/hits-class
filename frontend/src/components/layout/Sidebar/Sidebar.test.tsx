@@ -13,6 +13,10 @@ vi.mock('services/api/api-client/CourseQuery', () => ({
   useGetMyCoursesQuery: vi.fn(),
 }));
 
+vi.mock('services/api/api-client/UserQuery', () => ({
+  useGetCurrentUserInfoQuery: vi.fn(),
+}));
+
 vi.mock('./SidebarExpandableDropdown/SidebarExpandableDropdown', () => ({
   SidebarExpandableDropdown: ({
     title,
@@ -69,10 +73,34 @@ vi.mock('./JoinCourseModal/JoinCourseModal', () => ({
 
 import { useSidebar } from './SidebarContext';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
+import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { CourseListItemDto } from 'services/api/api-client.types';
 
 const mockedUseSidebar = vi.mocked(useSidebar);
 const mockedUseGetMyCoursesQuery = vi.mocked(useGetMyCoursesQuery);
+const mockedUseGetCurrentUserInfoQuery = vi.mocked(useGetCurrentUserInfoQuery);
+
+const teacherUser = {
+  id: 'u1',
+  email: 'teacher@test.com',
+  legalName: 'Преподаватель',
+  groupNumber: null,
+  username: 'teacher',
+  isTeacherSystemWide: true,
+  isAdmin: false,
+};
+
+const adminUser = {
+  ...teacherUser,
+  isTeacherSystemWide: false,
+  isAdmin: true,
+};
+
+const studentUser = {
+  ...teacherUser,
+  isTeacherSystemWide: false,
+  isAdmin: false,
+};
 
 const emptyCoursesResult = {
   data: { data: [], totalCount: 0 },
@@ -84,6 +112,7 @@ describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockedUseGetMyCoursesQuery.mockReturnValue(emptyCoursesResult);
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: teacherUser } as any);
   });
 
   // --- Expanded ---
@@ -237,6 +266,45 @@ describe('Sidebar', () => {
     );
 
     expect(screen.queryByText('Создать курс')).not.toBeInTheDocument();
+  });
+
+  test('hides "Создать курс" for a regular student', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: studentUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Создать курс')).not.toBeInTheDocument();
+  });
+
+  test('shows "Создать курс" for a system-wide teacher', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: teacherUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Создать курс')).toBeInTheDocument();
+  });
+
+  test('shows "Создать курс" for an admin', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: adminUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Создать курс')).toBeInTheDocument();
   });
 
   test('opens CreateCourseModal when "Создать курс" is clicked', async () => {
