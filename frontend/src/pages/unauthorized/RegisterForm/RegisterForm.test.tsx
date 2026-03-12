@@ -60,7 +60,7 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(
-      within(screen.getByTestId('Email')).getByText('Required'),
+      within(screen.getByTestId('Email')).getByText('Обязательное поле'),
     ).toBeInTheDocument();
   });
 
@@ -71,7 +71,7 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(
-      within(screen.getByTestId('LegalName')).getByText('Required'),
+      within(screen.getByTestId('LegalName')).getByText('Обязательное поле'),
     ).toBeInTheDocument();
   });
 
@@ -82,7 +82,9 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(
-      within(screen.getByTestId('GroupNumber')).queryByText('Required'),
+      within(screen.getByTestId('GroupNumber')).queryByText(
+        'Обязательное поле',
+      ),
     ).not.toBeInTheDocument();
   });
 
@@ -93,7 +95,7 @@ describe('RegisterForm', () => {
     await user.click(screen.getByRole('button', { name: /register/i }));
 
     expect(
-      within(screen.getByTestId('Password')).getByText('Required'),
+      within(screen.getByTestId('Password')).getByText('Обязательное поле'),
     ).toBeInTheDocument();
   });
 

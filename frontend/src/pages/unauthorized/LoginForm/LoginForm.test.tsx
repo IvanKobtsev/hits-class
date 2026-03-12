@@ -60,7 +60,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /login/i }));
 
     expect(
-      within(screen.getByTestId('Login')).getByText('Required'),
+      within(screen.getByTestId('Login')).getByText('Обязательное поле'),
     ).toBeInTheDocument();
   });
 
@@ -71,7 +71,7 @@ describe('LoginForm', () => {
     await user.click(screen.getByRole('button', { name: /login/i }));
 
     expect(
-      within(screen.getByTestId('Password')).getByText('Required'),
+      within(screen.getByTestId('Password')).getByText('Обязательное поле'),
     ).toBeInTheDocument();
   });
 
@@ -162,7 +162,9 @@ describe('LoginForm', () => {
 
   test('shows "Invalid login or password" when login fails', async () => {
     const user = userEvent.setup();
-    mockedSendLogin.mockRejectedValueOnce(new Error('Invalid login or password'));
+    mockedSendLogin.mockRejectedValueOnce(
+      new Error('Invalid login or password'),
+    );
     renderLoginForm();
 
     const loginInput = within(screen.getByTestId('Login')).getByRole('textbox');
