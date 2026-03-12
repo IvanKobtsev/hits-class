@@ -1,12 +1,20 @@
 import AssignmentIcon from 'assets/icons/list-ul.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import { AssignmentPayload, PublicationDto, SubmissionDto } from 'services/api/api-client.types';
+import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
 
-function isValidJson(value: string): boolean {
+function isLexicalState(value: string): boolean {
   try {
-    JSON.parse(value);
-    return true;
+    const parsed = JSON.parse(value);
+    return (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'root' in parsed &&
+      typeof parsed.root === 'object' &&
+      parsed.root !== null &&
+      Array.isArray(parsed.root.children)
+    );
   } catch {
     return false;
   }
@@ -87,11 +95,19 @@ export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) 
             className={styles.description}
             data-test-id="AssignmentView-description"
           >
-            {isValidJson(content)
+            {isLexicalState(content)
               ? <LexicalViewer lexicalState={content} />
               : <span>{content}</span>
             }
           </div>
+        )}
+
+        {assignment.attachments != null && assignment.attachments.length > 0 && (
+          <AttachmentsList
+            attachments={assignment.attachments}
+            onError={(error) => console.error('File download error:', error)}
+            data-test-id="AssignmentView-attachments"
+          />
         )}
 
         {submission?.mark != null && (

@@ -31,9 +31,10 @@ vi.mock('components/uikit/modal/useModal', async (importActual) => {
   };
 });
 
+const mockUploadFileAsync = vi.fn();
 vi.mock('services/api/api-client/FilesQuery', () => ({
   useUploadFileMutation: () => ({
-    mutate: vi.fn(),
+    mutateAsync: mockUploadFileAsync,
     isPending: false,
   }),
 }));
@@ -179,7 +180,7 @@ describe('CreateAssignmentModal', () => {
     });
   });
 
-  test('shows Required error under content field when submit is pressed with empty content', async () => {
+  test('shows required error under content field when submit is pressed with empty content', async () => {
     const user = userEvent.setup();
     renderModal();
 
@@ -188,12 +189,12 @@ describe('CreateAssignmentModal', () => {
 
     await waitFor(() => {
       const textarea = screen.getByTestId('CreateAssignment-content-input');
-      expect(textarea.closest('div')).toHaveTextContent('Required');
+      expect(textarea.closest('div')).toHaveTextContent('Обязательное поле');
       expect(textarea).toHaveAttribute('data-error', 'true');
     });
   });
 
-  test('shows Required error under title field when submit is pressed with empty title', async () => {
+  test('shows required error under title field when submit is pressed with empty title', async () => {
     const user = userEvent.setup();
     renderModal();
 
@@ -201,7 +202,7 @@ describe('CreateAssignmentModal', () => {
 
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('CreateAssignment-title')).getByText('Required'),
+        within(screen.getByTestId('CreateAssignment-title')).getByText('Обязательное поле'),
       ).toBeInTheDocument();
     });
   });
@@ -213,6 +214,49 @@ describe('CreateAssignmentModal', () => {
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  test('does not upload file immediately when selected', async () => {
+    const user = userEvent.setup();
+    const mockFile = new File(['data'], 'report.pdf', { type: 'application/pdf' });
+    renderModal();
+
+    await user.upload(screen.getByTestId('CreateAssignment-file-input'), mockFile);
+
+    expect(mockUploadFileAsync).not.toHaveBeenCalled();
+  });
+
+  test('uploads attached files via uploadFileAsync at submit time and passes them as attachments', async () => {
+    const user = userEvent.setup();
+    const mockFile = new File(['data'], 'report.pdf', { type: 'application/pdf' });
+    const mockFileInfo = {
+      id: 'uuid-1',
+      fileName: 'report.pdf',
+      size: 4,
+      createdAt: new Date('2025-01-01'),
+      metadata: { externalId: null },
+    };
+    mockUploadFileAsync.mockResolvedValue(mockFileInfo);
+    mockMutateAsync.mockResolvedValue({});
+    renderModal();
+
+    await user.upload(screen.getByTestId('CreateAssignment-file-input'), mockFile);
+    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание');
+    await user.click(screen.getByRole('button', { name: /создать/i }));
+
+    await waitFor(() => {
+      expect(mockUploadFileAsync).toHaveBeenCalledWith({
+        file: { data: mockFile, fileName: 'report.pdf' },
+      });
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          attachments: [
+            expect.objectContaining({ uuid: 'uuid-1', fileName: 'report.pdf' }),
+          ],
+        }),
+      );
+    });
   });
 
   test('shows error popup when creation fails', async () => {

@@ -15,6 +15,15 @@ vi.mock('components/lexical/LexicalViewer', () => ({
   ),
 }));
 
+vi.mock(
+  'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList',
+  () => ({
+    AttachmentsList: ({ attachments }: { attachments: unknown[] }) => (
+      <div data-test-id="AttachmentsList-mock">{attachments.length} files</div>
+    ),
+  }),
+);
+
 const mockAuthor: UserDto = {
   id: 'author-1',
   email: 'teacher@example.com',
@@ -125,6 +134,24 @@ describe('AssignmentView', () => {
     });
 
     expect(screen.queryByTestId('AssignmentView-mark')).not.toBeInTheDocument();
+  });
+
+  test('renders attachments list below description when attachments present', () => {
+    const withAttachments: PublicationDto = {
+      ...mockAssignment,
+      attachments: [
+        { uuid: 'f1', fileName: 'hw.pdf', size: 1024, createdAt: new Date('2025-01-01') },
+      ],
+    };
+    renderAssignmentView({ assignment: withAttachments });
+
+    expect(screen.getByTestId('AttachmentsList-mock')).toBeInTheDocument();
+  });
+
+  test('does not render attachments list when assignment has no attachments', () => {
+    renderAssignmentView({ assignment: { ...mockAssignment, attachments: [] } });
+
+    expect(screen.queryByTestId('AttachmentsList-mock')).not.toBeInTheDocument();
   });
 
   test('shows placeholder when deadline is not set', () => {

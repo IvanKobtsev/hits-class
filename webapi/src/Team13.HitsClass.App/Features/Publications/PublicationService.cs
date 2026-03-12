@@ -125,6 +125,7 @@ public class PublicationService(
             TargetUsers = targetUsers,
             PublicationPayload = publicationPayload,
             Course = course,
+            Attachments = createPublicationDto.Attachments,
         };
 
         dbContext.Publications.Add(newPublication);

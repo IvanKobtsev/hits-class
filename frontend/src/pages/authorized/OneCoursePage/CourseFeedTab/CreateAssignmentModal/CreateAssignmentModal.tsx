@@ -52,14 +52,22 @@ export const CreateAssignmentModal = ({
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [uploadedFileInfos, setUploadedFileInfos] = useState<Record<string, FileInfoDto>>({});
-  const { mutate: uploadFile } = useUploadFileMutation();
-
-  const attachments: Attachment[] = Object.values(uploadedFileInfos).map(fileInfoToAttachment);
+  const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
+  const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
   const form = useAdvancedForm<CreateAssignmentForm>(
     async (data) => {
       try {
+        const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
+          const item = files.find((f) => f.id === id);
+          return item && item.status !== 'too_large';
+        });
+        const fileInfos = await Promise.all(
+          uploadableEntries.map(([, file]) =>
+            uploadFileAsync({ file: { data: file, fileName: file.name } }),
+          ),
+        );
+        const attachments = fileInfos.map(fileInfoToAttachment);
         await mutateAsync({
           content: data.content,
           targetUsersIds: null,
@@ -82,7 +90,7 @@ export const CreateAssignmentModal = ({
   const handleClose = () => {
     form.reset();
     setFiles([]);
-    setUploadedFileInfos({});
+    setRawFiles({});
     onClose();
   };
 
@@ -91,40 +99,27 @@ export const CreateAssignmentModal = ({
       const selectedFiles = e.target.files;
       if (!selectedFiles?.length) return;
       const next: AttachedFileItem[] = [];
+      const nextRaw: Record<string, File> = {};
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
         const id = makeId();
         const status: AttachedFileItem['status'] =
-          file.size > MAX_FILE_SIZE_BYTES ? 'too_large' : 'uploading';
-        next.push({ id, name: file.name, size: file.size, status, progress: status === 'uploading' ? 0 : undefined });
-        if (status === 'uploading') {
-          uploadFile(
-            { file: { data: file, fileName: file.name } },
-            {
-              onSuccess: (data: FileInfoDto) => {
-                setFiles((prev) =>
-                  prev.map((f) => (f.id === id ? { ...f, status: 'uploaded' as const } : f)),
-                );
-                setUploadedFileInfos((prev) => ({ ...prev, [id]: data }));
-              },
-              onError: () => {
-                setFiles((prev) =>
-                  prev.map((f) => (f.id === id ? { ...f, status: 'error' as const } : f)),
-                );
-              },
-            },
-          );
+          file.size > MAX_FILE_SIZE_BYTES ? 'too_large' : 'pending';
+        next.push({ id, name: file.name, size: file.size, status });
+        if (status === 'pending') {
+          nextRaw[id] = file;
         }
       }
       setFiles((prev) => [...prev, ...next]);
+      setRawFiles((prev) => ({ ...prev, ...nextRaw }));
       e.target.value = '';
     },
-    [uploadFile],
+    [],
   );
 
   const handleRemoveFile = useCallback((id: string) => {
     setFiles((prev) => prev.filter((f) => f.id !== id));
-    setUploadedFileInfos((prev) => {
+    setRawFiles((prev) => {
       const next = { ...prev };
       delete next[id];
       return next;

@@ -154,7 +154,7 @@ describe('CreateAnnouncementModal', () => {
     });
   });
 
-  test('shows Required error under content field when submit is pressed with empty content', async () => {
+  test('shows required error under content field when submit is pressed with empty content', async () => {
     const user = userEvent.setup();
     renderModal();
 
@@ -162,7 +162,7 @@ describe('CreateAnnouncementModal', () => {
 
     await waitFor(() => {
       expect(
-        within(screen.getByTestId('CreateAnnouncement-content')).getByText('Required'),
+        within(screen.getByTestId('CreateAnnouncement-content')).getByText('Обязательное поле'),
       ).toBeInTheDocument();
     });
   });

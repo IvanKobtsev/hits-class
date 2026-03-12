@@ -12,8 +12,6 @@ import { FormError } from 'components/uikit/FormError';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useJoinCourseMutation } from 'services/api/api-client/CourseQuery';
 import styles from './JoinCourseModal.module.scss';
-import { QueryFactory } from 'services/api';
-
 export type JoinCourseModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -47,9 +45,7 @@ export const JoinCourseModal = ({ isOpen, onClose }: JoinCourseModalProps) => {
 
     try {
       await mutateAsync();
-      await queryClient.invalidateQueries({
-        queryKey: QueryFactory.CourseQuery.getCoursesQueryKey({}).slice(0, 1),
-      });
+      await queryClient.invalidateQueries({ queryKey: [] });
       setInviteCode('');
       onClose();
     } catch {
