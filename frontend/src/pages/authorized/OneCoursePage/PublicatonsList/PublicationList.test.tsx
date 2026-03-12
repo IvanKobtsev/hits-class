@@ -12,6 +12,26 @@ vi.mock(
   './PublicationListItem/EditAssignmentModal/EditAssignmentModal',
   () => ({ EditAssignmentModal: () => null }),
 );
+
+vi.mock('components/uikit/modal/useModal', () => ({
+  useModal: () => ({ showConfirm: vi.fn() }),
+}));
+
+vi.mock('@tanstack/react-query', async (importActual) => {
+  const actual = await importActual<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
+
+vi.mock('services/api/api-client/AnnouncementQuery', () => ({
+  useDeleteAnnouncementMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock('services/api/api-client/AssignmentQuery', () => ({
+  useDeleteAssignmentMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
 import {
   initAnnouncementPayload,
   initAssignmentPayload,

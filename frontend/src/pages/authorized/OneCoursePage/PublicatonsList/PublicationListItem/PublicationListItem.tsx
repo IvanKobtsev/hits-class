@@ -16,12 +16,16 @@ import {
   Snackbar,
 } from '@mui/material';
 import DotsIcon from 'assets/icons/dots.svg?react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   PublicationDto,
   PublicationType,
   AssignmentPayload,
 } from 'services/api/api-client.types';
 import { clsx } from 'clsx';
+import { useModal } from 'components/uikit/modal/useModal';
+import { useDeleteAnnouncementMutation } from 'services/api/api-client/AnnouncementQuery';
+import { useDeleteAssignmentMutation } from 'services/api/api-client/AssignmentQuery';
 import { AttachmentsList } from './AttachmentsList/AttachmentsList';
 import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
@@ -59,10 +63,20 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
 
+  const modal = useModal();
+  const queryClient = useQueryClient();
+  const { mutateAsync: deleteAnnouncement } = useDeleteAnnouncementMutation(id);
+  const { mutateAsync: deleteAssignment } = useDeleteAssignmentMutation(id);
+
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
 
   const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
@@ -79,9 +93,26 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     setIsEditModalOpen(true);
   };
 
-  const handleEditSuccess = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
+  const handleDeleteClick = async () => {
+    handleMenuClose();
+    const confirmed = await modal.showConfirm({
+      title: 'Удаление публикации',
+      text: 'Вы уверены, что хотите удалить эту публикацию?',
+      okButtonText: 'Удалить',
+      cancelButtonText: 'Отмена',
+    });
+    if (!confirmed) return;
+    try {
+      if (isAssignment) {
+        await deleteAssignment();
+      } else {
+        await deleteAnnouncement();
+      }
+      await queryClient.invalidateQueries({ queryKey: [] });
+      showSnackbar('Успешно удалено');
+    } catch {
+      showSnackbar('Возникла ошибка при удалении');
+    }
   };
 
   return (
@@ -181,6 +212,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           onClose={handleMenuClose}
         >
           <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
+          <MenuItem onClick={() => { void handleDeleteClick(); }}>Удалить</MenuItem>
         </Menu>
 
         {attachments && attachments.length > 0 && (
@@ -198,7 +230,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         <EditAnnouncementModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => handleEditSuccess('Объявление обновлено')}
+          onSuccess={() => showSnackbar('Объявление обновлено')}
           publicationId={id}
           initialContent={content ?? ''}
           initialAttachments={attachments ?? []}
@@ -208,7 +240,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         <EditAssignmentModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
-          onSuccess={() => handleEditSuccess('Задание обновлено')}
+          onSuccess={() => showSnackbar('Задание обновлено')}
           publicationId={id}
           initialTitle={assignmentData?.title ?? ''}
           initialContent={content ?? ''}

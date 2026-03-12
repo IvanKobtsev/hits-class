@@ -64,14 +64,9 @@ vi.mock('@tanstack/react-query', async (importActual) => {
 });
 
 const mockShowConfirm = vi.fn();
-vi.mock('components/uikit/modal/useModal', async (importActual) => {
-  const actual =
-    await importActual<typeof import('components/uikit/modal/useModal')>();
-  return {
-    ...actual,
-    useModal: () => ({ showConfirm: mockShowConfirm }),
-  };
-});
+vi.mock('components/uikit/modal/useModal', () => ({
+  useModal: () => ({ showConfirm: mockShowConfirm }),
+}));
 
 const mockAuthor = {
   id: 'teacher-1',
