@@ -2,11 +2,13 @@ import React from 'react';
 import { Typography } from '@mui/material';
 import { CourseListItem } from './CourseListItem/CourseListItem';
 import { Loading } from 'components/uikit/suspense/Loading';
-import { GetMyCoursesCourseQueryParameters, useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
+import {
+  GetMyCoursesCourseQueryParameters,
+  useGetMyCoursesQuery,
+} from 'services/api/api-client/CourseQuery';
 import styles from './CoursesList.module.scss';
 
 type Props = GetMyCoursesCourseQueryParameters;
-
 
 export const CoursesList: React.FC<Props> = (params) => {
   const { data, isLoading, isError } = useGetMyCoursesQuery(params);

@@ -4,7 +4,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
 import { Field } from 'components/uikit/Field';
 import { TextArea } from 'components/uikit/inputs/TextArea';
-import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
+import {
+  Button,
+  ButtonColor,
+  ButtonWidth,
+} from 'components/uikit/buttons/Button';
 import { FormError } from 'components/uikit/FormError';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useModal } from 'components/uikit/modal/useModal';
@@ -26,7 +30,12 @@ function makeId(): string {
 }
 
 function fileInfoToAttachment(info: FileInfoDto): Attachment {
-  return { uuid: info.id, fileName: info.fileName, size: info.size, createdAt: info.createdAt };
+  return {
+    uuid: info.id,
+    fileName: info.fileName,
+    size: info.size,
+    createdAt: info.createdAt,
+  };
 }
 
 type CreateAnnouncementForm = {
@@ -43,15 +52,20 @@ export const CreateAnnouncementModal = ({
   onClose,
 }: CreateAnnouncementModalProps) => {
   const { courseId } = useParams<{ courseId: string }>();
-  const { mutateAsync, isPending } = useCreateAnnouncementMutation(Number(courseId));
+  const { mutateAsync, isPending } = useCreateAnnouncementMutation(
+    Number(courseId),
+  );
   const queryClient = useQueryClient();
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [uploadedFileInfos, setUploadedFileInfos] = useState<Record<string, FileInfoDto>>({});
+  const [uploadedFileInfos, setUploadedFileInfos] = useState<
+    Record<string, FileInfoDto>
+  >({});
   const { mutate: uploadFile } = useUploadFileMutation();
 
-  const attachments: Attachment[] = Object.values(uploadedFileInfos).map(fileInfoToAttachment);
+  const attachments: Attachment[] =
+    Object.values(uploadedFileInfos).map(fileInfoToAttachment);
 
   const form = useAdvancedForm<CreateAnnouncementForm>(
     async (data) => {
@@ -88,20 +102,30 @@ export const CreateAnnouncementModal = ({
         const id = makeId();
         const status: AttachedFileItem['status'] =
           file.size > MAX_FILE_SIZE_BYTES ? 'too_large' : 'uploading';
-        next.push({ id, name: file.name, size: file.size, status, progress: status === 'uploading' ? 0 : undefined });
+        next.push({
+          id,
+          name: file.name,
+          size: file.size,
+          status,
+          progress: status === 'uploading' ? 0 : undefined,
+        });
         if (status === 'uploading') {
           uploadFile(
             { file: { data: file, fileName: file.name } },
             {
               onSuccess: (data: FileInfoDto) => {
                 setFiles((prev) =>
-                  prev.map((f) => (f.id === id ? { ...f, status: 'uploaded' as const } : f)),
+                  prev.map((f) =>
+                    f.id === id ? { ...f, status: 'uploaded' as const } : f,
+                  ),
                 );
                 setUploadedFileInfos((prev) => ({ ...prev, [id]: data }));
               },
               onError: () => {
                 setFiles((prev) =>
-                  prev.map((f) => (f.id === id ? { ...f, status: 'error' as const } : f)),
+                  prev.map((f) =>
+                    f.id === id ? { ...f, status: 'error' as const } : f,
+                  ),
                 );
               },
             },
@@ -144,7 +168,10 @@ export const CreateAnnouncementModal = ({
               </div>
             )}
           </Field>
-          <Field title="Прикреплённые файлы" testId="CreateAnnouncement-attachments">
+          <Field
+            title="Прикреплённые файлы"
+            testId="CreateAnnouncement-attachments"
+          >
             <AttachedFilesTable files={files} onRemove={handleRemoveFile} />
             <input
               ref={fileInputRef}

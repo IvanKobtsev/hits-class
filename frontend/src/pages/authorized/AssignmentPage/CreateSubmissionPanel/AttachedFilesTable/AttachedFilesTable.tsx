@@ -34,15 +34,17 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
   return (
     <>
       <table className={styles.table} data-test-id="attached-files-table">
-        <thead>
-          <tr>
-            <th className={styles.colIcon} />
-            <th className={styles.colName}>Имя</th>
-            <th className={styles.colSize}>Размер</th>
-            <th className={styles.colProgress}>Статус</th>
-            <th className={styles.colAction} />
-          </tr>
-        </thead>
+        {files.length > 0 && (
+          <thead>
+            <tr>
+              <th className={styles.colIcon} />
+              <th className={styles.colName}>Имя</th>
+              <th className={styles.colSize}>Размер</th>
+              <th className={styles.colProgress}>Статус</th>
+              <th className={styles.colAction} />
+            </tr>
+          </thead>
+        )}
         <tbody>
           {files.map((file) => (
             <tr key={file.id}>
@@ -64,6 +66,9 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
                   <span className={styles.errorText}>
                     Размер файла не должен превышать 400 MB
                   </span>
+                )}
+                {file.status === 'uploaded' && (
+                  <span className={styles.successText}>✓</span>
                 )}
                 {file.status === 'error' && (
                   <span className={styles.errorText}>Ошибка загрузки</span>
