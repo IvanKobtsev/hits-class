@@ -31,7 +31,8 @@ import { AttachmentsList } from './AttachmentsList/AttachmentsList';
 import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
 import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
-import { Link } from 'react-router';
+import { Link, useParams } from 'react-router';
+import { Links } from 'application/constants/links';
 
 const formatDate = (date: Date | string) => {
   const d = new Date(date);
@@ -64,7 +65,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     lastUpdatedAtUTC &&
     formatDate(createdAtUTC) !== formatDate(lastUpdatedAtUTC);
 
-  const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
+  const { courseId: courseIdParam } = useParams();
+  const courseId = Number(courseIdParam);
+  const link = isAssignment
+    ? Links.Authorized.AssignmentRoutes.link({ courseId, assignmentId: id })
+    : Links.Authorized.AnnouncementRoutes.link({ courseId, announcementId: id });
 
   const modal = useModal();
   const queryClient = useQueryClient();
