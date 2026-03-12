@@ -6,6 +6,15 @@
   padding: 24px;
 }
 
+.tabsWrapper {
+  max-width: 1200px;
+  margin: 0 auto 16px;
+}
+
+.tabs {
+  border-bottom: 1px solid $border-input;
+}
+
 .layout {
   display: grid;
   grid-template-columns: 1fr 320px;
@@ -32,4 +41,9 @@
   gap: 16px;
   position: sticky;
   top: 24px;
+}
+
+.submissionsLayout {
+  max-width: 1200px;
+  margin: 0 auto;
 }
