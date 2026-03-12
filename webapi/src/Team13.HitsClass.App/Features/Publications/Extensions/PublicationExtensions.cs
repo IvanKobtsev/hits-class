@@ -28,6 +28,7 @@ public static class PublicationExtensions
             Content = publication.Content,
             Author = publication.Author.ToUserDto(),
             Attachments = publication.Attachments,
+            TargetUserIds = publication.TargetUsers.Select(u => u.Id).ToList(),
             Type = publication.Type,
             PublicationPayload = publication.PublicationPayload,
         };
