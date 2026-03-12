@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { Tabs, Tab } from '@mui/material';
-import { QueryFactory } from 'services/api';
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
@@ -16,18 +15,11 @@ import styles from './AssignmentPage.module.scss';
 type TabValue = 'assignment' | 'submissions';
 
 export const AssignmentPage = () => {
-  const { courseId, assignmentId } = useParams();
-  const id = Number(assignmentId);
-  const numCourseId = Number(courseId);
-
-  const [activeTab, setActiveTab] = useState<TabValue>('assignment');
-
-  const { data: course } = QueryFactory.CourseQuery.useGetCourseQuery(numCourseId);
-  const role = useCourseRole(course);
-  const isTeacher = role === 'teacher';
   const { assignmentId, courseId } = useParams();
   const id = Number(assignmentId);
   const cid = Number(courseId);
+
+  const [activeTab, setActiveTab] = useState<TabValue>('assignment');
 
   const { data: publication } = useGetPublicationByIdQuery(id);
   const { data: submission } = useGetMySubmissionQuery(id);
@@ -60,12 +52,14 @@ export const AssignmentPage = () => {
               assignment={publication}
               submission={submission}
             />
-            <PublicCommentView />
+            <PublicCommentView publicationId={id} />
           </div>
-          <div className={styles.right}>
-            <SubmissionPanel assignmentId={id} submission={submission} />
-            <PrivateCommentView />
-          </div>
+          {!isTeacher && (
+            <div className={styles.right}>
+              <SubmissionPanel assignmentId={id} submission={submission} />
+              <PrivateCommentView assignmentId={id} comments={submission?.comments ?? []} />
+            </div>
+          )}
         </div>
       )}
 
@@ -74,21 +68,6 @@ export const AssignmentPage = () => {
           <StudentSubmissionsTab assignmentId={id} />
         </div>
       )}
-      <div className={styles.layout}>
-        <div className={styles.left}>
-          <AssignmentView
-            assignment={publication}
-            submission={submission}
-          />
-          <PublicCommentView publicationId={id} />
-        </div>
-        {!isTeacher && (
-          <div className={styles.right}>
-            <SubmissionPanel assignmentId={id} submission={submission} />
-            <PrivateCommentView assignmentId={id} comments={submission?.comments ?? []} />
-          </div>
-        )}
-      </div>
     </div>
   );
 };
