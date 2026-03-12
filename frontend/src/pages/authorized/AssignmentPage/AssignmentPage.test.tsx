@@ -11,6 +11,14 @@ vi.mock('services/api/api-client/SubmissionQuery', () => ({
   useGetMySubmissionQuery: vi.fn(),
 }));
 
+vi.mock('services/api/api-client/CourseQuery', () => ({
+  useGetCourseQuery: vi.fn(),
+}));
+
+vi.mock('pages/authorized/OneCoursePage/useCourseRole', () => ({
+  useCourseRole: vi.fn(),
+}));
+
 vi.mock('./AssignmentView/AssignmentView', () => ({
   AssignmentView: () => <div data-test-id="AssignmentView" />,
 }));
@@ -29,9 +37,13 @@ vi.mock('./PublicCommentView/PublicCommentView', () => ({
 
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
+import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
+import { useCourseRole } from 'pages/authorized/OneCoursePage/useCourseRole';
 
 const mockedUseGetPublicationByIdQuery = vi.mocked(useGetPublicationByIdQuery);
 const mockedUseGetMySubmissionQuery = vi.mocked(useGetMySubmissionQuery);
+const mockedUseGetCourseQuery = vi.mocked(useGetCourseQuery);
+const mockedUseCourseRole = vi.mocked(useCourseRole);
 
 const mockPublication = {
   id: 1,
@@ -88,6 +100,8 @@ describe('AssignmentPage', () => {
       data: mockSubmission,
       isError: false,
     } as any);
+    mockedUseGetCourseQuery.mockReturnValue({ isLoading: false, data: undefined } as any);
+    mockedUseCourseRole.mockReturnValue('student');
   });
 
   test('renders AssignmentView', () => {
@@ -112,5 +126,21 @@ describe('AssignmentPage', () => {
     renderAssignmentPage();
 
     expect(screen.getByTestId('PublicCommentView')).toBeInTheDocument();
+  });
+
+  test('hides SubmissionPanel and PrivateCommentView for teachers', () => {
+    mockedUseCourseRole.mockReturnValue('teacher');
+    renderAssignmentPage();
+
+    expect(screen.queryByTestId('SubmissionPanel')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('PrivateCommentView')).not.toBeInTheDocument();
+  });
+
+  test('shows SubmissionPanel and PrivateCommentView for students', () => {
+    mockedUseCourseRole.mockReturnValue('student');
+    renderAssignmentPage();
+
+    expect(screen.getByTestId('SubmissionPanel')).toBeInTheDocument();
+    expect(screen.getByTestId('PrivateCommentView')).toBeInTheDocument();
   });
 });

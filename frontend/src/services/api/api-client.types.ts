@@ -865,40 +865,6 @@ export function prepareSerializePatchCourseDto(_data: PatchCourseDto): PatchCour
   const data: Record<string, any> = { ..._data };
   return data as PatchCourseDto;
 }
-export interface PagedResultOfCommentDto  {
-  data: CommentDto[];
-  totalCount: number;
-}
-export function deserializePagedResultOfCommentDto(json: string): PagedResultOfCommentDto {
-  const data = JSON.parse(json) as PagedResultOfCommentDto;
-  initPagedResultOfCommentDto(data);
-  return data;
-}
-export function initPagedResultOfCommentDto(_data: PagedResultOfCommentDto) {
-  if (_data) {
-    if (Array.isArray(_data["data"])) {
-      _data.data = _data["data"].map(item => 
-        initCommentDto(item)
-      );
-    }
-  }
-  return _data;
-}
-export function serializePagedResultOfCommentDto(_data: PagedResultOfCommentDto | undefined) {
-  if (_data) {
-    _data = prepareSerializePagedResultOfCommentDto(_data as PagedResultOfCommentDto);
-  }
-  return JSON.stringify(_data);
-}
-export function prepareSerializePagedResultOfCommentDto(_data: PagedResultOfCommentDto): PagedResultOfCommentDto {
-  const data: Record<string, any> = { ..._data };
-  if (Array.isArray(_data.data)) {
-    data["data"] = _data.data.map(item => 
-        prepareSerializeCommentDto(item)
-    );
-  }
-  return data as PagedResultOfCommentDto;
-}
 export interface CreateCommentDto  {
   textLexical: string;
 }

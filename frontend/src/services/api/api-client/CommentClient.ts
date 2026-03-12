@@ -14,9 +14,9 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Retrieves all Comments of the specified Assignment.
+ * Retrieves all Comments of the current user's submission for the specified Assignment.
  */
-export function getAssignmentComments(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfCommentDto> {
+export function getAssignmentComments(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto[]> {
     let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/comments";
     if (assignmentId === undefined || assignmentId === null)
       throw new Error("The parameter 'assignmentId' must be defined.");
@@ -45,7 +45,7 @@ export function getAssignmentComments(assignmentId: number, config?: AxiosReques
     });
 }
 
-function processGetAssignmentComments(response: AxiosResponse): Promise<Types.PagedResultOfCommentDto> {
+function processGetAssignmentComments(response: AxiosResponse): Promise<Types.CommentDto[]> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -66,18 +66,22 @@ function processGetAssignmentComments(response: AxiosResponse): Promise<Types.Pa
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfCommentDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfCommentDto>(result200);
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initCommentDto(item)
+              );
+            }
+        return Promise.resolve<Types.CommentDto[]>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PagedResultOfCommentDto>(null as any);
+    return Promise.resolve<Types.CommentDto[]>(null as any);
 }
 
 /**
- * Adds a Comment to the specified Assignment.
+ * Adds a Comment to the current user's submission for the specified Assignment.
  */
 export function addCommentToAssignment(assignmentId: number, createCommentDto: Types.CreateCommentDto, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto> {
     let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/comments";
@@ -146,7 +150,7 @@ function processAddCommentToAssignment(response: AxiosResponse): Promise<Types.C
 /**
  * Retrieves all Comments of the specified Publication.
  */
-export function getPublicationComments(publicationId: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfCommentDto> {
+export function getPublicationComments(publicationId: number, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto[]> {
     let url_ = getBaseUrl() + "/api/publication/{publicationId}/comments";
     if (publicationId === undefined || publicationId === null)
       throw new Error("The parameter 'publicationId' must be defined.");
@@ -175,7 +179,7 @@ export function getPublicationComments(publicationId: number, config?: AxiosRequ
     });
 }
 
-function processGetPublicationComments(response: AxiosResponse): Promise<Types.PagedResultOfCommentDto> {
+function processGetPublicationComments(response: AxiosResponse): Promise<Types.CommentDto[]> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -196,14 +200,18 @@ function processGetPublicationComments(response: AxiosResponse): Promise<Types.P
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfCommentDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfCommentDto>(result200);
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initCommentDto(item)
+              );
+            }
+        return Promise.resolve<Types.CommentDto[]>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PagedResultOfCommentDto>(null as any);
+    return Promise.resolve<Types.CommentDto[]>(null as any);
 }
 
 /**

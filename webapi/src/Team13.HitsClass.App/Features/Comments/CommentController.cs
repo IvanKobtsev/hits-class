@@ -1,41 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Team13.HitsClass.App.Features.Comments.Dto;
-using Team13.WebApi.Pagination;
 
 namespace Team13.HitsClass.App.Features.Comments;
 
 [Route("api")]
-public class CommentController
+[ApiController]
+public class CommentController(CommentService commentService)
 {
     /// <summary>
-    /// Retrieves all Comments of the specified Assignment.
+    /// Retrieves all Comments of the current user's submission for the specified Assignment.
     /// </summary>
     [HttpGet("assignments/{assignmentId:int}/comments")]
-    public Task<PagedResult<CommentDto>> GetAssignmentComments(int assignmentId)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<List<CommentDto>> GetAssignmentComments([FromRoute] int assignmentId) =>
+        commentService.GetSubmissionComments(assignmentId);
 
     /// <summary>
-    /// Adds a Comment to the specified Assignment.
+    /// Adds a Comment to the current user's submission for the specified Assignment.
     /// </summary>
     [HttpPost("assignments/{assignmentId:int}/comments")]
     public Task<CommentDto> AddCommentToAssignment(
         [FromRoute] int assignmentId,
         [FromBody] CreateCommentDto createCommentDto
-    )
-    {
-        throw new NotImplementedException();
-    }
+    ) => commentService.AddSubmissionComment(assignmentId, createCommentDto);
 
     /// <summary>
     /// Retrieves all Comments of the specified Publication.
     /// </summary>
     [HttpGet("publication/{publicationId:int}/comments")]
-    public Task<PagedResult<CommentDto>> GetPublicationComments(int publicationId)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<List<CommentDto>> GetPublicationComments([FromRoute] int publicationId) =>
+        commentService.GetPublicationComments(publicationId);
 
     /// <summary>
     /// Adds a Comment to the specified Publication.
@@ -44,10 +37,7 @@ public class CommentController
     public Task<CommentDto> AddCommentToPublication(
         [FromRoute] int publicationId,
         [FromBody] CreateCommentDto createCommentDto
-    )
-    {
-        throw new NotImplementedException();
-    }
+    ) => commentService.AddPublicationComment(publicationId, createCommentDto);
 
     /// <summary>
     /// Edits a Comment. Only the author of the comment or an admin can edit a comment.
