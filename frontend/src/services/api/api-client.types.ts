@@ -142,6 +142,8 @@ export function prepareSerializeUserDto(_data: UserDto): UserDto {
 }
 export interface CurrentUserDto extends UserDto  {
   username: string;
+  isTeacherSystemWide: boolean;
+  isAdmin: boolean;
 }
 export function deserializeCurrentUserDto(json: string): CurrentUserDto {
   const data = JSON.parse(json) as CurrentUserDto;
@@ -507,6 +509,7 @@ export interface PublicationDto  {
   author: UserDto;
   attachments: Attachment[];
   type: PublicationType;
+  targetUserIds: string[];
   publicationPayload: PublicationPayload;
 }
 export function deserializePublicationDto(json: string): PublicationDto {
@@ -525,6 +528,7 @@ export function initPublicationDto(_data: PublicationDto) {
       );
     }
     _data.type = _data["type"];
+    _data.targetUserIds = _data["targetUserIds"];
     _data.publicationPayload = _data["publicationPayload"] && initPublicationPayload(_data["publicationPayload"]);
   }
   return _data;
@@ -723,6 +727,7 @@ export interface CourseDto  {
   createdAt: Date;
   owner: UserDto;
   teachers: UserDto[];
+  students: UserDto[];
   inviteCode: string;
   title: string;
   description: string;
@@ -741,6 +746,11 @@ export function initCourseDto(_data: CourseDto) {
         initUserDto(item)
       );
     }
+    if (Array.isArray(_data["students"])) {
+      _data.students = _data["students"].map(item => 
+        initUserDto(item)
+      );
+    }
   }
   return _data;
 }
@@ -756,6 +766,11 @@ export function prepareSerializeCourseDto(_data: CourseDto): CourseDto {
   data["owner"] = _data.owner && prepareSerializeUserDto(_data.owner);
   if (Array.isArray(_data.teachers)) {
     data["teachers"] = _data.teachers.map(item => 
+        prepareSerializeUserDto(item)
+    );
+  }
+  if (Array.isArray(_data.students)) {
+    data["students"] = _data.students.map(item => 
         prepareSerializeUserDto(item)
     );
   }

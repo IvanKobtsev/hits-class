@@ -28,6 +28,7 @@ const mockCourse: CourseDto = {
       groupNumber: null,
     },
   ],
+  students: [],
 };
 
 function renderHeader(

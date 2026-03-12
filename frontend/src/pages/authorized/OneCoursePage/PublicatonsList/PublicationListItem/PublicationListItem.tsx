@@ -26,9 +26,11 @@ import { clsx } from 'clsx';
 import { useModal } from 'components/uikit/modal/useModal';
 import { useDeleteAnnouncementMutation } from 'services/api/api-client/AnnouncementQuery';
 import { useDeleteAssignmentMutation } from 'services/api/api-client/AssignmentQuery';
+import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { AttachmentsList } from './AttachmentsList/AttachmentsList';
 import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
+import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
 import { Link } from 'react-router';
 
 const formatDate = (date: Date | string) => {
@@ -49,6 +51,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   content,
   author,
   attachments = [],
+  targetUserIds,
   publicationPayload,
 }) => {
   const isAssignment = type === PublicationType.Assignment;
@@ -67,9 +70,16 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   const queryClient = useQueryClient();
   const { mutateAsync: deleteAnnouncement } = useDeleteAnnouncementMutation(id);
   const { mutateAsync: deleteAssignment } = useDeleteAssignmentMutation(id);
+  const { data: currentUser } = useGetCurrentUserInfoQuery();
+
+  const canManagePublication =
+    currentUser?.isTeacherSystemWide ||
+    currentUser?.isAdmin ||
+    currentUser?.id === author.id;
 
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isTargetUsersModalOpen, setIsTargetUsersModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
@@ -91,6 +101,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   const handleEditClick = () => {
     handleMenuClose();
     setIsEditModalOpen(true);
+  };
+
+  const handleTargetUsersClick = () => {
+    handleMenuClose();
+    setIsTargetUsersModalOpen(true);
   };
 
   const handleDeleteClick = async () => {
@@ -197,23 +212,28 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           </CardContent>
         </CardActionArea>
 
-        <IconButton
-          data-test-id={`PublicationItem-menu-button-${id}`}
-          onClick={handleMenuOpen}
-          size="small"
-          sx={{ position: 'absolute', top: 8, right: 8 }}
-        >
-          <DotsIcon width={16} height={16} />
-        </IconButton>
+        {canManagePublication && (
+          <>
+            <IconButton
+              data-test-id={`PublicationItem-menu-button-${id}`}
+              onClick={handleMenuOpen}
+              size="small"
+              sx={{ position: 'absolute', top: 8, right: 8 }}
+            >
+              <DotsIcon width={16} height={16} />
+            </IconButton>
 
-        <Menu
-          anchorEl={menuAnchor}
-          open={Boolean(menuAnchor)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
-          <MenuItem onClick={() => { void handleDeleteClick(); }}>Удалить</MenuItem>
-        </Menu>
+            <Menu
+              anchorEl={menuAnchor}
+              open={Boolean(menuAnchor)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
+              <MenuItem onClick={handleTargetUsersClick}>Изменить целевых пользователей</MenuItem>
+              <MenuItem onClick={() => { void handleDeleteClick(); }}>Удалить</MenuItem>
+            </Menu>
+          </>
+        )}
 
         {attachments && attachments.length > 0 && (
           <CardContent>
@@ -246,6 +266,16 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialContent={content ?? ''}
           initialDeadlineUtc={assignmentData?.deadlineUtc ? new Date(assignmentData.deadlineUtc) : null}
           initialAttachments={attachments ?? []}
+        />
+      )}
+      {isTargetUsersModalOpen && (
+        <EditTargetUsersModal
+          isOpen={isTargetUsersModalOpen}
+          onClose={() => setIsTargetUsersModalOpen(false)}
+          onSuccess={() => showSnackbar('Успешно')}
+          publicationId={id}
+          publicationType={type}
+          initialTargetUserIds={targetUserIds ?? []}
         />
       )}
       <Snackbar

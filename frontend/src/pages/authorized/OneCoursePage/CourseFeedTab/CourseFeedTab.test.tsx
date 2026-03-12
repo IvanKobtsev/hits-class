@@ -24,6 +24,7 @@ const mockPublication: PublicationDto = {
   content: 'Текст',
   author: { id: 'u1', email: 'a@a.com', legalName: 'Иванов', groupNumber: null },
   attachments: [],
+  targetUserIds: [],
   type: 'Announcement' as any,
   publicationPayload: { publicationType: 'Announcement' } as any,
 };

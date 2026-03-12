@@ -7651,6 +7651,16 @@ namespace Team13.HitsClass.Http.Generated
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
         public string Username { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("isTeacherSystemWide")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public bool IsTeacherSystemWide { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("isAdmin")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public bool IsAdmin { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]

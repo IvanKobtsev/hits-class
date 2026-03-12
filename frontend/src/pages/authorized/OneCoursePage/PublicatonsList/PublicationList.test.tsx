@@ -13,6 +13,11 @@ vi.mock(
   () => ({ EditAssignmentModal: () => null }),
 );
 
+vi.mock(
+  './PublicationListItem/EditTargetUsersModal/EditTargetUsersModal',
+  () => ({ EditTargetUsersModal: () => null }),
+);
+
 vi.mock('components/uikit/modal/useModal', () => ({
   useModal: () => ({ showConfirm: vi.fn() }),
 }));
@@ -31,6 +36,20 @@ vi.mock('services/api/api-client/AnnouncementQuery', () => ({
 
 vi.mock('services/api/api-client/AssignmentQuery', () => ({
   useDeleteAssignmentMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+}));
+
+vi.mock('services/api/api-client/UserQuery', () => ({
+  useGetCurrentUserInfoQuery: () => ({
+    data: {
+      id: 'teacher-1',
+      email: 'teacher@test.com',
+      legalName: 'Иванов Иван Иванович',
+      groupNumber: null,
+      username: 'ivanov',
+      isTeacherSystemWide: true,
+      isAdmin: false,
+    },
+  }),
 }));
 import {
   initAnnouncementPayload,
@@ -57,6 +76,7 @@ const mockPublications: PublicationDto[] = [
     content: 'Тестовое объявление 1',
     author: mockAuthor,
     attachments: [],
+    targetUserIds: [],
     publicationPayload: initAnnouncementPayload({} as any),
   },
   {
@@ -67,6 +87,7 @@ const mockPublications: PublicationDto[] = [
     content: 'Тестовое задание 1',
     author: mockAuthor,
     attachments: [],
+    targetUserIds: [],
     publicationPayload: initAssignmentPayload({
       title: 'Задание 1',
       deadlineUtc: '2024-04-01T13:59:00Z',
@@ -80,6 +101,7 @@ const mockPublications: PublicationDto[] = [
     content: 'Тестовое объявление 2',
     author: mockAuthor,
     attachments: [],
+    targetUserIds: [],
     publicationPayload: initAnnouncementPayload({} as any),
   },
 ];

@@ -38,6 +38,17 @@ vi.mock(
   }),
 );
 
+const mockEditTargetUsersModal = vi.fn();
+vi.mock(
+  './EditTargetUsersModal/EditTargetUsersModal',
+  () => ({
+    EditTargetUsersModal: (props: { isOpen: boolean }) => {
+      mockEditTargetUsersModal(props);
+      return props.isOpen ? <div data-test-id="EditTargetUsersModal" /> : null;
+    },
+  }),
+);
+
 const mockDeleteAnnouncementMutateAsync = vi.fn();
 vi.mock('services/api/api-client/AnnouncementQuery', () => ({
   useDeleteAnnouncementMutation: () => ({
@@ -68,6 +79,21 @@ vi.mock('components/uikit/modal/useModal', () => ({
   useModal: () => ({ showConfirm: mockShowConfirm }),
 }));
 
+const defaultMockCurrentUser = {
+  id: 'teacher-1',
+  email: 'teacher@test.com',
+  legalName: 'Иванов Иван Иванович',
+  groupNumber: null,
+  username: 'ivanov',
+  isTeacherSystemWide: true,
+  isAdmin: false,
+};
+let mockCurrentUserData = { ...defaultMockCurrentUser };
+
+vi.mock('services/api/api-client/UserQuery', () => ({
+  useGetCurrentUserInfoQuery: () => ({ data: mockCurrentUserData }),
+}));
+
 const mockAuthor = {
   id: 'teacher-1',
   email: 'teacher@test.com',
@@ -86,6 +112,7 @@ const mockAnnouncement: PublicationDto = {
   content: 'Тестовое объявление',
   author: mockAuthor,
   attachments: [],
+  targetUserIds: ['user-1', 'user-2'],
   publicationPayload: initAnnouncementPayload({} as any),
 };
 
@@ -97,6 +124,7 @@ const mockAssignment: PublicationDto = {
   content: 'Тестовое задание',
   author: mockAuthor,
   attachments: [],
+  targetUserIds: [],
   publicationPayload: initAssignmentPayload({
     title: 'Важное задание',
     deadlineUtc: '2024-04-01T13:59:00Z',
@@ -114,6 +142,7 @@ function renderPublicationListItem(props = mockAnnouncement) {
 describe('PublicationListItem', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockCurrentUserData = { ...defaultMockCurrentUser };
   });
 
   // --- Rendering ---
@@ -487,5 +516,118 @@ describe('PublicationListItem', () => {
     await waitFor(() => {
       expect(screen.getByText('Возникла ошибка при удалении')).toBeInTheDocument();
     });
+  });
+
+  // --- Изменить целевых пользователей ---
+
+  test('menu contains Изменить целевых пользователей option', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem();
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+      ).toBeInTheDocument();
+    });
+  });
+
+  test('clicking Изменить целевых пользователей opens EditTargetUsersModal', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(
+      screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId('EditTargetUsersModal')).toBeInTheDocument();
+    });
+  });
+
+  test('EditTargetUsersModal receives initialTargetUserIds from publication', async () => {
+    const user = userEvent.setup();
+    renderPublicationListItem(mockAnnouncement);
+
+    await user.click(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    );
+    await user.click(
+      screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+    );
+
+    await waitFor(() => {
+      expect(mockEditTargetUsersModal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initialTargetUserIds: mockAnnouncement.targetUserIds,
+          publicationId: mockAnnouncement.id,
+          publicationType: PublicationType.Announcement,
+        }),
+      );
+    });
+  });
+
+  // --- Menu button visibility ---
+
+  test('menu button is hidden for a regular student who did not create the publication', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'student-99',
+      isTeacherSystemWide: false,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.queryByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).not.toBeInTheDocument();
+  });
+
+  test('menu button is visible for the author of the publication', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: mockAuthor.id,
+      isTeacherSystemWide: false,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is visible for a system-wide teacher', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'some-other-user',
+      isTeacherSystemWide: true,
+      isAdmin: false,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+  });
+
+  test('menu button is visible for an admin', () => {
+    mockCurrentUserData = {
+      ...mockCurrentUserData,
+      id: 'some-other-user',
+      isTeacherSystemWide: false,
+      isAdmin: true,
+    };
+    renderPublicationListItem(mockAnnouncement);
+
+    expect(
+      screen.getByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
   });
 });
