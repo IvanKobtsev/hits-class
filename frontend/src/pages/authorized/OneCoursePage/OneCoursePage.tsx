@@ -13,6 +13,7 @@ import { Navigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { exportMarks } from 'services/api/api-client/CourseClient';
 import { Links } from 'application/constants/links';
+import { GradeList } from './GradeList/GradeList';
 
 type TabValue = 'feed' | 'grades' | 'members';
 
@@ -114,6 +115,11 @@ export const OneCoursePage: React.FC = () => {
                     Экспорт оценок
                   </Button>
                 )}
+                {
+                  role === 'student' && (
+                    <GradeList publications={publicationsData?.data ?? []} />
+                  )
+                }
               </div>
             )}
             {activeTab === 'members' && (
