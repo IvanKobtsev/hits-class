@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { StudentSubmissionsTab } from './StudentSubmissionsTab';
 
 const mockMutate = vi.fn();
@@ -11,11 +12,6 @@ vi.mock('services/api/api-client/SubmissionQuery', () => ({
   getSubmissionsQueryKey: vi.fn(() => ['submissions']),
   getSubmissionQueryKey: vi.fn(() => ['submission']),
 }));
-
-vi.mock('@tanstack/react-query', async (importActual) => {
-  const actual = await importActual<typeof import('@tanstack/react-query')>();
-  return { ...actual, useQueryClient: () => ({ invalidateQueries: vi.fn() }) };
-});
 
 vi.mock(
   'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList',
@@ -43,12 +39,16 @@ const makeListItem = (overrides = {}) => ({
   ...overrides,
 });
 
+const testQueryClient = new QueryClient();
+
 function renderTab(deadlineUtc: Date | null = DEADLINE) {
   mockedUseGetSubmissionQuery.mockReturnValue({ data: undefined } as any);
   return render(
-    <MemoryRouter>
-      <StudentSubmissionsTab assignmentId={10} deadlineUtc={deadlineUtc} />
-    </MemoryRouter>,
+    <QueryClientProvider client={testQueryClient}>
+      <MemoryRouter>
+        <StudentSubmissionsTab assignmentId={10} deadlineUtc={deadlineUtc} />
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 
