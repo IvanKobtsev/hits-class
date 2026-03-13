@@ -1,4 +1,4 @@
-﻿using Team13.HitsClass.App.Features.Users.Dto;
+using Team13.HitsClass.App.Features.Users.Dto;
 
 namespace Team13.HitsClass.App.Features.Courses.Dto;
 
@@ -10,6 +10,7 @@ public class CourseDto
     public UserDto Owner { get; set; }
     public List<UserDto> Teachers { get; set; }
     public List<UserDto> Students { get; set; }
+    public List<UserDto> BannedStudents { get; set; }
     public string InviteCode { get; set; }
 
     public string Title { get; set; }

@@ -32,6 +32,7 @@ namespace Team13.HitsClass.App.Features.Courses
                 Owner = course.Owner.ToUserDto(),
                 Teachers = course.Teachers.Select(t => t.ToUserDto()).ToList(),
                 Students = course.Students.Select(s => s.ToUserDto()).ToList(),
+                BannedStudents = course.BannedStudents.Select(s => s.ToUserDto()).ToList(),
             };
         }
     }

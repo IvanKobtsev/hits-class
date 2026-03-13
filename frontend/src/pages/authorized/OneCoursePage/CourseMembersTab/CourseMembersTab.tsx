@@ -1,5 +1,6 @@
 import React from 'react';
 import type { CourseDto, UserDto } from 'services/api/api-client.types';
+import type { CourseRole } from '../useCourseRole';
 import styles from './CourseMembersTab.module.scss';
 
 const AVATAR_COLORS = [
@@ -45,10 +46,11 @@ const MemberRow: React.FC<MemberRowProps> = ({ user, isOwner, showGroup }) => (
 
 type CourseMembersTabProps = {
   course: CourseDto;
+  role: CourseRole;
 };
 
-export const CourseMembersTab: React.FC<CourseMembersTabProps> = ({ course }) => {
-  const { owner, teachers, students } = course;
+export const CourseMembersTab: React.FC<CourseMembersTabProps> = ({ course, role }) => {
+  const { owner, teachers, students, bannedStudents = [] } = course;
 
   const allTeachers = [owner, ...teachers.filter((t) => t.id !== owner.id)];
 
@@ -87,6 +89,26 @@ export const CourseMembersTab: React.FC<CourseMembersTabProps> = ({ course }) =>
           ))
         )}
       </div>
+
+      {role === 'teacher' && (
+        <div className={styles.section}>
+          <div className={`${styles.sectionHeader} ${styles.sectionHeaderStudents}`}>
+            <h2 className={`${styles.sectionTitle} ${styles.sectionTitleStudents}`}>
+              Заблокированные
+            </h2>
+            <span className={styles.sectionCount}>
+              {bannedStudents.length} {pluralBanned(bannedStudents.length)}
+            </span>
+          </div>
+          {bannedStudents.length === 0 ? (
+            <div className={styles.empty}>Нет заблокированных</div>
+          ) : (
+            bannedStudents.map((user) => (
+              <MemberRow key={user.id} user={user} showGroup />
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -97,4 +119,12 @@ function pluralStudents(n: number): string {
   if (mod10 === 1 && mod100 !== 11) return 'учащийся';
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'учащихся';
   return 'учащихся';
+}
+
+function pluralBanned(n: number): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'заблокированный';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'заблокированных';
+  return 'заблокированных';
 }

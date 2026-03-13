@@ -91,6 +91,7 @@ const mockCourse: CourseDto = {
     },
   ],
   students: [],
+  bannedStudents: [],
 };
 
 const mockPublication: PublicationDto = {
