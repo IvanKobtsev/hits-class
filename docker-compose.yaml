@@ -23,6 +23,7 @@ services:
       - General__SiteUrl=${SITE_URL:-https://localhost}
       - Hangfire__EnableDashboard=false
       - TestApiEnabled=false
+      - Logging__LogLevel__Default=Information
     volumes:
       - file_storage:/files:rw
 
