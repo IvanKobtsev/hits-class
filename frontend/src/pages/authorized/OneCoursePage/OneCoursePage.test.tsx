@@ -82,6 +82,7 @@ const mockCourse: CourseDto = {
     email: 'o@test.com',
     legalName: 'Козлов Д.А.',
     groupNumber: null,
+    roles: null,
   },
   teachers: [
     {
@@ -89,6 +90,7 @@ const mockCourse: CourseDto = {
       email: 'o@test.com',
       legalName: 'Козлов Д.А.',
       groupNumber: null,
+      roles: null,
     },
   ],
   students: [],
@@ -105,6 +107,7 @@ const mockPublication: PublicationDto = {
     email: 'a@a.com',
     legalName: 'Иванов',
     groupNumber: null,
+    roles: null,
   },
   attachments: [],
   targetUserIds: [],

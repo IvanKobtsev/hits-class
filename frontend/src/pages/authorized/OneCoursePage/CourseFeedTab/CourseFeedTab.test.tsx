@@ -22,7 +22,7 @@ const mockPublication: PublicationDto = {
   createdAtUTC: new Date(),
   lastUpdatedAtUTC: null,
   content: 'Текст',
-  author: { id: 'u1', email: 'a@a.com', legalName: 'Иванов', groupNumber: null },
+  author: { id: 'u1', email: 'a@a.com', legalName: 'Иванов', groupNumber: null, roles: null },
   attachments: [],
   targetUserIds: [],
   type: 'Announcement' as any,

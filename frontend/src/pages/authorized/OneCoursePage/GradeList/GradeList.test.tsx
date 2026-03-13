@@ -26,7 +26,7 @@ function makeAssignment(id: number, createdAtUTC = new Date('2024-01-01T00:00:00
     createdAtUTC,
     lastUpdatedAtUTC: null,
     content: null,
-    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null },
+    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null, roles: null },
     attachments: [],
     targetUserIds: [],
     publicationPayload: {
@@ -44,7 +44,7 @@ function makeAnnouncement(id: number): PublicationDto {
     createdAtUTC: new Date('2024-01-01T00:00:00Z'),
     lastUpdatedAtUTC: null,
     content: 'Объявление',
-    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null },
+    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null, roles: null },
     attachments: [],
     targetUserIds: [],
     publicationPayload: { publicationType: 'Announcement' },

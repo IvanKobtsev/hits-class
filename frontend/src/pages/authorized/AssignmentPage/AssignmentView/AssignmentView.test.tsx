@@ -29,6 +29,7 @@ const mockAuthor: UserDto = {
   email: 'teacher@example.com',
   legalName: 'Иван Петров',
   groupNumber: null,
+  roles: null,
 };
 
 const mockAssignment: PublicationDto = {

@@ -15,6 +15,7 @@ const mockUser: UserDto = {
   email: 'user@test.com',
   legalName: 'Иванов Иван',
   groupNumber: '201',
+  roles: null,
 };
 
 describe('UserWithRole', () => {

@@ -44,12 +44,14 @@ const mockUsers: UserDto[] = [
     email: 'ivan@test.com',
     legalName: 'Иванов Иван',
     groupNumber: '201',
+    roles: null,
   },
   {
     id: 'u2',
     email: 'petr@test.com',
     legalName: 'Петров Пётр',
     groupNumber: '101',
+    roles: null,
   },
 ];
 
