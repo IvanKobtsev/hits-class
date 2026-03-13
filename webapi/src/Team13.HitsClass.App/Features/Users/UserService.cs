@@ -36,13 +36,9 @@ public class UserService
     {
         var userId = _userAccessor.GetUserId();
         var user = await _dbContext.Users.FirstAsync(x => x.Id == userId);
-        var isAdminSystemWide = await _dbContext.UserRoles.AnyAsync(ur =>
-            ur.UserId == userId && ur.RoleId == UserRoles.Admin
-        );
+        var isAdminSystemWide = await _userManager.IsInRoleAsync(user, UserRoles.Admin);
         var isTeacherSystemWide =
-            await _dbContext.UserRoles.AnyAsync(ur =>
-                ur.UserId == userId && ur.RoleId == UserRoles.Teacher
-            ) || isAdminSystemWide;
+            await _userManager.IsInRoleAsync(user, UserRoles.Teacher) || isAdminSystemWide;
 
         return new CurrentUserDto()
         {

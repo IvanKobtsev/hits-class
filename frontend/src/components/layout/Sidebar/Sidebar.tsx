@@ -6,6 +6,7 @@ import PeopleIcon from 'assets/icons/people.svg?react';
 import AddIcon from 'assets/icons/add.svg?react';
 import LoginIcon from 'assets/icons/login.svg?react';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
+import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { useSidebar } from './SidebarContext';
 import { SidebarExpandableButton } from './SidebarExpandableButton/SidebarExpandableButton';
 import { SidebarExpandableDropdown } from './SidebarExpandableDropdown/SidebarExpandableDropdown';
@@ -32,6 +33,9 @@ export const Sidebar: React.FC = () => {
 
   const { data: studyingData } = useGetMyCoursesQuery({ whereImStudent: true });
   const { data: teachingData } = useGetMyCoursesQuery({ whereImTeacher: true });
+  const { data: currentUser } = useGetCurrentUserInfoQuery();
+
+  const canCreateCourse = currentUser?.isTeacherSystemWide || currentUser?.isAdmin;
 
   const studyingCourses = studyingData?.data ?? [];
   const teachingCourses = teachingData?.data ?? [];
@@ -75,12 +79,14 @@ export const Sidebar: React.FC = () => {
             <CourseListItemInSidebar key={course.id} course={course} />
           ))}
         </SidebarExpandableDropdown>
-        <SidebarExpandableButton
-          title="Создать курс"
-          icon={AddIcon}
-          onClick={() => setIsCreateCourseOpen(true)}
-          isExpanded={isExpanded}
-        />
+        {canCreateCourse && (
+          <SidebarExpandableButton
+            title="Создать курс"
+            icon={AddIcon}
+            onClick={() => setIsCreateCourseOpen(true)}
+            isExpanded={isExpanded}
+          />
+        )}
         <SidebarExpandableButton
           title="Записаться на курс"
           icon={LoginIcon}

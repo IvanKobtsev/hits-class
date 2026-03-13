@@ -1069,7 +1069,7 @@ namespace Team13.HitsClass.App.Tests
             var result = await _courseService.ExportMarks(course.Id);
 
             var csv = Encoding.UTF8.GetString(result.FileContents);
-            csv.Should().Contain(";;");
+            csv.Should().Contain(";Не сдано;");
         }
 
         [Fact]

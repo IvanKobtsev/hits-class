@@ -44,6 +44,20 @@ const formatDate = (date: Date | string) => {
   }).format(d);
 };
 
+const formatDeadline = (date: Date | string) => {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  return new Intl.DateTimeFormat('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
+};
+
+const isDeadlinePast = (date: Date | string) => new Date(date) < new Date();
+
 export const PublicationListItem: React.FC<PublicationDto> = ({
   id,
   type,
@@ -215,8 +229,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
                 data-test-id={`PublicationItem-deadline-section-${id}`}
               >
                 <Chip
-                  label={`Срок сдачи: ${formatDate(assignmentData.deadlineUtc)}`}
-                  className={styles.deadlineChip}
+                  label={`Срок сдачи: ${formatDeadline(assignmentData.deadlineUtc)}`}
+                  className={clsx(
+                    styles.deadlineChip,
+                    isDeadlinePast(assignmentData.deadlineUtc) && styles.deadlineChipOverdue,
+                  )}
                   data-test-id={`PublicationItem-deadline-chip-${id}`}
                 />
               </Box>

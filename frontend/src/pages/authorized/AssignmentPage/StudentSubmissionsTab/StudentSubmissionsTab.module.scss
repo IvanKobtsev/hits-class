@@ -127,6 +127,12 @@
   color: $classroom-blue;
 }
 
+.statusLate {
+  background: rgba(#dc2626, 0.1);
+  color: #dc2626;
+}
+
+
 .statusNotSubmitted {
   background: rgba($classroom-danger, 0.06);
   color: $classroom-danger;

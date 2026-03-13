@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OneCoursePage } from './OneCoursePage.tsx';
 import { CourseDto, PublicationDto } from 'services/api/api-client';
 
@@ -91,6 +92,7 @@ const mockCourse: CourseDto = {
     },
   ],
   students: [],
+  bannedStudents: [],
 };
 
 const mockPublication: PublicationDto = {
@@ -110,13 +112,17 @@ const mockPublication: PublicationDto = {
   publicationPayload: { publicationType: 'Announcement' } as any,
 };
 
+const testQueryClient = new QueryClient();
+
 function renderPage(courseId = '1') {
   return render(
-    <MemoryRouter initialEntries={[`/courses/${courseId}`]}>
-      <Routes>
-        <Route path="/courses/:courseId" element={<OneCoursePage />} />
-      </Routes>
-    </MemoryRouter>,
+    <QueryClientProvider client={testQueryClient}>
+      <MemoryRouter initialEntries={[`/courses/${courseId}`]}>
+        <Routes>
+          <Route path="/courses/:courseId" element={<OneCoursePage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

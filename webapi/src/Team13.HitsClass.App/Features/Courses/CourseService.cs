@@ -303,6 +303,35 @@ namespace Team13.HitsClass.App.Features.Courses
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task UnbanStudentFromCourse(int courseId, string studentId)
+        {
+            var course = await FindCourseOrThrow(courseId);
+            var student = await _dbContext.Users.GetOne(User.HasId(studentId));
+
+            var userId = _userAccessor.GetUserId();
+            var user = await _dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                course.OwnerId == userId
+                || course.Teachers.Any(t => t.Id == userId)
+                || await _userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+            if (!hasAccess)
+            {
+                throw new AccessDeniedException(
+                    "User is not allowed to unban students for this course."
+                );
+            }
+
+            if (!course.BannedStudents.Any(s => s.Id == studentId))
+            {
+                throw new ValidationException("This user is not a in a ban list for this course.");
+            }
+
+            course.Students.Add(student);
+            course.BannedStudents.Remove(student);
+            await _dbContext.SaveChangesAsync();
+        }
+
         public async Task DeleteTeacherfromCourse(int courseId, string teacherId)
         {
             var course = await FindCourseOrThrow(courseId);
@@ -477,7 +506,7 @@ namespace Team13.HitsClass.App.Features.Courses
                 foreach (var a in assignments)
                 {
                     markLookup.TryGetValue((a.Id, student.Id), out var mark);
-                    sb.Append(';').Append(mark ?? "");
+                    sb.Append(';').Append(mark ?? "Не сдано");
                     if (TryParseMarkAsDouble(mark, out var d))
                         numericMarks.Add(d);
                 }

@@ -420,6 +420,7 @@ export interface SubmissionListItem  {
   id: number;
   state: SubmissionState;
   mark: string | null;
+  lastSubmittedAtUTC: Date | null;
   author: UserDto;
 }
 export function deserializeSubmissionListItem(json: string): SubmissionListItem {
@@ -430,6 +431,7 @@ export function deserializeSubmissionListItem(json: string): SubmissionListItem 
 export function initSubmissionListItem(_data: SubmissionListItem) {
   if (_data) {
     _data.state = _data["state"];
+    _data.lastSubmittedAtUTC = _data["lastSubmittedAtUTC"] ? new Date(_data["lastSubmittedAtUTC"].toString()) : <any>null;
     _data.author = _data["author"] && initUserDto(_data["author"]);
   }
   return _data;
@@ -442,6 +444,7 @@ export function serializeSubmissionListItem(_data: SubmissionListItem | undefine
 }
 export function prepareSerializeSubmissionListItem(_data: SubmissionListItem): SubmissionListItem {
   const data: Record<string, any> = { ..._data };
+  data["lastSubmittedAtUTC"] = _data.lastSubmittedAtUTC && _data.lastSubmittedAtUTC.toISOString();
   data["author"] = _data.author && prepareSerializeUserDto(_data.author);
   return data as SubmissionListItem;
 }
@@ -728,6 +731,7 @@ export interface CourseDto  {
   owner: UserDto;
   teachers: UserDto[];
   students: UserDto[];
+  bannedStudents: UserDto[];
   inviteCode: string;
   title: string;
   description: string;
@@ -751,6 +755,11 @@ export function initCourseDto(_data: CourseDto) {
         initUserDto(item)
       );
     }
+    if (Array.isArray(_data["bannedStudents"])) {
+      _data.bannedStudents = _data["bannedStudents"].map(item => 
+        initUserDto(item)
+      );
+    }
   }
   return _data;
 }
@@ -771,6 +780,11 @@ export function prepareSerializeCourseDto(_data: CourseDto): CourseDto {
   }
   if (Array.isArray(_data.students)) {
     data["students"] = _data.students.map(item => 
+        prepareSerializeUserDto(item)
+    );
+  }
+  if (Array.isArray(_data.bannedStudents)) {
+    data["bannedStudents"] = _data.bannedStudents.map(item => 
         prepareSerializeUserDto(item)
     );
   }

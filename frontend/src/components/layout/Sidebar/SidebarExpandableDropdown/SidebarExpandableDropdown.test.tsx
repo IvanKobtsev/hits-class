@@ -121,6 +121,52 @@ describe('SidebarExpandableDropdown', () => {
     expect(screen.getByText('Course 2')).toBeInTheDocument();
   });
 
+  // --- Empty state ---
+
+  test('displays "-- No courses --" when no children and expanded both ways', () => {
+    render(
+      <SidebarExpandableDropdown {...defaultProps}>
+      </SidebarExpandableDropdown>,
+    );
+
+    expect(screen.getByText('-- No courses --')).toBeInTheDocument();
+  });
+
+  test('"-- No courses --" has the noCourses style class applied', () => {
+    render(
+      <SidebarExpandableDropdown {...defaultProps}>
+      </SidebarExpandableDropdown>,
+    );
+
+    const el = screen.getByText('-- No courses --');
+    expect(el.className).toMatch(/noCourses/);
+  });
+
+  test('does not display "-- No courses --" when children are present', () => {
+    renderDropdown();
+
+    expect(screen.queryByText('-- No courses --')).not.toBeInTheDocument();
+  });
+
+  test('displays "-- No courses --" when children is an empty array', () => {
+    render(
+      <SidebarExpandableDropdown {...defaultProps}>
+        {[]}
+      </SidebarExpandableDropdown>,
+    );
+
+    expect(screen.getByText('-- No courses --')).toBeInTheDocument();
+  });
+
+  test('does not display "-- No courses --" when collapsed vertically', () => {
+    render(
+      <SidebarExpandableDropdown {...defaultProps} isExpandedVertically={false}>
+      </SidebarExpandableDropdown>,
+    );
+
+    expect(screen.queryByText('-- No courses --')).not.toBeInTheDocument();
+  });
+
   // --- Click ---
 
   test('calls onClick when the header is clicked', async () => {
