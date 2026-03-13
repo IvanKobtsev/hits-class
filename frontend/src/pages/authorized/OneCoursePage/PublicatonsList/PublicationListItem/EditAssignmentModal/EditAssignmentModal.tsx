@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
 import { Field } from 'components/uikit/Field';
 import { Input } from 'components/uikit/inputs/Input';
-import { TextArea } from 'components/uikit/inputs/TextArea';
 import { HookFormDatePicker } from 'components/uikit/inputs/date-time/HookFormDatePicker';
 import {
   Button,
@@ -28,6 +27,8 @@ import type {
 } from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api';
 import styles from './EditAssignmentModal.module.scss';
+import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
+import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -90,42 +91,45 @@ export const EditAssignmentModal = ({
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
-  const form = useAdvancedForm<EditAssignmentForm>(async (data) => {
-    try {
-      const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
-        const item = files.find((f) => f.id === id);
-        return item && item.status !== 'too_large';
-      });
-      const fileInfos = await Promise.all(
-        uploadableEntries.map(([, file]) =>
-          uploadFileAsync({ file: { data: file, fileName: file.name } }),
-        ),
-      );
-      const newAttachments = fileInfos.map(fileInfoToAttachment);
-      const remainingExisting = files
-        .filter((f) => existingAttachmentsByFileId[f.id])
-        .map((f) => existingAttachmentsByFileId[f.id]);
-      const allAttachments = [...remainingExisting, ...newAttachments];
+  const form = useAdvancedForm<EditAssignmentForm>(
+    async (data) => {
+      try {
+        const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
+          const item = files.find((f) => f.id === id);
+          return item && item.status !== 'too_large';
+        });
+        const fileInfos = await Promise.all(
+          uploadableEntries.map(([, file]) =>
+            uploadFileAsync({ file: { data: file, fileName: file.name } }),
+          ),
+        );
+        const newAttachments = fileInfos.map(fileInfoToAttachment);
+        const remainingExisting = files
+          .filter((f) => existingAttachmentsByFileId[f.id])
+          .map((f) => existingAttachmentsByFileId[f.id]);
+        const allAttachments = [...remainingExisting, ...newAttachments];
 
-      await mutateAsync({
-        content: data.content,
-        attachments: allAttachments,
-        payload: {
-          title: data.title,
-          deadlineUtc: data.deadlineUtc ?? null,
-        },
-      });
-      await queryClient.invalidateQueries({
-        queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
-          courseId: 1,
-        }).slice(0, 1),
-      });
-      onClose();
-      onSuccess?.();
-    } catch {
-      void modal.showError({ text: 'Обновление задания не удалось' });
-    }
-  });
+        await mutateAsync({
+          content: data.content,
+          attachments: allAttachments,
+          payload: {
+            title: data.title,
+            deadlineUtc: data.deadlineUtc ?? null,
+          },
+        });
+        await queryClient.invalidateQueries({
+          queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
+            courseId: 1,
+          }).slice(0, 1),
+        });
+        onClose();
+        onSuccess?.();
+      } catch {
+        void modal.showError({ text: 'Обновление задания не удалось' });
+      }
+    },
+    { defaultValues: { content: wrapInLexical('') } },
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -200,11 +204,11 @@ export const EditAssignmentModal = ({
             />
           </Field>
           <Field title="Описание">
-            <TextArea
-              {...form.register('content', { ...requiredRule() })}
-              errorText={form.formState.errors.content?.message}
-              data-test-id="EditAssignment-content-input"
-              data-error={!!form.formState.errors.content}
+            <LexicalTextAreaControlled
+              className={styles.content}
+              form={form}
+              name={'content'}
+              testId="EditAssignment-content-input"
             />
           </Field>
           <Field title="Срок сдачи">
