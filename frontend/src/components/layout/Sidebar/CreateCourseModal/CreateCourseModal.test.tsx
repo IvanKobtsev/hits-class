@@ -5,12 +5,16 @@ import { MemoryRouter } from 'react-router';
 import { CreateCourseModal } from './CreateCourseModal.tsx';
 
 const mockMutateAsync = vi.fn();
-vi.mock('services/api/api-client/CourseQuery', () => ({
-  useCreateCourseMutation: () => ({
-    mutateAsync: mockMutateAsync,
-    isPending: false,
-  }),
-}));
+vi.mock('services/api/api-client/CourseQuery', async (importActual) => {
+  const actual = await importActual<typeof import('services/api/api-client/CourseQuery')>();
+  return {
+    ...actual,
+    useCreateCourseMutation: () => ({
+      mutateAsync: mockMutateAsync,
+      isPending: false,
+    }),
+  };
+});
 
 const mockInvalidateQueries = vi.fn();
 vi.mock('@tanstack/react-query', async (importActual) => {
@@ -137,7 +141,7 @@ describe('CreateCourseModal', () => {
 
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({
-        queryKey: [],
+        queryKey: ['CourseClient'],
       });
     });
   });

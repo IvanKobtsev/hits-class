@@ -1,5 +1,6 @@
 using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Assignment;
+using Team13.HitsClass.App.Features.Comments;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
 using Team13.HitsClass.App.Features.Notifications;
@@ -32,6 +33,7 @@ public static class SetupServices
             .AddScoped<CourseService>()
             .AddScoped<AnnouncementService>()
             .AddScoped<SubmissionService>()
+            .AddScoped<CommentService>()
             .AddScoped<CourseService>()
             .AddScoped<NotificationService>();
     }

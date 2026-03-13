@@ -52,6 +52,27 @@ namespace Team13.HitsClass.App.Features.Submission
         }
 
         /// <summary>
+        /// Save (upsert) draft submission
+        /// </summary>
+        [HttpPut("assignments/{id:int}/submission/draft")]
+        public async Task<SubmissionDto> SaveDraft(
+            [FromRoute] int id,
+            [FromBody] CreateSubmissionDto dto
+        )
+        {
+            return await submissionService.SaveDraft(id, dto);
+        }
+
+        /// <summary>
+        /// Retract student's own submission (sets state back to Draft)
+        /// </summary>
+        [HttpPut("assignments/{id:int}/submission/retract")]
+        public async Task<SubmissionDto> RetractSubmission([FromRoute] int id)
+        {
+            return await submissionService.RetractSubmission(id);
+        }
+
+        /// <summary>
         /// Mark submission (check permission)
         /// </summary>
         [HttpPut("submissions/{id:int}/mark")]

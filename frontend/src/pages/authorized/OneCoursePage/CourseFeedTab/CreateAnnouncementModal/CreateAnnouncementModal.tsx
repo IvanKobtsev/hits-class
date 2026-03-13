@@ -22,6 +22,7 @@ import {
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
 import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
 import styles from './CreateAnnouncementModal.module.scss';
+import { QueryFactory } from 'services/api';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -76,7 +77,11 @@ export const CreateAnnouncementModal = ({
           attachments: attachments.length > 0 ? attachments : null,
           payload: { publicationType: 'Announcement' },
         });
-        await queryClient.invalidateQueries({ queryKey: [] });
+        await queryClient.invalidateQueries({
+          queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
+            courseId: 1,
+          }).slice(0, 1),
+        });
         onClose();
       } catch {
         void modal.showError({ text: 'Создание объявления не удалось' });

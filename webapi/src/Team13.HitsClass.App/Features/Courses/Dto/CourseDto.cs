@@ -9,6 +9,7 @@ public class CourseDto
 
     public UserDto Owner { get; set; }
     public List<UserDto> Teachers { get; set; }
+    public List<UserDto> Students { get; set; }
     public string InviteCode { get; set; }
 
     public string Title { get; set; }

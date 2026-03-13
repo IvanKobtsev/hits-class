@@ -65,7 +65,7 @@ public class CourseController
     /// <summary>
     /// Creates a new course. Only teachers can create courses.
     /// </summary>
-    [Authorize(Roles = UserRoles.Teacher)]
+    [Authorize(Roles = $"{UserRoles.Teacher},{UserRoles.Admin}")]
     [HttpPost]
     public async Task<CourseDto> CreateCourse([FromBody] CreateCourseDto courseDto)
     {
@@ -106,6 +106,7 @@ public class CourseController
     /// Export marks for all students in a course as CSV
     /// </summary>
     [HttpGet("{courseId:int}/marks/export")]
+    [ProducesResponseType(typeof(FileContentResult), 200)]
     public async Task<FileContentResult> ExportMarks([FromRoute] int courseId) =>
         await _courseService.ExportMarks(courseId);
 

@@ -1,0 +1,382 @@
+@use 'src/styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.summary {
+  display: flex;
+  gap: 24px;
+  padding: 16px 20px;
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.summaryCount {
+  font-size: 28px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+}
+
+.list {
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid $border-input;
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.studentRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid $border-input;
+  transition: background 0.15s;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
+.studentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.studentName {
+  font-size: 14px;
+  color: $classroom-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.studentGroup {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.statusSubmitted {
+  background: rgba($classroom-green, 0.1);
+  color: $classroom-green;
+}
+
+.statusDraft {
+  background: rgba($classroom-text-secondary, 0.1);
+  color: $classroom-text-secondary;
+}
+
+.statusAccepted {
+  background: rgba($classroom-blue, 0.1);
+  color: $classroom-blue;
+}
+
+.statusNotSubmitted {
+  background: rgba($classroom-danger, 0.06);
+  color: $classroom-danger;
+}
+
+.mark {
+  min-width: 60px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+  margin-left: 16px;
+}
+
+.markEmpty {
+  color: $classroom-text-secondary;
+  font-weight: 400;
+}
+
+.markInput {
+  width: 60px;
+  padding: 4px 8px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+
+  &:focus {
+    border-color: $classroom-blue;
+  }
+}
+
+.empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: $classroom-text-secondary;
+  font-size: 14px;
+}
+
+.selectedSubmission {
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.selectedHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid $border-input;
+}
+
+.selectedStudentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selectedStudentName {
+  font-size: 16px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.backButton {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: $classroom-blue;
+  padding: 4px 8px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.selectedBody {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.attachmentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachmentItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: $classroom-surface-alt;
+  border-radius: 6px;
+  font-size: 13px;
+  color: $classroom-text-primary;
+}
+
+.attachmentIcon {
+  color: $classroom-text-secondary;
+}
+
+.markSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid $border-input;
+}
+
+.markLabel {
+  font-size: 14px;
+  color: $classroom-text-secondary;
+}
+
+.markSaveButton {
+  padding: 6px 16px;
+  background: $classroom-blue;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: darken($classroom-blue, 8%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.submittedAt {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+}
+
+.commentsSection {
+  border-top: 1px solid $border-input;
+  padding-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.commentsHeader {
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+  margin-bottom: 8px;
+}
+
+.commentItem {
+  padding: 10px 0;
+  border-bottom: 1px solid $border-input;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.commentMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.commentAuthor {
+  font-size: 13px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.commentDate {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+}
+
+.commentBody {
+  font-size: 14px;
+  color: $classroom-text-primary;
+  line-height: 1.5;
+
+  :global(.ContentEditable__root) {
+    min-height: unset !important;
+    font-size: 14px;
+    padding: 0;
+  }
+}
+
+.commentInputArea {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  padding-top: 12px;
+}
+
+.commentTextarea {
+  flex: 1;
+  resize: none;
+  border: 1px solid $border-input;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.4;
+  color: $classroom-text-primary;
+  background: $input-background;
+  min-height: 36px;
+  max-height: 120px;
+  outline: none;
+
+  &:focus {
+    border-color: $primary;
+  }
+
+  &::placeholder {
+    color: $hint-text-color;
+  }
+}
+
+.commentSendButton {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 6px;
+  background: $primary;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) {
+    background: $primary-link-hover;
+  }
+
+  &:disabled {
+    background: $primary-disabled;
+    cursor: default;
+  }
+}

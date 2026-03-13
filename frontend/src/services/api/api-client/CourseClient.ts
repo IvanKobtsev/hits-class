@@ -565,7 +565,7 @@ function processJoinCourse(response: AxiosResponse): Promise<void> {
 /**
  * Export marks for all students in a course as CSV
  */
-export function exportMarks(courseId: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+export function exportMarks(courseId: number, config?: AxiosRequestConfig | undefined): Promise<Types.FileResponse> {
     let url_ = getBaseUrl() + "/api/courses/{courseId}/marks/export";
     if (courseId === undefined || courseId === null)
       throw new Error("The parameter 'courseId' must be defined.");
@@ -575,10 +575,12 @@ export function exportMarks(courseId: number, config?: AxiosRequestConfig | unde
     let options_: AxiosRequestConfig = {
         ..._requestConfigExportMarks,
         ...config,
+        responseType: "blob",
         method: "GET",
         url: url_,
         headers: {
             ..._requestConfigExportMarks?.headers,
+            "Accept": "application/octet-stream"
         }
     };
 
@@ -593,7 +595,7 @@ export function exportMarks(courseId: number, config?: AxiosRequestConfig | unde
     });
 }
 
-function processExportMarks(response: AxiosResponse): Promise<void> {
+function processExportMarks(response: AxiosResponse): Promise<Types.FileResponse> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -610,15 +612,22 @@ function processExportMarks(response: AxiosResponse): Promise<void> {
         result400 = Types.initValidationProblemDetails(resultData400);
         return throwException("A server side error occurred.", status, _responseText, _headers, result400);
 
-    } else if (status === 200) {
-        const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
-
+    } else if (status === 200 || status === 206) {
+        const contentDisposition = response.headers ? response.headers["content-disposition"] : undefined;
+        let fileNameMatch = contentDisposition ? /filename\*=(?:(\\?['"])(.*?)\1|(?:[^\s]+'.*?')?([^;\n]*))/g.exec(contentDisposition) : undefined;
+        let fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[3] || fileNameMatch[2] : undefined;
+        if (fileName) {
+            fileName = decodeURIComponent(fileName);
+        } else {
+            fileNameMatch = contentDisposition ? /filename="?([^"]*?)"?(;|$)/g.exec(contentDisposition) : undefined;
+            fileName = fileNameMatch && fileNameMatch.length > 1 ? fileNameMatch[1] : undefined;
+        }
+        return Promise.resolve({ fileName: fileName, status: status, data: new Blob([response.data], { type: response.headers["content-type"] }), headers: _headers });
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<void>(null as any);
+    return Promise.resolve<Types.FileResponse>(null as any);
 }
 
 export function addStudent(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<void> {

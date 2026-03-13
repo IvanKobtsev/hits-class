@@ -14,9 +14,9 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Retrieves all Comments of the specified Assignment.
+ * Retrieves all Comments of the current user's submission for the specified Assignment.
  */
-export function getAssignmentComments(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfCommentDto> {
+export function getAssignmentComments(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto[]> {
     let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/comments";
     if (assignmentId === undefined || assignmentId === null)
       throw new Error("The parameter 'assignmentId' must be defined.");
@@ -45,7 +45,7 @@ export function getAssignmentComments(assignmentId: number, config?: AxiosReques
     });
 }
 
-function processGetAssignmentComments(response: AxiosResponse): Promise<Types.PagedResultOfCommentDto> {
+function processGetAssignmentComments(response: AxiosResponse): Promise<Types.CommentDto[]> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -66,18 +66,22 @@ function processGetAssignmentComments(response: AxiosResponse): Promise<Types.Pa
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfCommentDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfCommentDto>(result200);
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initCommentDto(item)
+              );
+            }
+        return Promise.resolve<Types.CommentDto[]>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PagedResultOfCommentDto>(null as any);
+    return Promise.resolve<Types.CommentDto[]>(null as any);
 }
 
 /**
- * Adds a Comment to the specified Assignment.
+ * Adds a Comment to the current user's submission for the specified Assignment.
  */
 export function addCommentToAssignment(assignmentId: number, createCommentDto: Types.CreateCommentDto, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto> {
     let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/comments";
@@ -144,9 +148,76 @@ function processAddCommentToAssignment(response: AxiosResponse): Promise<Types.C
 }
 
 /**
+ * Adds a Comment to a specific Submission by its ID (for teachers).
+ */
+export function addCommentToSubmission(submissionId: number, createCommentDto: Types.CreateCommentDto, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto> {
+    let url_ = getBaseUrl() + "/api/submissions/{submissionId}/comments";
+    if (submissionId === undefined || submissionId === null)
+      throw new Error("The parameter 'submissionId' must be defined.");
+    url_ = url_.replace("{submissionId}", encodeURIComponent("" + submissionId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeCreateCommentDto(createCommentDto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigAddCommentToSubmission,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigAddCommentToSubmission?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processAddCommentToSubmission(_response);
+    });
+}
+
+function processAddCommentToSubmission(response: AxiosResponse): Promise<Types.CommentDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initCommentDto(resultData200);
+        return Promise.resolve<Types.CommentDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.CommentDto>(null as any);
+}
+
+/**
  * Retrieves all Comments of the specified Publication.
  */
-export function getPublicationComments(publicationId: number, config?: AxiosRequestConfig | undefined): Promise<Types.PagedResultOfCommentDto> {
+export function getPublicationComments(publicationId: number, config?: AxiosRequestConfig | undefined): Promise<Types.CommentDto[]> {
     let url_ = getBaseUrl() + "/api/publication/{publicationId}/comments";
     if (publicationId === undefined || publicationId === null)
       throw new Error("The parameter 'publicationId' must be defined.");
@@ -175,7 +246,7 @@ export function getPublicationComments(publicationId: number, config?: AxiosRequ
     });
 }
 
-function processGetPublicationComments(response: AxiosResponse): Promise<Types.PagedResultOfCommentDto> {
+function processGetPublicationComments(response: AxiosResponse): Promise<Types.CommentDto[]> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -196,14 +267,18 @@ function processGetPublicationComments(response: AxiosResponse): Promise<Types.P
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPagedResultOfCommentDto(resultData200);
-        return Promise.resolve<Types.PagedResultOfCommentDto>(result200);
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initCommentDto(item)
+              );
+            }
+        return Promise.resolve<Types.CommentDto[]>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PagedResultOfCommentDto>(null as any);
+    return Promise.resolve<Types.CommentDto[]>(null as any);
 }
 
 /**
@@ -415,6 +490,17 @@ export function setAddCommentToAssignmentRequestConfig(value: Partial<AxiosReque
 }
 export function patchAddCommentToAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigAddCommentToAssignment = patch(_requestConfigAddCommentToAssignment ?? {});
+}
+
+let _requestConfigAddCommentToSubmission: Partial<AxiosRequestConfig> | null;
+export function getAddCommentToSubmissionRequestConfig() {
+  return _requestConfigAddCommentToSubmission;
+}
+export function setAddCommentToSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigAddCommentToSubmission = value;
+}
+export function patchAddCommentToSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigAddCommentToSubmission = patch(_requestConfigAddCommentToSubmission ?? {});
 }
 
 let _requestConfigGetPublicationComments: Partial<AxiosRequestConfig> | null;

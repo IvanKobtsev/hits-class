@@ -284,6 +284,136 @@ function processGetSubmission(response: AxiosResponse): Promise<Types.Submission
 }
 
 /**
+ * Save (upsert) draft submission
+ */
+export function saveDraft(id: number, dto: Types.CreateSubmissionDto, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/submission/draft";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeCreateSubmissionDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigSaveDraft,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigSaveDraft?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processSaveDraft(_response);
+    });
+}
+
+function processSaveDraft(response: AxiosResponse): Promise<Types.SubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+
+/**
+ * Retract student's own submission (sets state back to Draft)
+ */
+export function retractSubmission(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
+    let url_ = getBaseUrl() + "/api/assignments/{id}/submission/retract";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigRetractSubmission,
+        ...config,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigRetractSubmission?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processRetractSubmission(_response);
+    });
+}
+
+function processRetractSubmission(response: AxiosResponse): Promise<Types.SubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initSubmissionDto(resultData200);
+        return Promise.resolve<Types.SubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.SubmissionDto>(null as any);
+}
+
+/**
  * Mark submission (check permission)
  */
 export function markSubmission(id: number, dto: Types.MarkDto, config?: AxiosRequestConfig | undefined): Promise<Types.SubmissionDto> {
@@ -391,6 +521,28 @@ export function setGetSubmissionRequestConfig(value: Partial<AxiosRequestConfig>
 }
 export function patchGetSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigGetSubmission = patch(_requestConfigGetSubmission ?? {});
+}
+
+let _requestConfigSaveDraft: Partial<AxiosRequestConfig> | null;
+export function getSaveDraftRequestConfig() {
+  return _requestConfigSaveDraft;
+}
+export function setSaveDraftRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigSaveDraft = value;
+}
+export function patchSaveDraftRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigSaveDraft = patch(_requestConfigSaveDraft ?? {});
+}
+
+let _requestConfigRetractSubmission: Partial<AxiosRequestConfig> | null;
+export function getRetractSubmissionRequestConfig() {
+  return _requestConfigRetractSubmission;
+}
+export function setRetractSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigRetractSubmission = value;
+}
+export function patchRetractSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigRetractSubmission = patch(_requestConfigRetractSubmission ?? {});
 }
 
 let _requestConfigMarkSubmission: Partial<AxiosRequestConfig> | null;

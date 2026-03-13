@@ -755,7 +755,7 @@ url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
   return url_;
 }
 
-let exportMarksDefaultOptions: Omit<UseQueryOptions<void, unknown, void>, 'queryKey'> = {
+let exportMarksDefaultOptions: Omit<UseQueryOptions<Types.FileResponse, unknown, Types.FileResponse>, 'queryKey'> = {
   queryFn: __exportMarks,
 };
 export function getExportMarksDefaultOptions() {
@@ -788,13 +788,13 @@ function __exportMarks(context: QueryFunctionContext) {
       context.queryKey[2] as number    );
 }
 
-export function useExportMarksQuery<TSelectData = void, TError = unknown>(dto: ExportMarksCourseQueryParameters, options?: Omit<UseQueryOptions<void, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(dto: ExportMarksCourseQueryParameters, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
  * Export marks for all students in a course as CSV
  */
-export function useExportMarksQuery<TSelectData = void, TError = unknown>(courseId: number, options?: Omit<UseQueryOptions<void, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
-export function useExportMarksQuery<TSelectData = void, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
-  let options: UseQueryOptions<void, TError, TSelectData> | undefined = undefined;
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(courseId: number, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.FileResponse, TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
   let courseId: any = undefined;
   
@@ -815,17 +815,17 @@ export function useExportMarksQuery<TSelectData = void, TError = unknown>(...par
     options!.meta = { ...options!.meta, axiosConfig };
   }
 
-  return useQuery<void, TError, TSelectData>({
+  return useQuery<Types.FileResponse, TError, TSelectData>({
     queryFn: __exportMarks,
     queryKey: exportMarksQueryKey(courseId),
-    ...exportMarksDefaultOptions as unknown as Omit<UseQueryOptions<void, TError, TSelectData>, 'queryKey'>,
+    ...exportMarksDefaultOptions as unknown as Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>,
     ...options,
   });
 }
 /**
  * Export marks for all students in a course as CSV
  */
-export function setExportMarksData(queryClient: QueryClient, updater: (data: void | undefined) => void, courseId: number) {
+export function setExportMarksData(queryClient: QueryClient, updater: (data: Types.FileResponse | undefined) => Types.FileResponse, courseId: number) {
   queryClient.setQueryData(exportMarksQueryKey(courseId),
     updater
   );
@@ -834,7 +834,7 @@ export function setExportMarksData(queryClient: QueryClient, updater: (data: voi
 /**
  * Export marks for all students in a course as CSV
  */
-export function setExportMarksDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: void | undefined) => void) {
+export function setExportMarksDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.FileResponse | undefined) => Types.FileResponse) {
   queryClient.setQueryData(queryKey, updater);
 }
     
