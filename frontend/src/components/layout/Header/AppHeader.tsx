@@ -54,7 +54,11 @@ export const AppHeader: React.FC = () => {
           className={styles.breadcrumbs}
         >
           {isCoursesPage && <span>Courses</span>}
-          {courseId && <span>{course?.title ?? '…'}</span>}
+          {courseId && (
+            <Link to={`/courses/${courseId}`}>
+              {course?.title ?? '…'}
+            </Link>
+          )}
         </nav>
       )}
 
