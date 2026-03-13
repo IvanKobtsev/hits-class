@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Client,
   useGetUsersQuery,
+  useGetCurrentUserInfoQuery,
   getUsersQueryKey,
   getCurrentUserInfoQueryKey,
 } from 'services/api/api-client/UserQuery';
@@ -68,6 +69,7 @@ export const AdminPage: React.FC = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const { data, isLoading } = useGetUsersQuery({ limit: 1000 });
+  const { data: currentUser } = useGetCurrentUserInfoQuery();
 
   const users = data?.data ?? [];
 
@@ -140,6 +142,7 @@ export const AdminPage: React.FC = () => {
               user={user}
               selectedRole={getSelectedRole(user)}
               onRoleChange={(role) => handleRoleChange(user, role)}
+              roleSelectDisabled={user.id === currentUser?.id}
             />
           ))}
         </div>
