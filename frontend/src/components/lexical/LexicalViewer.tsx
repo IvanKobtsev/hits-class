@@ -12,21 +12,54 @@ import { useEffect, useState } from 'react';
 import { LexicalEditor } from 'lexical';
 import { LexicalState } from 'services/api/api-client.types.ts';
 
+const EMPTY_EDITOR_STATE_JSON = JSON.stringify({
+  root: {
+    children: [
+      {
+        children: [],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'paragraph',
+        version: 1,
+      },
+    ],
+    direction: null,
+    format: '',
+    indent: 0,
+    type: 'root',
+    version: 1,
+  },
+});
+
+function getEditorStateJson(lexicalState: LexicalState | null | undefined): string {
+  const json = lexicalState?.json;
+  if (json == null || json === '') return EMPTY_EDITOR_STATE_JSON;
+  try {
+    const parsed = typeof json === 'string' ? JSON.parse(json) : json;
+    if (!parsed?.root) return EMPTY_EDITOR_STATE_JSON;
+    return typeof json === 'string' ? json : JSON.stringify(parsed);
+  } catch {
+    return EMPTY_EDITOR_STATE_JSON;
+  }
+}
+
 interface LexicalViewerProps {
-  lexicalState: LexicalState;
+  lexicalState: LexicalState | null | undefined;
   className?: string;
 }
 
 export function LexicalViewer({ lexicalState, className }: LexicalViewerProps) {
   const [editor, setEditor] = useState<LexicalEditor>(null!);
+  const editorStateJson = getEditorStateJson(lexicalState);
 
   useEffect(() => {
-    if (editor && !!lexicalState) {
-      editor?.update(() => {
-        editor.setEditorState(editor.parseEditorState(lexicalState.json));
+    if (editor) {
+      editor.update(() => {
+        editor.setEditorState(editor.parseEditorState(editorStateJson));
       });
     }
-  }, [editor, lexicalState]);
+  }, [editor, editorStateJson]);
 
   const initialConfig: InitialConfigType = {
     namespace: 'Page Editor',
@@ -38,7 +71,7 @@ export function LexicalViewer({ lexicalState, className }: LexicalViewerProps) {
       ...PlaygroundEditorTheme,
       ...getBeautifulMentionsTheme(),
     },
-    editorState: lexicalState.json,
+    editorState: editorStateJson,
     editable: false,
   };
 

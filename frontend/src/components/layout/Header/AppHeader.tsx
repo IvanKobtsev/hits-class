@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useParams } from 'react-router';
 import { useMediaQuery } from '@mui/material';
 import { useScopedTranslation } from 'application/localization/useScopedTranslation';
 import styles from './AppHeader.module.scss';
@@ -11,9 +11,16 @@ export const AppHeader: React.FC = () => {
   const i18n = useScopedTranslation('AppHeader');
   const { isExpanded, toggle } = useSidebar();
   const location = useLocation();
+  const params = useParams<{ courseId?: string }>();
   const isMobile = useMediaQuery('(max-width: 600px)');
 
   const isCoursesPage = location.pathname === '/courses';
+  const courseId = params.courseId ? Number(params.courseId) : undefined;
+  const courseQuery = QueryFactory.CourseQuery.useGetCourseQuery(courseId ?? 0, {
+    enabled: !!courseId,
+  });
+  const course = courseQuery.data;
+
   const showBreadcrumbs = !isMobile || isCoursesPage;
   const showAvatar = !isMobile || isCoursesPage;
 
@@ -47,6 +54,7 @@ export const AppHeader: React.FC = () => {
           className={styles.breadcrumbs}
         >
           {isCoursesPage && <span>Courses</span>}
+          {courseId && <span>{course?.title ?? '…'}</span>}
         </nav>
       )}
 

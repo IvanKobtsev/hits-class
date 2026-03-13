@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, Route, Routes } from 'react-router';
 
 vi.mock('../Sidebar/SidebarContext', () => ({
   useSidebar: vi.fn(),
@@ -12,6 +12,9 @@ vi.mock('services/api', () => ({
     UserQuery: {
       useGetCurrentUserInfoQuery: vi.fn(),
       setGetCurrentUserInfoDefaultOptions: vi.fn(),
+    },
+    CourseQuery: {
+      useGetCourseQuery: vi.fn(),
     },
   },
 }));
@@ -24,6 +27,9 @@ const mockedUseSidebar = vi.mocked(useSidebar);
 const mockedUseGetCurrentUserInfo = vi.mocked(
   QueryFactory.UserQuery.useGetCurrentUserInfoQuery,
 );
+const mockedUseGetCourseQuery = vi.mocked(
+  QueryFactory.CourseQuery.useGetCourseQuery,
+);
 
 const mockToggle = vi.fn();
 
@@ -31,6 +37,9 @@ function setupDefaultMocks() {
   mockedUseSidebar.mockReturnValue({ isExpanded: false, toggle: mockToggle });
   mockedUseGetCurrentUserInfo.mockReturnValue({
     data: { id: '1', username: 'John Doe' },
+  } as any);
+  mockedUseGetCourseQuery.mockReturnValue({
+    data: { id: 42, title: 'Test Course', description: '', inviteCode: '', createdAt: new Date(), owner: {} as any, teachers: [], students: [] },
   } as any);
 }
 
@@ -53,7 +62,10 @@ function mockMatchMedia(mobile: boolean) {
 function renderHeader(path = '/courses') {
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <AppHeader />
+      <Routes>
+        <Route path="/courses" element={<AppHeader />} />
+        <Route path="/courses/:courseId/*" element={<AppHeader />} />
+      </Routes>
     </MemoryRouter>,
   );
 }
@@ -119,9 +131,17 @@ describe('AppHeader', () => {
   });
 
   test('shows breadcrumbs on non-courses pages on desktop', () => {
-    renderHeader('/course/1');
+    renderHeader('/courses/1');
 
     expect(screen.getByTestId('app-header-breadcrumbs')).toBeInTheDocument();
+  });
+
+  test('breadcrumbs show course title when on course page', () => {
+    renderHeader('/courses/42');
+
+    expect(screen.getByTestId('app-header-breadcrumbs')).toHaveTextContent(
+      'Test Course',
+    );
   });
 
   // --- Sidebar toggle ---
@@ -163,7 +183,7 @@ describe('AppHeader', () => {
     });
 
     test('hides breadcrumbs when not on /courses page', () => {
-      renderHeader('/course/1');
+      renderHeader('/courses/1');
 
       expect(
         screen.queryByTestId('app-header-breadcrumbs'),
@@ -177,7 +197,7 @@ describe('AppHeader', () => {
     });
 
     test('hides avatar button when not on /courses page', () => {
-      renderHeader('/course/1');
+      renderHeader('/courses/1');
 
       expect(screen.queryByTestId('app-header-avatar')).not.toBeInTheDocument();
     });

@@ -214,7 +214,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         </Typography>
       )}
 
-      <LexicalViewer lexicalState={content!} />
+      {content && <LexicalViewer lexicalState={content} />}
 
       {assignmentData?.deadlineUtc && (
         <Box

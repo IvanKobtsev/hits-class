@@ -55,11 +55,25 @@
 .breadcrumbs {
   flex: 1;
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.87);
+  color: #444746;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  a {
+    color: #444746;
+    text-decoration: none;
+
+    &:hover {
+      color: $classroom-blue;
+      text-decoration: underline;
+    }
+  }
 }
+
 
 .avatar {
   width: 32px;
