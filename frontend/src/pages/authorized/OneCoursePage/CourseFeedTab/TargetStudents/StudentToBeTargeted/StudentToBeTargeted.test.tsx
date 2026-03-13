@@ -15,7 +15,6 @@ const mockUser: UserDto = {
   email: 'student@test.com',
   legalName: 'Иван Иванов',
   groupNumber: 'А-101',
-  roles: [],
 };
 
 describe('StudentToBeTargeted', () => {

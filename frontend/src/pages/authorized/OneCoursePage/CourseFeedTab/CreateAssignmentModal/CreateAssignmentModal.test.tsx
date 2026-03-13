@@ -86,6 +86,12 @@ vi.mock('../TargetStudents/TargetStudents', () => ({
       >
         Deselect s1
       </button>
+      <button
+        data-test-id="target-students-deselect-all"
+        onClick={() => onSelectionChange(new Set())}
+      >
+        Deselect all
+      </button>
     </div>
   ),
 }));
@@ -301,6 +307,21 @@ describe('CreateAssignmentModal', () => {
         }),
       );
     });
+  });
+
+  test('disables Create button when no students selected', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.type(screen.getByTestId('CreateAssignment-title-input'), 'Задание 1');
+    await user.type(screen.getByTestId('CreateAssignment-content-input'), 'Описание');
+    await waitFor(() => {
+      expect(screen.getByTestId('target-students-deselect-all')).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId('target-students-deselect-all'));
+
+    const createButton = screen.getByRole('button', { name: /создать/i });
+    expect(createButton).toBeDisabled();
   });
 
   test('passes targetUsersIds when some students deselected', async () => {

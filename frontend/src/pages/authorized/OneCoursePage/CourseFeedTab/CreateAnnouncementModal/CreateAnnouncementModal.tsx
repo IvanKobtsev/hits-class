@@ -219,6 +219,7 @@ export const CreateAnnouncementModal = ({
               type="submit"
               color={ButtonColor.Primary}
               width={ButtonWidth.Fullwidth}
+              disabled={selectedIds.size === 0}
             />
           </div>
         </form>

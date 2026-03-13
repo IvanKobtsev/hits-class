@@ -110,7 +110,11 @@ export const TargetStudents: React.FC<TargetStudentsProps> = ({
                 indeterminate={someSelected}
                 onChange={toggleAll}
                 size="small"
-                inputProps={{ 'data-test-id': 'target-students-select-all' }}
+                inputProps={
+                  { 'data-test-id': 'target-students-select-all' } as React.ComponentProps<
+                    typeof Checkbox
+                  >['inputProps']
+                }
                 aria-label="Выбрать всех"
               />
               <span className={styles.selectAllLabel}>Выбрать всех</span>
@@ -138,9 +142,11 @@ export const TargetStudents: React.FC<TargetStudentsProps> = ({
                         onChange={() => toggleGroup(groupStudents)}
                         size="small"
                         onClick={(e) => e.stopPropagation()}
-                        inputProps={{
-                          'data-test-id': `target-students-group-checkbox-${groupLabel}`,
-                        }}
+                        inputProps={
+                          {
+                            'data-test-id': `target-students-group-checkbox-${groupLabel}`,
+                          } as React.ComponentProps<typeof Checkbox>['inputProps']
+                        }
                         aria-label={`Группа ${groupLabel}`}
                       />
                       <span className={styles.groupLabel}>{groupLabel}</span>

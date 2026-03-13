@@ -56,6 +56,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={props.type ?? 'button'}
+        disabled={disabled}
         data-disabled={disabled}
         {...rest}
         className={clsx(buttonStyles)}
