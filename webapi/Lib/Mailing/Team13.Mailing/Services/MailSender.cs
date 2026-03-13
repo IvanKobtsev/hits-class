@@ -104,8 +104,6 @@ public class MailSender : IMailSender
         }
     }
 
-    private static List<string> _globalAttachments = new() { "Views/Emails/Images/logo.png" };
-
     [AutomaticRetry(
         Attempts = 10,
         DelaysInSeconds = new[] { 60, 120, 240, 480, 600, 1810, 3610, 4010, 5450, 7300 }
@@ -124,16 +122,6 @@ public class MailSender : IMailSender
         message.To.Add(new MailboxAddress("", recipient));
 
         var bodyBuilder = new BodyBuilder();
-
-        foreach (var attachment in _globalAttachments)
-        {
-            MimeEntity entity = bodyBuilder.LinkedResources.Add(attachment);
-            var fileName = Path.GetFileName(attachment);
-            entity.ContentDisposition = new ContentDisposition(ContentDisposition.Inline);
-            entity.ContentId = fileName;
-            entity.ContentType.Name = fileName;
-            entity.ContentDisposition.FileName = fileName;
-        }
 
         if (attachments != null)
         {
