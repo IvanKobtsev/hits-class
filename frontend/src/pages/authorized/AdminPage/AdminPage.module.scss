@@ -1,0 +1,58 @@
+@use 'src/styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: $classroom-text-primary;
+  margin: 0;
+}
+
+.searchRow {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.searchInput {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    border-color: #6366f1;
+  }
+}
+
+.userList {
+  max-height: 480px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid $classroom-surface-alt;
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.error {
+  font-size: 14px;
+  color: #dc2626;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}

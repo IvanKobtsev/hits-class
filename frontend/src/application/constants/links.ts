@@ -38,5 +38,6 @@ export const Links = {
     }),
     UiKit: createRoute('/uikit'),
     Courses: createRoute('/courses'),
+    Admin: createRoute('/admin'),
   },
 };
