@@ -878,6 +878,69 @@ function processDeleteTeacher(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
+
+/**
+ * Unbans student for course
+ */
+export function unbanStudent(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/courses/{id}/student/unban";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(studentId);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigUnbanStudent,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigUnbanStudent?.headers,
+            "Content-Type": "application/json",
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processUnbanStudent(_response);
+    });
+}
+
+function processUnbanStudent(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
 let _requestConfigGetCourses: Partial<AxiosRequestConfig> | null;
 export function getGetCoursesRequestConfig() {
   return _requestConfigGetCourses;
@@ -1019,4 +1082,15 @@ export function setDeleteTeacherRequestConfig(value: Partial<AxiosRequestConfig>
 }
 export function patchDeleteTeacherRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigDeleteTeacher = patch(_requestConfigDeleteTeacher ?? {});
+}
+
+let _requestConfigUnbanStudent: Partial<AxiosRequestConfig> | null;
+export function getUnbanStudentRequestConfig() {
+  return _requestConfigUnbanStudent;
+}
+export function setUnbanStudentRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigUnbanStudent = value;
+}
+export function patchUnbanStudentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigUnbanStudent = patch(_requestConfigUnbanStudent ?? {});
 }

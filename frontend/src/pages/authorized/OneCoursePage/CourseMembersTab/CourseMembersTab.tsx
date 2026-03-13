@@ -1,4 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { IconButton, Menu, MenuItem } from '@mui/material';
+import DotsIcon from 'assets/icons/dots.svg?react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useModal } from 'components/uikit/modal/useModal';
+import {
+  useBanStudentMutation,
+  useUnbanStudentMutation,
+  getCourseQueryKey,
+} from 'services/api/api-client/CourseQuery';
 import type { CourseDto, UserDto } from 'services/api/api-client.types';
 import type { CourseRole } from '../useCourseRole';
 import styles from './CourseMembersTab.module.scss';
@@ -23,26 +32,120 @@ type MemberRowProps = {
   user: UserDto;
   isOwner?: boolean;
   showGroup?: boolean;
+  courseId?: number;
+  isBanned?: boolean;
+  canShowBanMenu?: boolean;
 };
 
-const MemberRow: React.FC<MemberRowProps> = ({ user, isOwner, showGroup }) => (
-  <div className={styles.memberRow} data-test-id={`member-row-${user.id}`}>
-    <div
-      className={styles.avatar}
-      style={{ background: getAvatarColor(user.legalName) }}
-    >
-      {getInitials(user.legalName)}
+const MemberRow: React.FC<MemberRowProps> = ({
+  user,
+  isOwner,
+  showGroup,
+  courseId = 0,
+  isBanned = false,
+  canShowBanMenu = false,
+}) => {
+  const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const modal = useModal();
+  const queryClient = useQueryClient();
+  const { mutateAsync: banStudent } = useBanStudentMutation(courseId);
+  const { mutateAsync: unbanStudent } = useUnbanStudentMutation(courseId);
+
+  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setMenuAnchor(e.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchor(null);
+  };
+
+  const handleBanClick = async () => {
+    handleMenuClose();
+    const confirmed = await modal.showConfirm({
+      title: 'Заблокировать',
+      text: 'Вы точно хотите заблокировать выбранного пользователя?',
+      okButtonText: 'Заблокировать',
+      cancelButtonText: 'Отмена',
+    });
+    if (!confirmed) return;
+    try {
+      await banStudent(user.id);
+      await queryClient.invalidateQueries({
+        queryKey: getCourseQueryKey(courseId),
+      });
+    } catch {
+      // Error handling could be added (e.g. snackbar)
+    }
+  };
+
+  const handleUnbanClick = async () => {
+    handleMenuClose();
+    const confirmed = await modal.showConfirm({
+      title: 'Разблокировать',
+      text: 'Вы точно хотите разблокировать выбранного пользователя?',
+      okButtonText: 'Разблокировать',
+      cancelButtonText: 'Отмена',
+    });
+    if (!confirmed) return;
+    try {
+      await unbanStudent(user.id);
+      await queryClient.invalidateQueries({
+        queryKey: getCourseQueryKey(courseId),
+      });
+    } catch {
+      // Error handling could be added (e.g. snackbar)
+    }
+  };
+
+  return (
+    <div className={styles.memberRow} data-test-id={`member-row-${user.id}`}>
+      <div
+        className={styles.avatar}
+        style={{ background: getAvatarColor(user.legalName) }}
+      >
+        {getInitials(user.legalName)}
+      </div>
+      <div className={styles.memberInfo}>
+        <span className={styles.memberName}>{user.legalName}</span>
+        <span className={styles.memberEmail}>{user.email}</span>
+      </div>
+      {isOwner && <span className={styles.ownerBadge}>Владелец</span>}
+      {showGroup && user.groupNumber && (
+        <span className={styles.groupBadge}>{user.groupNumber}</span>
+      )}
+      {canShowBanMenu && (
+        <>
+          <div className={styles.memberRowActions}>
+            <IconButton
+              data-test-id={`member-row-menu-button-${user.id}`}
+              onClick={handleMenuOpen}
+              size="small"
+            >
+              <DotsIcon width={16} height={16} />
+            </IconButton>
+          </div>
+          <Menu
+            anchorEl={menuAnchor}
+            open={Boolean(menuAnchor)}
+            onClose={handleMenuClose}
+          >
+            {isBanned ? (
+              <MenuItem onClick={() => void handleUnbanClick()}>
+                Разблокировать
+              </MenuItem>
+            ) : (
+              <MenuItem onClick={() => void handleBanClick()}>
+                Заблокировать
+              </MenuItem>
+            )}
+          </Menu>
+        </>
+      )}
     </div>
-    <div className={styles.memberInfo}>
-      <span className={styles.memberName}>{user.legalName}</span>
-      <span className={styles.memberEmail}>{user.email}</span>
-    </div>
-    {isOwner && <span className={styles.ownerBadge}>Владелец</span>}
-    {showGroup && user.groupNumber && (
-      <span className={styles.groupBadge}>{user.groupNumber}</span>
-    )}
-  </div>
-);
+  );
+};
 
 type CourseMembersTabProps = {
   course: CourseDto;
@@ -85,7 +188,14 @@ export const CourseMembersTab: React.FC<CourseMembersTabProps> = ({ course, role
           <div className={styles.empty}>Нет учащихся</div>
         ) : (
           students.map((student) => (
-            <MemberRow key={student.id} user={student} showGroup />
+            <MemberRow
+              key={student.id}
+              user={student}
+              showGroup
+              courseId={course.id}
+              canShowBanMenu={role === 'teacher'}
+              isBanned={false}
+            />
           ))
         )}
       </div>
@@ -104,7 +214,14 @@ export const CourseMembersTab: React.FC<CourseMembersTabProps> = ({ course, role
             <div className={styles.empty}>Нет заблокированных</div>
           ) : (
             bannedStudents.map((user) => (
-              <MemberRow key={user.id} user={user} showGroup />
+              <MemberRow
+                key={user.id}
+                user={user}
+                showGroup
+                courseId={course.id}
+                canShowBanMenu={role === 'teacher'}
+                isBanned
+              />
             ))
           )}
         </div>

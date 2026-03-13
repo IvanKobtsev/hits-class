@@ -731,7 +731,7 @@ export interface CourseDto  {
   owner: UserDto;
   teachers: UserDto[];
   students: UserDto[];
-  bannedStudents?: UserDto[];
+  bannedStudents: UserDto[];
   inviteCode: string;
   title: string;
   description: string;
