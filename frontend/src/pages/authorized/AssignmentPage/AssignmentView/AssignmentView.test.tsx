@@ -8,6 +8,7 @@ import {
   SubmissionState,
   UserDto,
 } from 'services/api/api-client.types';
+import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab';
 
 vi.mock('components/lexical/LexicalViewer', () => ({
   LexicalViewer: ({ lexicalState }: { lexicalState: string }) => (
@@ -34,7 +35,7 @@ const mockAuthor: UserDto = {
 
 const mockAssignment: PublicationDto = {
   id: 1,
-  content: 'Реализуйте сортировку пузырьком',
+  content: wrapInLexical('Реализуйте сортировку пузырьком'),
   author: mockAuthor,
   createdAtUTC: new Date('2025-03-01T10:30:00Z'),
   lastUpdatedAtUTC: null,
@@ -151,7 +152,12 @@ describe('AssignmentView', () => {
     const withAttachments: PublicationDto = {
       ...mockAssignment,
       attachments: [
-        { uuid: 'f1', fileName: 'hw.pdf', size: 1024, createdAt: new Date('2025-01-01') },
+        {
+          uuid: 'f1',
+          fileName: 'hw.pdf',
+          size: 1024,
+          createdAt: new Date('2025-01-01'),
+        },
       ],
     };
     renderAssignmentView({ assignment: withAttachments });
@@ -160,16 +166,23 @@ describe('AssignmentView', () => {
   });
 
   test('does not render attachments list when assignment has no attachments', () => {
-    renderAssignmentView({ assignment: { ...mockAssignment, attachments: [] } });
+    renderAssignmentView({
+      assignment: { ...mockAssignment, attachments: [] },
+    });
 
-    expect(screen.queryByTestId('AttachmentsList-mock')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('AttachmentsList-mock'),
+    ).not.toBeInTheDocument();
   });
 
   test('shows placeholder when deadline is not set', () => {
     renderAssignmentView({
       assignment: {
         ...mockAssignment,
-        publicationPayload: { ...mockAssignment.publicationPayload, deadlineUtc: null } as AssignmentPayload,
+        publicationPayload: {
+          ...mockAssignment.publicationPayload,
+          deadlineUtc: null,
+        } as AssignmentPayload,
       },
     });
 

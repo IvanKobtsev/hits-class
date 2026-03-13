@@ -24,3 +24,9 @@
   color: var(--color-error, #d32f2f);
   margin-top: 4px;
 }
+
+.content {
+  :global(.ContentEditable__root) {
+    min-height: 100px !important;
+  }
+}

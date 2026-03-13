@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,8 +8,10 @@ using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Announcement.Dto;
 using Team13.HitsClass.App.Features.Courses;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
 
 namespace Team13.HitsClass.App.Tests
@@ -16,6 +19,12 @@ namespace Team13.HitsClass.App.Tests
     public class AnnouncementServiceTests : AppServiceTestBase
     {
         private readonly AnnouncementService _announcementService;
+        private readonly LexicalState _defaultLexicalState = LexicalStateBuilder.BuildLexicalState(
+            "Hello, tomorrow class is canceled! :)"
+        );
+        private readonly LexicalState _defaultUpdatedState = LexicalStateBuilder.BuildLexicalState(
+            "Updated content"
+        );
 
         public AnnouncementServiceTests(ITestOutputHelper output)
             : base(output)
@@ -31,7 +40,7 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student.Id);
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [student.Id],
                 Payload = new AnnouncementPayload(),
             };
@@ -49,7 +58,7 @@ namespace Team13.HitsClass.App.Tests
             var student = await CreateUser("student@gmail.com");
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = null,
                 Payload = new AnnouncementPayload(),
             };
@@ -67,7 +76,7 @@ namespace Team13.HitsClass.App.Tests
             var student = await CreateUser("student@gmail.com");
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [student.Id],
                 Payload = new AnnouncementPayload(),
             };
@@ -88,7 +97,7 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student2.Id);
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [student1.Id, student2.Id],
                 Payload = new AnnouncementPayload(),
             };
@@ -117,7 +126,7 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student3.Id);
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [student1.Id, student2.Id],
                 Payload = new AnnouncementPayload(),
             };
@@ -147,7 +156,7 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student2.Id);
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [],
                 Payload = new AnnouncementPayload(),
             };
@@ -177,7 +186,7 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student2.Id);
             var createDto = new CreateAnnouncementDto
             {
-                Content = "Hello, tomorrow class is canceled! :)",
+                Content = _defaultLexicalState,
                 TargetUsersIds = [student2.Id],
                 Payload = new AnnouncementPayload(),
             };
@@ -196,10 +205,7 @@ namespace Team13.HitsClass.App.Tests
             var student = await CreateUser("student@gmail.com");
             await AddStudentToCourse(course.Id, student.Id);
             var announcement = await CreateAnnouncement(course.Id);
-            var patchDto = new PatchAnnouncementDto
-            {
-                Content = "Joking. All missing students will be expelled. :)",
-            };
+            var patchDto = new PatchAnnouncementDto { Content = _defaultUpdatedState };
             patchDto.SetHasProperty(nameof(patchDto.Content));
 
             var patchedAnnouncement = await _announcementService.PatchAnnouncement(
@@ -214,10 +220,7 @@ namespace Team13.HitsClass.App.Tests
         [Fact]
         public async Task PatchAnnouncement_AnnouncementDoesNotExist_ThrowsNotFoundException()
         {
-            var patchDto = new PatchAnnouncementDto
-            {
-                Content = "Joking. All missing students will be expelled. :)",
-            };
+            var patchDto = new PatchAnnouncementDto { Content = _defaultUpdatedState };
             patchDto.SetHasProperty(nameof(patchDto.Content));
 
             Func<Task> act = async () =>
@@ -233,10 +236,7 @@ namespace Team13.HitsClass.App.Tests
             var teacher = await CreateUser("teacher@gmail.com");
             await AddTeacherToCourse(course.Id, teacher.Id);
             var announcement = await CreateAnnouncement(course.Id);
-            var patchDto = new PatchAnnouncementDto
-            {
-                Content = "Joking. All missing students will be expelled. :)",
-            };
+            var patchDto = new PatchAnnouncementDto { Content = _defaultUpdatedState };
             patchDto.SetHasProperty(nameof(patchDto.Content));
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
@@ -256,10 +256,7 @@ namespace Team13.HitsClass.App.Tests
             var student = await CreateUser("student@gmail.com");
             await AddStudentToCourse(course.Id, student.Id);
             var announcement = await CreateAnnouncement(course.Id);
-            var patchDto = new PatchAnnouncementDto
-            {
-                Content = "Joking. All missing students will be expelled. :)",
-            };
+            var patchDto = new PatchAnnouncementDto { Content = _defaultUpdatedState };
             patchDto.SetHasProperty(nameof(patchDto.Content));
             _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
@@ -276,10 +273,7 @@ namespace Team13.HitsClass.App.Tests
             var course = await CreateCourse("Title", "description", owner.Id);
             await AddStudentToCourse(course.Id, _defaultUser.Id);
             var announcement = await CreateAnnouncement(course.Id);
-            var patchDto = new PatchAnnouncementDto
-            {
-                Content = "Joking. All missing students will be expelled. :)",
-            };
+            var patchDto = new PatchAnnouncementDto { Content = _defaultUpdatedState };
             patchDto.SetHasProperty(nameof(patchDto.Content));
 
             var patchedAnnouncement = await _announcementService.PatchAnnouncement(
@@ -302,7 +296,7 @@ namespace Team13.HitsClass.App.Tests
             var announcement = await CreateAnnouncement(course.Id);
             var patchDto = new PatchAnnouncementDto
             {
-                Content = "Joking. All missing students will be expelled. :)",
+                Content = _defaultUpdatedState,
                 TargetUsersIds = [student1.Id],
             };
             patchDto.SetHasProperty(nameof(patchDto.Content));
@@ -326,13 +320,13 @@ namespace Team13.HitsClass.App.Tests
             await AddStudentToCourse(course.Id, student3.Id);
             var announcement = await CreateAnnouncement(
                 course.Id,
-                "Important announcement",
+                _defaultLexicalState,
                 [student1.Id, student2.Id]
             );
 
             var patchDto = new PatchAnnouncementDto
             {
-                Content = "Updated announcement",
+                Content = _defaultUpdatedState,
                 TargetUsersIds = [student2.Id, student3.Id],
             };
             patchDto.SetHasProperty(nameof(patchDto.Content));
@@ -501,10 +495,12 @@ namespace Team13.HitsClass.App.Tests
 
         private async Task<Publication> CreateAnnouncement(
             int courseId,
-            string content = "Hello, tomorrow class is canceled! :)",
+            LexicalState? content = null,
             List<string>? targetUserIds = null
         )
         {
+            content ??= _defaultLexicalState;
+
             return await WithDbContext(async db =>
             {
                 var course = await db

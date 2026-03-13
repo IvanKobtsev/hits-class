@@ -8,33 +8,11 @@ import {
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import type { CommentDto } from 'services/api/api-client.types';
 import styles from './PublicCommentView.module.scss';
+import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab';
+import { LexicalTextArea } from '../../../../components/lexical/text-area/LexicalTextArea.tsx';
 
 interface Props {
   publicationId: number;
-}
-
-function wrapInLexical(text: string): string {
-  return JSON.stringify({
-    root: {
-      children: [
-        {
-          children: [
-            { detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1 },
-          ],
-          direction: 'ltr',
-          format: '',
-          indent: 0,
-          type: 'paragraph',
-          version: 1,
-        },
-      ],
-      direction: 'ltr',
-      format: '',
-      indent: 0,
-      type: 'root',
-      version: 1,
-    },
-  });
 }
 
 export const PublicCommentView = ({ publicationId }: Props) => {
@@ -44,13 +22,16 @@ export const PublicCommentView = ({ publicationId }: Props) => {
   const { data } = useGetPublicationCommentsQuery(publicationId);
   const comments = (data as unknown as CommentDto[] | undefined) ?? [];
   const { mutate } = useAddCommentToPublicationMutation(publicationId);
+  // Pls don't ask.
+  const [updater, setUpdater] = useState(0);
 
   const handleSubmit = () => {
     mutate(
-      { textLexical: wrapInLexical(text) },
+      { content: { json: text } },
       {
         onSuccess: () => {
           setText('');
+          setUpdater((p) => p + 1);
           void queryClient.invalidateQueries({
             queryKey: getPublicationCommentsQueryKey(publicationId),
           });
@@ -66,25 +47,33 @@ export const PublicCommentView = ({ publicationId }: Props) => {
         {comments.map((comment) => (
           <div key={comment.id} className={styles.comment}>
             <div className={styles.commentMeta}>
-              <span className={styles.commentAuthor}>{comment.author.legalName}</span>
-              <span className={styles.commentDate}>{comment.createdAt.toLocaleDateString()}</span>
+              <span className={styles.commentAuthor}>
+                {comment.author.legalName}
+              </span>
+              <span className={styles.commentDate}>
+                {comment.createdAt.toLocaleDateString()}
+              </span>
             </div>
             <div className={styles.commentText}>
-              <LexicalViewer lexicalState={comment.textLexical} />
+              <LexicalViewer lexicalState={comment.content} />
             </div>
           </div>
         ))}
       </div>
       <div className={styles.inputArea}>
-        <textarea
+        <LexicalTextArea
           className={styles.textarea}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          aria-label="Комментарий"
-          placeholder="Написать комментарий..."
-          rows={1}
+          editorClassName={styles.textareaEditor}
+          onChange={(state) => setText(state)}
+          placeholder={'Написать комментарий...'}
+          defaultValue={wrapInLexical('').json}
+          updater={updater}
         />
-        <button className={styles.sendButton} onClick={handleSubmit} disabled={!text.trim()}>
+        <button
+          className={styles.sendButton}
+          onClick={handleSubmit}
+          disabled={!text.trim()}
+        >
           Отправить
         </button>
       </div>

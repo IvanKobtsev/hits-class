@@ -8,6 +8,7 @@ using Team13.HitsClass.App.Features.Assignment.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
 
 namespace Team13.HitsClass.App.Tests;
@@ -16,6 +17,12 @@ public class AssignmentServiceTests : AppServiceTestBase
 {
     private AssignmentService Sut { get; }
     private readonly UserManager<User> _userManager;
+    private readonly LexicalState _defaultContent = LexicalStateBuilder.BuildLexicalState(
+        "Assignment content"
+    );
+    private readonly LexicalState _defaultUpdatedContent = LexicalStateBuilder.BuildLexicalState(
+        "Updated content"
+    );
 
     public AssignmentServiceTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
@@ -181,7 +188,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var deadline = DateTime.UtcNow.AddDays(7);
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
             Payload = new AssignmentPayload { Title = "Test Assignment", DeadlineUtc = deadline },
         };
@@ -212,7 +219,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var pastDeadline = DateTime.UtcNow.AddDays(-1);
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
             Payload = new AssignmentPayload
             {
@@ -240,7 +247,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var currentTime = DateTime.UtcNow;
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
             Payload = new AssignmentPayload
             {
@@ -268,7 +275,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var midnight = DateTime.Today.AddDays(1);
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
             Payload = new AssignmentPayload
             {
@@ -297,7 +304,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment without deadline",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
             Payload = new AssignmentPayload
             {
@@ -321,7 +328,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         // Arrange
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = null,
             Payload = new AssignmentPayload
             {
@@ -347,7 +354,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         var dto = new CreateAssignmentDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [nonCourseStudent.Id],
             Payload = new AssignmentPayload
             {
@@ -378,7 +385,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         var dto = new CreateAssignmentDto
         {
-            Content = "Group assignment",
+            Content = _defaultContent,
             TargetUsersIds = [student1.Id, student2.Id],
             Payload = new AssignmentPayload
             {
@@ -416,7 +423,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         var newDeadline = DateTime.UtcNow.AddDays(14);
         var dto = new PatchAssignmentDto
         {
-            Content = "Updated content",
+            Content = _defaultUpdatedContent,
             Payload = new PatchAssignmentPayloadDto
             {
                 Title = "Updated Title",
@@ -432,7 +439,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().Be("Updated content");
+        result.Content.Should().Be(_defaultUpdatedContent);
 
         var payload = result.PublicationPayload as AssignmentPayload;
         payload!.Title.Should().Be("Updated Title");
@@ -564,7 +571,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         var dto = new PatchAssignmentDto
         {
-            Content = "Updated by teacher",
+            Content = _defaultUpdatedContent,
             Payload = new PatchAssignmentPayloadDto { Title = "Teacher Updated" },
         };
         dto.SetHasProperty(nameof(dto.Content));
@@ -575,7 +582,7 @@ public class AssignmentServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().Be("Updated by teacher");
+        result.Content.Should().Be(_defaultUpdatedContent);
     }
 
     [Fact]
@@ -734,7 +741,7 @@ public class AssignmentServiceTests : AppServiceTestBase
                     ? course.Students
                     : course.Students.Where(s => forWhomUserIds.Contains(s.Id)).ToList();
 
-            var assignment = new Publication("Assignment content")
+            var assignment = new Publication(_defaultContent)
             {
                 CourseId = courseId,
                 Type = PublicationType.Assignment,
@@ -855,10 +862,12 @@ public class AssignmentServiceTests : AppServiceTestBase
     private async Task<Publication> CreatePublication(
         int courseId,
         PublicationType type,
-        string content = "Test publication",
+        LexicalState? content = null,
         List<string>? forWhomUserIds = null
     )
     {
+        content ??= _defaultContent;
+
         return await WithDbContext(async db =>
         {
             var course = await db

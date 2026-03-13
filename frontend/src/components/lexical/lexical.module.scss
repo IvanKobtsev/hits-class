@@ -80,7 +80,6 @@
   }
 
   .toolbar .toolbar-item .text {
-    @include p1;
     display: flex;
     vertical-align: middle;
     color: #777;
@@ -284,6 +283,7 @@
 }
 .editorShell {
   max-width: unset !important;
+  padding-left: 10px;
 }
 .readOnlyEditor {
 }

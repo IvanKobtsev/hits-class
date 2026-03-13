@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 using Team13.DomainHelpers;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 
 namespace Team13.HitsClass.Domain;
@@ -12,7 +13,7 @@ namespace Team13.HitsClass.Domain;
 /// </summary>
 public class Publication
 {
-    public Publication(string content)
+    public Publication(LexicalState content)
     {
         CreatedAtUtc = DateTime.UtcNow;
         Content = content;
@@ -26,7 +27,7 @@ public class Publication
     public PublicationType Type { get; set; }
     public string AuthorId { get; set; }
     public User Author { get; set; }
-    public string Content { get; set; }
+    public LexicalState Content { get; set; }
     public bool IsForEveryone { get; set; }
     public List<User> TargetUsers { get; set; }
     public List<Submission>? Submissions { get; set; }
