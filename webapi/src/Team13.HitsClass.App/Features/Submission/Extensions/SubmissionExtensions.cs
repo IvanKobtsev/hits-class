@@ -49,7 +49,7 @@ public static class SubmissionExtensions
                     CreatedAt = c.CreatedAt,
                     LastEditedAt = c.LastEditedAt,
                     Author = c.Author.ToUserDto(),
-                    TextLexical = c.TextLexical,
+                    Content = c.Content,
                 })
                 .ToList(),
         };

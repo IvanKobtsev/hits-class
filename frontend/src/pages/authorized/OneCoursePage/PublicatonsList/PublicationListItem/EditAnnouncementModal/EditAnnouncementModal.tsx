@@ -19,7 +19,11 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
+import type {
+  Attachment,
+  FileInfoDto,
+  LexicalState,
+} from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api';
 import styles from './EditAnnouncementModal.module.scss';
 
@@ -48,7 +52,7 @@ function attachmentToFileItem(attachment: Attachment): AttachedFileItem {
 }
 
 type EditAnnouncementForm = {
-  content: string;
+  content: LexicalState;
 };
 
 export type EditAnnouncementModalProps = {
@@ -56,7 +60,7 @@ export type EditAnnouncementModalProps = {
   onClose: () => void;
   onSuccess?: () => void;
   publicationId: number;
-  initialContent: string;
+  initialContent: LexicalState | null;
   initialAttachments: Attachment[];
 };
 
@@ -68,14 +72,14 @@ export const EditAnnouncementModal = ({
   initialContent,
   initialAttachments,
 }: EditAnnouncementModalProps) => {
-  const { mutateAsync, isPending } = useUpdateAnnouncementMutation(publicationId);
+  const { mutateAsync, isPending } =
+    useUpdateAnnouncementMutation(publicationId);
   const queryClient = useQueryClient();
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] = useState<
-    Record<string, Attachment>
-  >({});
+  const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] =
+    useState<Record<string, Attachment>>({});
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
@@ -114,14 +118,14 @@ export const EditAnnouncementModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      form.reset({ content: initialContent });
+      form.reset({ content: initialContent ?? undefined });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
         Object.fromEntries(initialAttachments.map((a) => [a.uuid, a])),
       );
       setRawFiles({});
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleClose = () => {

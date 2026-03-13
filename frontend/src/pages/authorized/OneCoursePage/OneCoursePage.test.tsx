@@ -30,9 +30,12 @@ vi.mock('./CourseFeedTab/CourseFeedTab', () => ({
   )),
 }));
 
-vi.mock('./CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal', () => ({
-  CreateAnnouncementModal: vi.fn(() => null),
-}));
+vi.mock(
+  './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal',
+  () => ({
+    CreateAnnouncementModal: vi.fn(() => null),
+  }),
+);
 
 vi.mock('./CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal', () => ({
   CreateAssignmentModal: vi.fn(() => null),
@@ -63,6 +66,7 @@ vi.mock('services/api', () => ({
 import { QueryFactory } from 'services/api';
 import { useCourseRole } from './useCourseRole';
 import { exportMarks } from 'services/api/api-client/CourseClient';
+import { wrapInLexical } from '../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockedGetCourse = vi.mocked(QueryFactory.CourseQuery.useGetCourseQuery);
 const mockedGetPublications = vi.mocked(
@@ -82,6 +86,7 @@ const mockCourse: CourseDto = {
     email: 'o@test.com',
     legalName: 'Козлов Д.А.',
     groupNumber: null,
+    roles: null,
   },
   teachers: [
     {
@@ -89,6 +94,7 @@ const mockCourse: CourseDto = {
       email: 'o@test.com',
       legalName: 'Козлов Д.А.',
       groupNumber: null,
+      roles: null,
     },
   ],
   students: [],
@@ -99,12 +105,13 @@ const mockPublication: PublicationDto = {
   id: 1,
   createdAtUTC: new Date(),
   lastUpdatedAtUTC: null,
-  content: 'Текст',
+  content: wrapInLexical('Текст'),
   author: {
     id: 'u1',
     email: 'a@a.com',
     legalName: 'Иванов',
     groupNumber: null,
+    roles: null,
   },
   attachments: [],
   targetUserIds: [],
@@ -256,7 +263,9 @@ describe('OneCoursePage', () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
-    expect(screen.getByRole('button', { name: 'Экспорт оценок' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Экспорт оценок' }),
+    ).toBeInTheDocument();
   });
 
   test('does not show export button for student in grades tab', async () => {
@@ -264,19 +273,29 @@ describe('OneCoursePage', () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByTestId('OneCoursePage-tab-grades'));
-    expect(screen.queryByRole('button', { name: 'Экспорт оценок' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Экспорт оценок' }),
+    ).not.toBeInTheDocument();
   });
 
   test('calls exportMarks and triggers download on button click', async () => {
     mockedUseCourseRole.mockReturnValue('teacher');
     const blob = new Blob(['csv'], { type: 'text/csv' });
-    mockedExportMarks.mockResolvedValue({ data: blob, fileName: 'Оценки Test.csv', status: 200, headers: {} });
+    // @ts-ignore
+    mockedExportMarks.mockResolvedValue({
+      data: blob,
+      fileName: 'Оценки Test.csv',
+      status: 200,
+      headers: {},
+    });
 
     const createObjectURL = vi.fn(() => 'blob:url');
     const revokeObjectURL = vi.fn();
     vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
 
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    const clickSpy = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => {});
 
     const user = userEvent.setup();
     renderPage();

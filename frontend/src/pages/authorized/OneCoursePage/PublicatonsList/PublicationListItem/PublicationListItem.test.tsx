@@ -9,6 +9,7 @@ import {
   PublicationType,
 } from 'services/api/api-client.types';
 import { PublicationListItem } from './PublicationListItem';
+import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 // Мокаем только то, что нужно для рендера
 vi.mock('react-router', async () => {
@@ -17,37 +18,28 @@ vi.mock('react-router', async () => {
 });
 
 const mockEditAnnouncementModal = vi.fn();
-vi.mock(
-  './EditAnnouncementModal/EditAnnouncementModal',
-  () => ({
-    EditAnnouncementModal: (props: { isOpen: boolean }) => {
-      mockEditAnnouncementModal(props);
-      return props.isOpen ? <div data-test-id="EditAnnouncementModal" /> : null;
-    },
-  }),
-);
+vi.mock('./EditAnnouncementModal/EditAnnouncementModal', () => ({
+  EditAnnouncementModal: (props: { isOpen: boolean }) => {
+    mockEditAnnouncementModal(props);
+    return props.isOpen ? <div data-test-id="EditAnnouncementModal" /> : null;
+  },
+}));
 
 const mockEditAssignmentModal = vi.fn();
-vi.mock(
-  './EditAssignmentModal/EditAssignmentModal',
-  () => ({
-    EditAssignmentModal: (props: { isOpen: boolean }) => {
-      mockEditAssignmentModal(props);
-      return props.isOpen ? <div data-test-id="EditAssignmentModal" /> : null;
-    },
-  }),
-);
+vi.mock('./EditAssignmentModal/EditAssignmentModal', () => ({
+  EditAssignmentModal: (props: { isOpen: boolean }) => {
+    mockEditAssignmentModal(props);
+    return props.isOpen ? <div data-test-id="EditAssignmentModal" /> : null;
+  },
+}));
 
 const mockEditTargetUsersModal = vi.fn();
-vi.mock(
-  './EditTargetUsersModal/EditTargetUsersModal',
-  () => ({
-    EditTargetUsersModal: (props: { isOpen: boolean }) => {
-      mockEditTargetUsersModal(props);
-      return props.isOpen ? <div data-test-id="EditTargetUsersModal" /> : null;
-    },
-  }),
-);
+vi.mock('./EditTargetUsersModal/EditTargetUsersModal', () => ({
+  EditTargetUsersModal: (props: { isOpen: boolean }) => {
+    mockEditTargetUsersModal(props);
+    return props.isOpen ? <div data-test-id="EditTargetUsersModal" /> : null;
+  },
+}));
 
 const mockDeleteAnnouncementMutateAsync = vi.fn();
 vi.mock('services/api/api-client/AnnouncementQuery', () => ({
@@ -84,6 +76,7 @@ const defaultMockCurrentUser = {
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
   username: 'ivanov',
   isTeacherSystemWide: true,
   isAdmin: false,
@@ -99,6 +92,7 @@ const mockAuthor = {
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
 };
 
 const mockDate = new Date('2024-03-15T10:00:00Z');
@@ -109,7 +103,7 @@ const mockAnnouncement: PublicationDto = {
   type: PublicationType.Announcement,
   createdAtUTC: mockDate,
   lastUpdatedAtUTC: null,
-  content: 'Тестовое объявление',
+  content: wrapInLexical('Тестовое объявление'),
   author: mockAuthor,
   attachments: [],
   targetUserIds: ['user-1', 'user-2'],
@@ -121,7 +115,7 @@ const mockAssignment: PublicationDto = {
   type: PublicationType.Assignment,
   createdAtUTC: mockDate,
   lastUpdatedAtUTC: null,
-  content: 'Тестовое задание',
+  content: wrapInLexical('Тестовое задание'),
   author: mockAuthor,
   attachments: [],
   targetUserIds: [],
@@ -149,17 +143,23 @@ describe('PublicationListItem', () => {
 
   test('renders author name', () => {
     renderPublicationListItem();
-    expect(screen.getByTestId(`PublicationItem-author-${mockAnnouncement.id}`)).toHaveTextContent('Иванов Иван Иванович');
+    expect(
+      screen.getByTestId(`PublicationItem-author-${mockAnnouncement.id}`),
+    ).toHaveTextContent('Иванов Иван Иванович');
   });
 
   test('renders formatted date', () => {
     renderPublicationListItem();
-    expect(screen.getByTestId(`PublicationItem-date-${mockAnnouncement.id}`)).toHaveTextContent('15.03.2024');
+    expect(
+      screen.getByTestId(`PublicationItem-date-${mockAnnouncement.id}`),
+    ).toHaveTextContent('15.03.2024');
   });
 
   test('renders content', () => {
     renderPublicationListItem();
-    expect(screen.getByTestId(`PublicationItem-content-${mockAnnouncement.id}`)).toHaveTextContent('Тестовое объявление');
+    expect(
+      screen.getByTestId(`PublicationItem-content-${mockAnnouncement.id}`),
+    ).toHaveTextContent('Тестовое объявление');
   });
 
   test('renders a link to the publication page', () => {
@@ -190,19 +190,28 @@ describe('PublicationListItem', () => {
     renderPublicationListItem({
       ...mockAnnouncement,
       attachments: [
-        { uuid: 'f1', fileName: 'file.pdf', size: 100, createdAt: new Date('2025-01-01') },
+        {
+          uuid: 'f1',
+          fileName: 'file.pdf',
+          size: 100,
+          createdAt: new Date('2025-01-01'),
+        },
       ],
     });
 
     const link = screen.getByRole('link');
-    const attachmentsList = screen.getByTestId(`AttachmentsList-${mockAnnouncement.id}`);
+    const attachmentsList = screen.getByTestId(
+      `AttachmentsList-${mockAnnouncement.id}`,
+    );
     expect(link).not.toContainElement(attachmentsList);
   });
 
   // --- Assignment specific test ---
   test('renders assignment title when type is Assignment', () => {
     renderPublicationListItem(mockAssignment);
-    expect(screen.getByTestId(`PublicationItem-title-${mockAssignment.id}`)).toHaveTextContent('Важное задание');
+    expect(
+      screen.getByTestId(`PublicationItem-title-${mockAssignment.id}`),
+    ).toHaveTextContent('Важное задание');
   });
 
   test('renders deadline date when type is Assignment', () => {
@@ -260,8 +269,12 @@ describe('PublicationListItem', () => {
       ...mockAnnouncement,
       lastUpdatedAtUTC: mockUpdatedDate,
     });
-    expect(screen.getByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`)).toBeInTheDocument();
-    expect(screen.getByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`)).toHaveTextContent('(ред. 16.03.2024)');
+    expect(
+      screen.getByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`),
+    ).toHaveTextContent('(ред. 16.03.2024)');
   });
 
   test('does not show updated date when lastUpdatedAtUTC is same as createdAt', () => {
@@ -269,18 +282,31 @@ describe('PublicationListItem', () => {
       ...mockAnnouncement,
       lastUpdatedAtUTC: mockDate, // та же дата
     });
-    expect(screen.queryByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`)).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(
+        `PublicationItem-updated-date-${mockAnnouncement.id}`,
+      ),
+    ).not.toBeInTheDocument();
   });
 
   test('does not show updated date when lastUpdatedAtUTC is null', () => {
     renderPublicationListItem();
-    expect(screen.queryByTestId(`PublicationItem-updated-date-${mockAnnouncement.id}`)).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId(
+        `PublicationItem-updated-date-${mockAnnouncement.id}`,
+      ),
+    ).not.toBeInTheDocument();
   });
 
   // --- Edge cases ---
   test('renders without crashing when content is empty', () => {
-    renderPublicationListItem({ ...mockAnnouncement, content: '' });
-    expect(screen.getByTestId(`PublicationItem-author-${mockAnnouncement.id}`)).toBeInTheDocument();
+    renderPublicationListItem({
+      ...mockAnnouncement,
+      content: wrapInLexical(''),
+    });
+    expect(
+      screen.getByTestId(`PublicationItem-author-${mockAnnouncement.id}`),
+    ).toBeInTheDocument();
   });
 
   test('renders without crashing when attachments are empty', () => {
@@ -299,25 +325,34 @@ describe('PublicationListItem', () => {
         deadlineUtc: null,
       } as any),
     });
-    expect(screen.getByTestId(`PublicationItem-title-${mockAssignment.id}`)).toHaveTextContent('Задание без дедлайна');
+    expect(
+      screen.getByTestId(`PublicationItem-title-${mockAssignment.id}`),
+    ).toHaveTextContent('Задание без дедлайна');
     expect(screen.queryByText(/Срок сдачи/)).not.toBeInTheDocument();
   });
 
   test('link href changes when different id is passed', () => {
     renderPublicationListItem({ ...mockAnnouncement, id: 42 });
-    expect(screen.getByRole('link')).toHaveAttribute('href', '/announcements/42');
+    expect(screen.getByRole('link')).toHaveAttribute(
+      'href',
+      '/announcements/42',
+    );
   });
 
   // --- Publication type check ---
   test('applies correct icon class for announcement', () => {
     renderPublicationListItem();
-    const avatar = screen.getByTestId(`PublicationItem-type-icon-${mockAnnouncement.id}`);
+    const avatar = screen.getByTestId(
+      `PublicationItem-type-icon-${mockAnnouncement.id}`,
+    );
     expect(avatar.className).toMatch(/typeIconAnnouncement/);
   });
 
   test('applies correct icon class for assignment', () => {
     renderPublicationListItem(mockAssignment);
-    const avatar = screen.getByTestId(`PublicationItem-type-icon-${mockAssignment.id}`);
+    const avatar = screen.getByTestId(
+      `PublicationItem-type-icon-${mockAssignment.id}`,
+    );
     expect(avatar.className).toMatch(/typeIconAssignment/);
   });
 
@@ -537,7 +572,9 @@ describe('PublicationListItem', () => {
   test('failed deletion shows error snackbar', async () => {
     const user = userEvent.setup();
     mockShowConfirm.mockResolvedValue(true);
-    mockDeleteAnnouncementMutateAsync.mockRejectedValue(new Error('Server error'));
+    mockDeleteAnnouncementMutateAsync.mockRejectedValue(
+      new Error('Server error'),
+    );
     renderPublicationListItem(mockAnnouncement);
 
     await user.click(
@@ -546,7 +583,9 @@ describe('PublicationListItem', () => {
     await user.click(screen.getByRole('menuitem', { name: /удалить/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Возникла ошибка при удалении')).toBeInTheDocument();
+      expect(
+        screen.getByText('Возникла ошибка при удалении'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -562,7 +601,9 @@ describe('PublicationListItem', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole('menuitem', { name: /изменить целевых пользователей/i }),
+        screen.getByRole('menuitem', {
+          name: /изменить целевых пользователей/i,
+        }),
       ).toBeInTheDocument();
     });
   });
@@ -617,7 +658,9 @@ describe('PublicationListItem', () => {
     renderPublicationListItem(mockAnnouncement);
 
     expect(
-      screen.queryByTestId(`PublicationItem-menu-button-${mockAnnouncement.id}`),
+      screen.queryByTestId(
+        `PublicationItem-menu-button-${mockAnnouncement.id}`,
+      ),
     ).not.toBeInTheDocument();
   });
 

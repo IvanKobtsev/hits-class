@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
+using Team13.HitsClass.Common;
 
 namespace Team13.HitsClass.Domain;
 
@@ -13,7 +14,7 @@ public class PublicationComment
     [ForeignKey(nameof(AuthorId))]
     public User Author { get; set; }
 
-    public string TextLexical { get; set; }
+    public LexicalState Content { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? LastEditedAt { get; set; }
 
@@ -22,11 +23,11 @@ public class PublicationComment
     /// </summary>
     public PublicationComment() { }
 
-    public PublicationComment(int publicationId, string authorId, string textLexical)
+    public PublicationComment(int publicationId, string authorId, LexicalState content)
     {
         PublicationId = publicationId;
         AuthorId = authorId;
-        TextLexical = textLexical;
+        Content = content;
         CreatedAt = DateTime.UtcNow;
     }
 }

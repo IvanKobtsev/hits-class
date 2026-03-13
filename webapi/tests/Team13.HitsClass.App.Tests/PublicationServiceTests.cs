@@ -8,6 +8,7 @@ using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Domain.Helpers;
 using Team13.WebApi.Patching.Models;
@@ -18,6 +19,12 @@ public class PublicationServiceTests : AppServiceTestBase
 {
     private PublicationService Sut { get; }
     private readonly UserManager<User> _userManager;
+    private readonly LexicalState _defaultContent = LexicalStateBuilder.BuildLexicalState(
+        "Publication content"
+    );
+    private readonly LexicalState _defaultUpdatedState = LexicalStateBuilder.BuildLexicalState(
+        "Updated content"
+    );
 
     public PublicationServiceTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
@@ -43,8 +50,14 @@ public class PublicationServiceTests : AppServiceTestBase
         // Assert
         result.Should().NotBeNull();
         result.Data.Should().HaveCount(2); // publication1 (for student1) and publication3 (for everyone)
-        result.Data.Should().Contain(p => p.Content == "Publication for student1");
-        result.Data.Should().Contain(p => p.Content == "Publication for everyone");
+        JsonCanonicalizer
+            .Normalize(result.Data[0].Content!.Json)
+            .Should()
+            .Be(JsonCanonicalizer.Normalize(_student1Publication.Json));
+        JsonCanonicalizer
+            .Normalize(result.Data[1].Content!.Json)
+            .Should()
+            .Be(JsonCanonicalizer.Normalize(_defaultContent.Json));
     }
 
     [Fact]
@@ -111,7 +124,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var course = await CreateCourse();
         for (int i = 0; i < 15; i++)
         {
-            await CreatePublication(course.Id, PublicationType.Announcement, $"Publication {i}");
+            await CreatePublication(course.Id, PublicationType.Announcement, _defaultContent);
         }
 
         var searchDto = new SearchPublicationsDto { Limit = 10 };
@@ -156,7 +169,10 @@ public class PublicationServiceTests : AppServiceTestBase
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(publication.Id);
-        result.Content.Should().Be(publication.Content);
+        JsonCanonicalizer
+            .Normalize(result.Content!.Json)
+            .Should()
+            .Be(JsonCanonicalizer.Normalize(publication.Content));
     }
 
     [Fact]
@@ -280,7 +296,7 @@ public class PublicationServiceTests : AppServiceTestBase
         await AddStudentToCourse(course.Id, student.Id);
         var dto = new TestCreatePublicationDto
         {
-            Content = "Test publication content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
         };
         var payload = new AnnouncementPayload();
@@ -315,7 +331,7 @@ public class PublicationServiceTests : AppServiceTestBase
         await AddStudentToCourse(course.Id, student.Id);
         var dto = new TestCreatePublicationDto
         {
-            Content = "Assignment content",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id],
         };
         var payload = new AssignmentPayload
@@ -343,7 +359,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var nonCourseStudent = await CreateUser("noncourse@test.com");
         var dto = new TestCreatePublicationDto
         {
-            Content = "Test publication",
+            Content = _defaultContent,
             TargetUsersIds = [nonCourseStudent.Id],
         };
         var payload = new AnnouncementPayload();
@@ -362,11 +378,7 @@ public class PublicationServiceTests : AppServiceTestBase
     public async Task CreateNewPublication_InvalidCourseId_ThrowsNotFoundException()
     {
         // Arrange
-        var dto = new TestCreatePublicationDto
-        {
-            Content = "Test publication",
-            TargetUsersIds = null,
-        };
+        var dto = new TestCreatePublicationDto { Content = _defaultContent, TargetUsersIds = null };
         var payload = new AnnouncementPayload();
 
         // Act & Assert
@@ -386,11 +398,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var student2 = await CreateUser("student2@test.com");
         await AddStudentToCourse(course.Id, student1.Id);
         await AddStudentToCourse(course.Id, student2.Id);
-        var dto = new TestCreatePublicationDto
-        {
-            Content = "Publication with null TargetUsersIds",
-            TargetUsersIds = null,
-        };
+        var dto = new TestCreatePublicationDto { Content = _defaultContent, TargetUsersIds = null };
         var payload = new AnnouncementPayload();
 
         // Act
@@ -418,7 +426,7 @@ public class PublicationServiceTests : AppServiceTestBase
         await AddStudentToCourse(course.Id, student.Id);
         var dto = new TestCreatePublicationDto
         {
-            Content = "Test publication",
+            Content = _defaultContent,
             TargetUsersIds = [student.Id, nonCourseStudent.Id],
         };
         var payload = new AnnouncementPayload();
@@ -445,9 +453,9 @@ public class PublicationServiceTests : AppServiceTestBase
         var publication = await CreatePublication(
             course.Id,
             PublicationType.Announcement,
-            "Original content"
+            _defaultContent
         );
-        var patchDto = new TestPatchPublicationDto { Content = "Updated content" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act
@@ -456,12 +464,15 @@ public class PublicationServiceTests : AppServiceTestBase
         // Assert
         result.Should().NotBeNull();
         result.Id.Should().Be(publication.Id);
-        result.Content.Should().Be("Updated content");
+        result.Content.Should().Be(_defaultUpdatedState);
 
         await WithDbContext(async db =>
         {
             var updatedPublication = await db.Publications.FirstAsync(p => p.Id == publication.Id);
-            updatedPublication.Content.Should().Be("Updated content");
+            JsonCanonicalizer
+                .Normalize(updatedPublication.Content.Json)
+                .Should()
+                .Be(JsonCanonicalizer.Normalize(_defaultUpdatedState.Json));
         });
     }
 
@@ -475,11 +486,11 @@ public class PublicationServiceTests : AppServiceTestBase
         var publication = await CreatePublication(
             course.Id,
             PublicationType.Announcement,
-            "Original content"
+            _defaultContent
         );
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        var patchDto = new TestPatchPublicationDto { Content = "Updated by teacher" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act
@@ -487,7 +498,7 @@ public class PublicationServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().Be("Updated by teacher");
+        result.Content.Should().Be(_defaultUpdatedState);
     }
 
     [Fact]
@@ -499,11 +510,11 @@ public class PublicationServiceTests : AppServiceTestBase
         var publication = await CreatePublication(
             course.Id,
             PublicationType.Announcement,
-            "Original content"
+            _defaultContent
         );
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(admin.Id);
 
-        var patchDto = new TestPatchPublicationDto { Content = "Updated by admin" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act
@@ -511,7 +522,7 @@ public class PublicationServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().Be("Updated by admin");
+        result.Content.Should().Be(_defaultUpdatedState);
     }
 
     [Fact]
@@ -524,7 +535,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var publication = await CreatePublication(course.Id, PublicationType.Announcement);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
 
-        var patchDto = new TestPatchPublicationDto { Content = "Unauthorized update" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act & Assert
@@ -611,7 +622,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var course = await CreateCourse();
         var publication = await CreatePublication(course.Id, PublicationType.Assignment);
 
-        var patchDto = new TestPatchPublicationDto { Content = "Updated assignment" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         var newDeadline = DateTime.UtcNow.AddDays(14);
@@ -638,7 +649,7 @@ public class PublicationServiceTests : AppServiceTestBase
     public async Task PatchPublication_PublicationDoesNotExist_ThrowsNotFoundException()
     {
         // Arrange
-        var patchDto = new TestPatchPublicationDto { Content = "Update" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act & Assert
@@ -659,7 +670,7 @@ public class PublicationServiceTests : AppServiceTestBase
         var publication = await CreatePublication(course.Id, PublicationType.Announcement);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        var patchDto = new TestPatchPublicationDto { Content = "Updated by course teacher" };
+        var patchDto = new TestPatchPublicationDto { Content = _defaultUpdatedState };
         patchDto.SetHasProperty(nameof(patchDto.Content));
 
         // Act
@@ -667,7 +678,7 @@ public class PublicationServiceTests : AppServiceTestBase
 
         // Assert
         result.Should().NotBeNull();
-        result.Content.Should().Be("Updated by course teacher");
+        result.Content.Should().Be(_defaultUpdatedState);
     }
 
     #endregion
@@ -832,6 +843,13 @@ public class PublicationServiceTests : AppServiceTestBase
 
     #region Helper Methods
 
+    private readonly LexicalState _student1Publication = LexicalStateBuilder.BuildLexicalState(
+        "Student1"
+    );
+    private readonly LexicalState _student2Publication = LexicalStateBuilder.BuildLexicalState(
+        "Student2"
+    );
+
     private async Task<(
         Course course,
         User teacher,
@@ -852,20 +870,16 @@ public class PublicationServiceTests : AppServiceTestBase
         await CreatePublication(
             course.Id,
             PublicationType.Announcement,
-            "Publication for student1",
+            _student1Publication,
             [student1.Id]
         );
         await CreatePublication(
             course.Id,
             PublicationType.Announcement,
-            "Publication for student2",
+            _student2Publication,
             [student2.Id]
         );
-        await CreatePublication(
-            course.Id,
-            PublicationType.Announcement,
-            "Publication for everyone"
-        );
+        await CreatePublication(course.Id, PublicationType.Announcement, _defaultContent);
 
         return (course, teacher, student1, student2);
     }
@@ -933,10 +947,12 @@ public class PublicationServiceTests : AppServiceTestBase
     private async Task<Publication> CreatePublication(
         int courseId,
         PublicationType type,
-        string content = "Test publication",
+        LexicalState? content = null,
         List<string>? forWhomUserIds = null
     )
     {
+        content ??= _defaultContent;
+
         return await WithDbContext(async db =>
         {
             var course = await db

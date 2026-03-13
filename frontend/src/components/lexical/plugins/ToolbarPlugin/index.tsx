@@ -474,7 +474,7 @@ export interface ToolbarPluginProps {
   editor?: LexicalEditor | null;
   activeEditor?: LexicalEditor | null;
   setActiveEditor: Dispatch<LexicalEditor>;
-  setIsLinkEditMode: Dispatch<boolean>;
+  setIsLinkEditMode?: Dispatch<boolean>;
   className?: string;
   hide?: boolean;
   enableListFormatting?: boolean;
@@ -549,7 +549,7 @@ export default function ToolbarPlugin({
       const elementKey = element.getKey();
       const elementDOM = activeEditor.getElementByKey(elementKey);
 
-      updateToolbarState('isRTL', $isParentElementRTL(selection));
+      // updateToolbarState('isRTL', $isParentElementRTL(selection));
 
       // Update links
       const node = getSelectedNode(selection);
@@ -746,7 +746,7 @@ export default function ToolbarPlugin({
     if (!activeEditor) return;
 
     if (!toolbarState.isLink) {
-      setIsLinkEditMode(true);
+      setIsLinkEditMode?.(true);
       activeEditor?.dispatchCommand(
         TOGGLE_LINK_COMMAND,
         sanitizeUrl('https://'),

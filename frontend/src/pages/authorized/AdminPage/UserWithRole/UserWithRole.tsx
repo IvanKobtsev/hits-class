@@ -19,12 +19,14 @@ export type UserWithRoleProps = {
   user: UserDto;
   selectedRole: SystemRole;
   onRoleChange: (role: SystemRole) => void;
+  roleSelectDisabled?: boolean;
 };
 
 export const UserWithRole: React.FC<UserWithRoleProps> = ({
   user,
   selectedRole,
   onRoleChange,
+  roleSelectDisabled = false,
 }) => {
   return (
     <div className={styles.row} data-test-id={`user-with-role-${user.id}`}>
@@ -40,6 +42,7 @@ export const UserWithRole: React.FC<UserWithRoleProps> = ({
         className={styles.roleSelect}
         value={selectedRole}
         onChange={(e) => onRoleChange(e.target.value as SystemRole)}
+        disabled={roleSelectDisabled}
         data-test-id={`user-with-role-select-${user.id}`}
       >
         {ROLE_OPTIONS.map((opt) => (

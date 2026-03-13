@@ -269,7 +269,7 @@ public class SubmissionService(
         submission.LastMarkedAtUTC = DateTime.UtcNow;
         submission.State = SubmissionState.Accepted;
 
-        if (!string.IsNullOrEmpty(dto.MarkComment))
+        if (!string.IsNullOrEmpty(dto.MarkComment?.Json))
         {
             var comment = new SubmissionComment(submission.Id, userId, dto.MarkComment)
             {

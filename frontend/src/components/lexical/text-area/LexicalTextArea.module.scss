@@ -1,0 +1,25 @@
+@use 'src/styles/mixins' as *;
+
+.editorPlaceholder {
+
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  opacity: 0.5;
+
+  &.halfTransparent {
+    opacity: 0.2;
+  }
+}
+
+.editor {
+  position: relative;
+  background-color: transparent !important;
+  padding: 10px 10px 0 0;
+  border: 1px solid #ddd;
+
+  :global(.ContentEditable__root) {
+    min-width: 540px;
+  }
+}

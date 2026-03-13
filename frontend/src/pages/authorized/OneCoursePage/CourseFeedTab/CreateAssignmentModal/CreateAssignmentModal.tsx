@@ -6,7 +6,11 @@ import { Field } from 'components/uikit/Field';
 import { Input } from 'components/uikit/inputs/Input';
 import { TextArea } from 'components/uikit/inputs/TextArea';
 import { HookFormDatePicker } from 'components/uikit/inputs/date-time/HookFormDatePicker';
-import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
+import {
+  Button,
+  ButtonColor,
+  ButtonWidth,
+} from 'components/uikit/buttons/Button';
 import { FormError } from 'components/uikit/FormError';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useModal } from 'components/uikit/modal/useModal';
@@ -20,8 +24,14 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
+import type {
+  Attachment,
+  FileInfoDto,
+  LexicalState,
+} from 'services/api/api-client.types';
 import styles from './CreateAssignmentModal.module.scss';
+import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
+import { LexicalTextAreaControlled } from 'components/lexical/text-area/LexicalTextArea.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -30,12 +40,17 @@ function makeId(): string {
 }
 
 function fileInfoToAttachment(info: FileInfoDto): Attachment {
-  return { uuid: info.id, fileName: info.fileName, size: info.size, createdAt: info.createdAt };
+  return {
+    uuid: info.id,
+    fileName: info.fileName,
+    size: info.size,
+    createdAt: info.createdAt,
+  };
 }
 
 type CreateAssignmentForm = {
   title: string;
-  content: string;
+  content: LexicalState;
   deadlineUtc: Date | null;
 };
 
@@ -100,7 +115,10 @@ export const CreateAssignmentModal = ({
         void modal.showError({ text: 'Создание задания не удалось' });
       }
     },
-    { shouldResetOnSuccess: true },
+    {
+      shouldResetOnSuccess: true,
+      defaultValues: { content: { json: wrapInLexical('').json } },
+    },
   );
 
   const handleClose = () => {
@@ -163,10 +181,11 @@ export const CreateAssignmentModal = ({
             />
           </Field>
           <Field title="Описание">
-            <TextArea
-              {...form.register('content', { ...requiredRule() })}
-              errorText={form.formState.errors.content?.message}
-              data-test-id="CreateAssignment-content-input"
+            <LexicalTextAreaControlled
+              className={styles.content}
+              form={form}
+              name={'content'}
+              testId="CreateAssignment-content-input"
             />
           </Field>
           <Field title="Срок сдачи">
@@ -176,7 +195,10 @@ export const CreateAssignmentModal = ({
               withTime
             />
           </Field>
-          <Field title="Прикреплённые файлы" testId="CreateAssignment-attachments">
+          <Field
+            title="Прикреплённые файлы"
+            testId="CreateAssignment-attachments"
+          >
             <AttachedFilesTable files={files} onRemove={handleRemoveFile} />
             <input
               ref={fileInputRef}

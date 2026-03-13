@@ -22,9 +22,15 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
+import type {
+  Attachment,
+  FileInfoDto,
+  LexicalState,
+} from 'services/api/api-client.types';
 import styles from './CreateAnnouncementModal.module.scss';
 import { QueryFactory } from 'services/api';
+import { LexicalTextAreaControlled } from '../../../../../components/lexical/text-area/LexicalTextArea.tsx';
+import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -42,7 +48,7 @@ function fileInfoToAttachment(info: FileInfoDto): Attachment {
 }
 
 type CreateAnnouncementForm = {
-  content: string;
+  content: LexicalState;
 };
 
 export type CreateAnnouncementModalProps = {
@@ -101,7 +107,10 @@ export const CreateAnnouncementModal = ({
         void modal.showError({ text: 'Создание объявления не удалось' });
       }
     },
-    { shouldResetOnSuccess: true },
+    {
+      shouldResetOnSuccess: true,
+      defaultValues: { content: { json: wrapInLexical('').json } },
+    },
   );
 
   const handleClose = () => {
@@ -180,10 +189,11 @@ export const CreateAnnouncementModal = ({
           <div className={styles.formColumn}>
           <form onSubmit={form.handleSubmitDefault} className={styles.form}>
           <Field title="Содержание" testId="CreateAnnouncement-content">
-            <TextArea
-              {...form.register('content', { ...requiredRule() })}
-              data-test-id="CreateAnnouncement-content-input"
-              data-error={!!form.formState.errors.content}
+            <LexicalTextAreaControlled
+              className={styles.content}
+              form={form}
+              name={'content'}
+              testId="CreateAnnouncement-content-input"
             />
             {form.formState.errors.content && (
               <div data-error="true" className={styles.fieldError}>

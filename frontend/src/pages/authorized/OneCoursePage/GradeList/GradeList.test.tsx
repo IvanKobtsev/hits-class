@@ -2,7 +2,12 @@ import { render, screen } from '@testing-library/react';
 import { vi, test, expect, describe } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { GradeList } from './GradeList';
-import { AssignmentPayload, PublicationDto, PublicationType } from 'services/api/api-client.types';
+import {
+  AssignmentPayload,
+  PublicationDto,
+  PublicationType,
+} from 'services/api/api-client.types';
+import { wrapInLexical } from '../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
@@ -19,14 +24,23 @@ vi.mock('./GradeListItem.module.scss', () => ({
 
 // --- фабрики ---
 
-function makeAssignment(id: number, createdAtUTC = new Date('2024-01-01T00:00:00Z')): PublicationDto {
+function makeAssignment(
+  id: number,
+  createdAtUTC = new Date('2024-01-01T00:00:00Z'),
+): PublicationDto {
   return {
     id,
     type: PublicationType.Assignment,
     createdAtUTC,
     lastUpdatedAtUTC: null,
     content: null,
-    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null },
+    author: {
+      id: 'u1',
+      email: 'teacher@test.com',
+      legalName: 'Преподаватель',
+      groupNumber: null,
+      roles: null
+    },
     attachments: [],
     targetUserIds: [],
     publicationPayload: {
@@ -43,8 +57,14 @@ function makeAnnouncement(id: number): PublicationDto {
     type: PublicationType.Announcement,
     createdAtUTC: new Date('2024-01-01T00:00:00Z'),
     lastUpdatedAtUTC: null,
-    content: 'Объявление',
-    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null },
+    content: wrapInLexical('Объявление'),
+    author: {
+      id: 'u1',
+      email: 'teacher@test.com',
+      legalName: 'Преподаватель',
+      groupNumber: null,
+      roles: null
+    },
     attachments: [],
     targetUserIds: [],
     publicationPayload: { publicationType: 'Announcement' },
@@ -65,12 +85,16 @@ function renderList(publications: PublicationDto[]) {
 describe('GradeList — empty state', () => {
   test('shows empty message when publications array is empty', () => {
     renderList([]);
-    expect(screen.getByText('В этом курсе пока нет заданий')).toBeInTheDocument();
+    expect(
+      screen.getByText('В этом курсе пока нет заданий'),
+    ).toBeInTheDocument();
   });
 
   test('shows empty message when there are only announcements', () => {
     renderList([makeAnnouncement(1), makeAnnouncement(2)]);
-    expect(screen.getByText('В этом курсе пока нет заданий')).toBeInTheDocument();
+    expect(
+      screen.getByText('В этом курсе пока нет заданий'),
+    ).toBeInTheDocument();
   });
 
   test('does not render any GradeItem when empty', () => {

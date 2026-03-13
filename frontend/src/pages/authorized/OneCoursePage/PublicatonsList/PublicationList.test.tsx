@@ -31,11 +31,17 @@ vi.mock('@tanstack/react-query', async (importActual) => {
 });
 
 vi.mock('services/api/api-client/AnnouncementQuery', () => ({
-  useDeleteAnnouncementMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteAnnouncementMutation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 vi.mock('services/api/api-client/AssignmentQuery', () => ({
-  useDeleteAssignmentMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useDeleteAssignmentMutation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 vi.mock('services/api/api-client/UserQuery', () => ({
@@ -45,6 +51,7 @@ vi.mock('services/api/api-client/UserQuery', () => ({
       email: 'teacher@test.com',
       legalName: 'Иванов Иван Иванович',
       groupNumber: null,
+      roles: null,
       username: 'ivanov',
       isTeacherSystemWide: true,
       isAdmin: false,
@@ -57,12 +64,14 @@ import {
   PublicationDto,
   PublicationType,
 } from 'services/api/api-client.types';
+import { wrapInLexical } from '../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockAuthor = {
   id: 'teacher-1',
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
 };
 
 const mockDate = new Date('2024-03-15T10:00:00Z');
@@ -73,7 +82,7 @@ const mockPublications: PublicationDto[] = [
     type: PublicationType.Announcement,
     createdAtUTC: mockDate,
     lastUpdatedAtUTC: null,
-    content: 'Тестовое объявление 1',
+    content: wrapInLexical('Тестовое объявление 1'),
     author: mockAuthor,
     attachments: [],
     targetUserIds: [],
@@ -84,7 +93,7 @@ const mockPublications: PublicationDto[] = [
     type: PublicationType.Assignment,
     createdAtUTC: mockDate,
     lastUpdatedAtUTC: null,
-    content: 'Тестовое задание 1',
+    content: wrapInLexical('Тестовое задание 1'),
     author: mockAuthor,
     attachments: [],
     targetUserIds: [],
@@ -98,7 +107,7 @@ const mockPublications: PublicationDto[] = [
     type: PublicationType.Announcement,
     createdAtUTC: mockDate,
     lastUpdatedAtUTC: null,
-    content: 'Тестовое объявление 2',
+    content: wrapInLexical('Тестовое объявление 2'),
     author: mockAuthor,
     attachments: [],
     targetUserIds: [],
@@ -133,7 +142,7 @@ describe('PublicationList', () => {
 
   test('renders correct number of publications', () => {
     renderPublicationList();
-    
+
     const items = screen.getAllByTestId(/^PublicationItem-\d+$/);
     expect(items).toHaveLength(3);
   });

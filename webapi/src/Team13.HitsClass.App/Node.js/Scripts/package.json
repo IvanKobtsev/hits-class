@@ -1,0 +1,6 @@
+{
+  "type": "commonjs",
+  "dependencies": {
+    "jsdom": "^27.0.0"
+  }
+}

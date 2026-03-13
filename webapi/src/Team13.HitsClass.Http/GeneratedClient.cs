@@ -8130,6 +8130,15 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         public string GroupNumber { get; set; }
 
+        /// <summary>
+        /// System-wide roles (Admin, Teacher). Only populated by GetUsers. Null for other endpoints.
+        /// </summary>
+
+        [System.Text.Json.Serialization.JsonPropertyName("roles")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public System.Collections.Generic.ICollection<string> Roles { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -8299,11 +8308,23 @@ namespace Team13.HitsClass.Http.Generated
         [System.ComponentModel.DataAnnotations.Required]
         public UserDto Author { get; set; } = new UserDto();
 
-        [System.Text.Json.Serialization.JsonPropertyName("textLexical")]
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required]
+        public LexicalState Content { get; set; } = new LexicalState();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LexicalState
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("json")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TextLexical { get; set; }
+        public string Json { get; set; }
 
     }
 
@@ -8382,7 +8403,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("markComment")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string MarkComment { get; set; }
+        public LexicalState MarkComment { get; set; }
 
     }
 
@@ -8426,7 +8447,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string Content { get; set; }
+        public LexicalState Content { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("author")]
 
@@ -8735,11 +8756,11 @@ namespace Team13.HitsClass.Http.Generated
     public partial class CreateCommentDto
     {
 
-        [System.Text.Json.Serialization.JsonPropertyName("textLexical")]
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TextLexical { get; set; }
+        [System.ComponentModel.DataAnnotations.Required]
+        public LexicalState Content { get; set; } = new LexicalState();
 
     }
 
@@ -8801,7 +8822,7 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required]
-        public string Content { get; set; }
+        public LexicalState Content { get; set; } = new LexicalState();
 
         [System.Text.Json.Serialization.JsonPropertyName("targetUsersIds")]
 
@@ -8852,7 +8873,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string Content { get; set; }
+        public LexicalState Content { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("attachments")]
 

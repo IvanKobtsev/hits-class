@@ -9,6 +9,7 @@ using Team13.HitsClass.App.Features.Submission.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.WebApi.Pagination;
 
@@ -18,6 +19,10 @@ public class SubmissionServiceTests : AppServiceTestBase
 {
     private SubmissionService Sut { get; }
     private readonly UserManager<User> _userManager;
+
+    private readonly LexicalState _defaultContent = LexicalStateBuilder.BuildLexicalState(
+        "Great work!"
+    );
 
     public SubmissionServiceTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
@@ -724,7 +729,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         var submission = await CreateDbSubmission(assignment.Id, student.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
-        var markDto = new MarkDto { Mark = "5", MarkComment = "Great work!" };
+        var markDto = new MarkDto { Mark = "5", MarkComment = _defaultContent };
 
         // Act
         var result = await Sut.MarkSubmission(submission.Id, markDto);
@@ -734,7 +739,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         result.Mark.Should().Be("5");
         result.State.Should().Be(SubmissionState.Accepted);
         result.LastMarkedAtUTC.Should().NotBeNull();
-        result.Comments.Should().ContainSingle(c => c.TextLexical == "Great work!");
+        result.Comments.Should().ContainSingle(c => c.Content == _defaultContent);
     }
 
     [Fact]
@@ -842,7 +847,7 @@ public class SubmissionServiceTests : AppServiceTestBase
                     ? course.Students
                     : course.Students.Where(s => forWhomUserIds.Contains(s.Id)).ToList();
 
-            var publication = new Publication("Test assignment content")
+            var publication = new Publication(_defaultContent)
             {
                 CourseId = courseId,
                 Type = PublicationType.Assignment,
@@ -869,7 +874,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         {
             var author = await db.Users.FirstAsync(u => u.Id == _defaultUser.Id);
 
-            var publication = new Publication("Test announcement")
+            var publication = new Publication(_defaultContent)
             {
                 CourseId = courseId,
                 Type = PublicationType.Announcement,
