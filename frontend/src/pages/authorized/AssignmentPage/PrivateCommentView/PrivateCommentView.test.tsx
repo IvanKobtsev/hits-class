@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { PrivateCommentView } from './PrivateCommentView';
 import type { CommentDto } from 'services/api/api-client.types';
+import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockMutate = vi.fn();
 
@@ -14,7 +15,11 @@ vi.mock('services/api/api-client/CommentQuery', () => ({
 }));
 
 vi.mock('services/api/api-client/SubmissionQuery', () => ({
-  getMySubmissionQueryKey: (id: number) => ['SubmissionClient', 'getMySubmission', id],
+  getMySubmissionQueryKey: (id: number) => [
+    'SubmissionClient',
+    'getMySubmission',
+    id,
+  ],
 }));
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
@@ -31,9 +36,13 @@ vi.mock('components/lexical/LexicalViewer', () => ({
   ),
 }));
 
-const makeComment = (id: number, text: string, authorName: string): CommentDto => ({
+const makeComment = (
+  id: number,
+  text: string,
+  authorName: string,
+): CommentDto => ({
   id,
-  textLexical: text,
+  content: wrapInLexical(text),
   createdAt: new Date('2025-03-01T10:00:00Z'),
   lastEditedAt: null,
   author: {
@@ -93,7 +102,9 @@ describe('PrivateCommentView', () => {
     await user.click(screen.getByRole('button', { name: /отправить/i }));
 
     expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ textLexical: expect.stringContaining('My comment') }),
+      expect.objectContaining({
+        textLexical: expect.stringContaining('My comment'),
+      }),
       expect.any(Object),
     );
   });

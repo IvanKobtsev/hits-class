@@ -8,14 +8,26 @@ import {
   getSubmissionQueryKey,
 } from 'services/api/api-client/SubmissionQuery';
 import { useAddCommentToSubmissionMutation } from 'services/api/api-client/CommentQuery';
-import type { SubmissionListItem, SubmissionState, FileInfoDto, Attachment } from 'services/api/api-client.types';
+import type {
+  SubmissionListItem,
+  SubmissionState,
+  FileInfoDto,
+  Attachment,
+  LexicalState,
+} from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import styles from './StudentSubmissionsTab.module.scss';
 
 const AVATAR_COLORS = [
-  '#1a73e8', '#e8710a', '#1e8e3e', '#d93025',
-  '#9334e6', '#e52592', '#00897b', '#f9ab00',
+  '#1a73e8',
+  '#e8710a',
+  '#1e8e3e',
+  '#d93025',
+  '#9334e6',
+  '#e52592',
+  '#00897b',
+  '#f9ab00',
 ];
 
 function getInitials(name: string): string {
@@ -31,40 +43,71 @@ function getAvatarColor(name: string): string {
 
 function statusLabel(state: SubmissionState): string {
   switch (state) {
-    case 'Submitted': return 'Сдано';
-    case 'Accepted': return 'Принято';
-    case 'Draft': return 'Черновик';
-    default: return state;
+    case 'Submitted':
+      return 'Сдано';
+    case 'Accepted':
+      return 'Принято';
+    case 'Draft':
+      return 'Черновик';
+    default:
+      return state;
   }
 }
 
 function statusClass(state: SubmissionState): string {
   switch (state) {
-    case 'Submitted': return styles.statusSubmitted;
-    case 'Accepted': return styles.statusAccepted;
-    case 'Draft': return styles.statusDraft;
-    default: return '';
+    case 'Submitted':
+      return styles.statusSubmitted;
+    case 'Accepted':
+      return styles.statusAccepted;
+    case 'Draft':
+      return styles.statusDraft;
+    default:
+      return '';
   }
 }
 
-function wrapInLexical(text: string): string {
-  return JSON.stringify({
-    root: {
-      children: [
-        {
-          children: [
-            { detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1 },
-          ],
-          direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1,
-        },
-      ],
-      direction: 'ltr', format: '', indent: 0, type: 'root', version: 1,
-    },
-  });
+export function wrapInLexical(text: string): LexicalState {
+  return {
+    json: JSON.stringify({
+      root: {
+        children: [
+          {
+            children: [
+              {
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text,
+                type: 'text',
+                version: 1,
+              },
+            ],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1,
+          },
+        ],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1,
+      },
+    }),
+  };
 }
 
 function fileInfoToAttachment(f: FileInfoDto): Attachment {
-  return { uuid: f.id, fileName: f.fileName, size: f.size, createdAt: f.createdAt };
+  return {
+    uuid: f.id,
+    fileName: f.fileName,
+    size: f.size,
+    createdAt: f.createdAt,
+  };
 }
 
 function formatDate(date: Date | null | undefined): string {
@@ -85,12 +128,18 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   assignmentId,
 }) => {
   const queryClient = useQueryClient();
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<
+    number | null
+  >(null);
   const [markValue, setMarkValue] = useState('');
   const [markComment, setMarkComment] = useState('');
   const [commentText, setCommentText] = useState('');
 
-  const { data: submissionsData } = useGetSubmissionsQuery(assignmentId, 0, 100);
+  const { data: submissionsData } = useGetSubmissionsQuery(
+    assignmentId,
+    0,
+    100,
+  );
   const submissions = submissionsData?.data ?? [];
 
   const { data: selectedSubmission } = useGetSubmissionQuery(
@@ -98,20 +147,23 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     { enabled: selectedSubmissionId != null },
   );
 
-  const { mutate: markSubmission, isPending: isMarking } = useMarkSubmissionMutation(
+  const { mutate: markSubmission, isPending: isMarking } =
+    useMarkSubmissionMutation(selectedSubmissionId ?? 0);
+
+  const { mutate: addComment } = useAddCommentToSubmissionMutation(
     selectedSubmissionId ?? 0,
   );
-
-  const { mutate: addComment } = useAddCommentToSubmissionMutation(selectedSubmissionId ?? 0);
 
   const handleAddComment = useCallback(() => {
     if (!commentText.trim() || selectedSubmissionId == null) return;
     addComment(
-      { textLexical: wrapInLexical(commentText) },
+      { content: wrapInLexical(commentText) },
       {
         onSuccess: () => {
           setCommentText('');
-          void queryClient.invalidateQueries({ queryKey: getSubmissionQueryKey(selectedSubmissionId) });
+          void queryClient.invalidateQueries({
+            queryKey: getSubmissionQueryKey(selectedSubmissionId),
+          });
         },
       },
     );
@@ -122,14 +174,11 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   ).length;
   const gradedCount = submissions.filter((s) => s.mark != null).length;
 
-  const handleSelectSubmission = useCallback(
-    (sub: SubmissionListItem) => {
-      setSelectedSubmissionId(sub.id);
-      setMarkValue(sub.mark ?? '');
-      setMarkComment('');
-    },
-    [],
-  );
+  const handleSelectSubmission = useCallback((sub: SubmissionListItem) => {
+    setSelectedSubmissionId(sub.id);
+    setMarkValue(sub.mark ?? '');
+    setMarkComment('');
+  }, []);
 
   const handleBack = useCallback(() => {
     setSelectedSubmissionId(null);
@@ -141,7 +190,10 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const handleSaveMark = useCallback(() => {
     if (selectedSubmissionId == null) return;
     markSubmission(
-      { mark: markValue || null, markComment: markComment || null },
+      {
+        mark: markValue || null,
+        markComment: !!markComment ? { json: markComment } : null,
+      },
       {
         onSuccess: () => {
           void queryClient.invalidateQueries({
@@ -153,7 +205,14 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
         },
       },
     );
-  }, [selectedSubmissionId, markValue, markComment, markSubmission, queryClient, assignmentId]);
+  }, [
+    selectedSubmissionId,
+    markValue,
+    markComment,
+    markSubmission,
+    queryClient,
+    assignmentId,
+  ]);
 
   if (selectedSubmissionId != null && selectedSubmission) {
     return (
@@ -163,7 +222,11 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
             <div className={styles.selectedStudentInfo}>
               <div
                 className={styles.avatar}
-                style={{ background: getAvatarColor(selectedSubmission.author.legalName) }}
+                style={{
+                  background: getAvatarColor(
+                    selectedSubmission.author.legalName,
+                  ),
+                }}
               >
                 {getInitials(selectedSubmission.author.legalName)}
               </div>
@@ -184,14 +247,18 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
           </div>
           <div className={styles.selectedBody}>
             <div>
-              <span className={`${styles.statusBadge} ${statusClass(selectedSubmission.state)}`}>
+              <span
+                className={`${styles.statusBadge} ${statusClass(selectedSubmission.state)}`}
+              >
                 {statusLabel(selectedSubmission.state)}
               </span>
             </div>
 
             {selectedSubmission.attachments.length > 0 && (
               <AttachmentsList
-                attachments={selectedSubmission.attachments.map(fileInfoToAttachment)}
+                attachments={selectedSubmission.attachments.map(
+                  fileInfoToAttachment,
+                )}
                 onError={(err) => console.error('Download error:', err)}
               />
             )}
@@ -218,11 +285,15 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               {selectedSubmission.comments.map((comment) => (
                 <div key={comment.id} className={styles.commentItem}>
                   <div className={styles.commentMeta}>
-                    <span className={styles.commentAuthor}>{comment.author.legalName}</span>
-                    <span className={styles.commentDate}>{comment.createdAt.toLocaleDateString()}</span>
+                    <span className={styles.commentAuthor}>
+                      {comment.author.legalName}
+                    </span>
+                    <span className={styles.commentDate}>
+                      {comment.createdAt.toLocaleDateString()}
+                    </span>
                   </div>
                   <div className={styles.commentBody}>
-                    <LexicalViewer lexicalState={comment.textLexical} />
+                    <LexicalViewer lexicalState={comment.content} />
                   </div>
                 </div>
               ))}
@@ -258,7 +329,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
           <span className={styles.summaryLabel}>Сдано</span>
         </div>
         <div className={styles.summaryItem}>
-          <span className={styles.summaryCount}>{submissions.length - submittedCount}</span>
+          <span className={styles.summaryCount}>
+            {submissions.length - submittedCount}
+          </span>
           <span className={styles.summaryLabel}>Не сдано</span>
         </div>
         <div className={styles.summaryItem}>
@@ -289,16 +362,24 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                   {getInitials(sub.author.legalName)}
                 </div>
                 <div>
-                  <div className={styles.studentName}>{sub.author.legalName}</div>
+                  <div className={styles.studentName}>
+                    {sub.author.legalName}
+                  </div>
                   {sub.author.groupNumber && (
-                    <div className={styles.studentGroup}>{sub.author.groupNumber}</div>
+                    <div className={styles.studentGroup}>
+                      {sub.author.groupNumber}
+                    </div>
                   )}
                 </div>
               </div>
-              <span className={`${styles.statusBadge} ${statusClass(sub.state)}`}>
+              <span
+                className={`${styles.statusBadge} ${statusClass(sub.state)}`}
+              >
                 {statusLabel(sub.state)}
               </span>
-              <div className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}>
+              <div
+                className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}
+              >
                 {sub.mark ?? '—'}
               </div>
             </div>

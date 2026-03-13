@@ -6,22 +6,6 @@ import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/
 import AnnouncementIcon from 'assets/icons/announcement.svg?react';
 import styles from './AnnouncementPage.module.scss';
 
-function isLexicalState(value: string): boolean {
-  try {
-    const parsed = JSON.parse(value);
-    return (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      'root' in parsed &&
-      typeof parsed.root === 'object' &&
-      parsed.root !== null &&
-      Array.isArray(parsed.root.children)
-    );
-  } catch {
-    return false;
-  }
-}
-
 function formatDateUTC(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
   const m = String(date.getUTCMonth() + 1).padStart(2, '0');
@@ -37,7 +21,12 @@ export const AnnouncementPage = () => {
 
   if (!publication) return null;
 
-  const { content, author, createdAtUTC: createdAtUTCRaw, attachments } = publication;
+  const {
+    content,
+    author,
+    createdAtUTC: createdAtUTCRaw,
+    attachments,
+  } = publication;
   const createdAtUTC = new Date(createdAtUTCRaw);
 
   return (
@@ -56,26 +45,28 @@ export const AnnouncementPage = () => {
                 </span>
                 <span className={styles.metaItem}>
                   <span className={styles.metaLabel}>Опубликовано:</span>
-                  <span className={styles.metaValue}>{formatDateUTC(createdAtUTC)}</span>
+                  <span className={styles.metaValue}>
+                    {formatDateUTC(createdAtUTC)}
+                  </span>
                 </span>
               </div>
             </div>
           </div>
 
-          {(content != null || (attachments != null && attachments.length > 0)) && (
+          {(content != null ||
+            (attachments != null && attachments.length > 0)) && (
             <div className={styles.body}>
               {content != null && (
                 <div className={styles.description}>
-                  {isLexicalState(content)
-                    ? <LexicalViewer lexicalState={content} />
-                    : <span>{content}</span>
-                  }
+                  <LexicalViewer lexicalState={content} />
                 </div>
               )}
               {attachments != null && attachments.length > 0 && (
                 <AttachmentsList
                   attachments={attachments}
-                  onError={(error) => console.error('File download error:', error)}
+                  onError={(error) =>
+                    console.error('File download error:', error)
+                  }
                 />
               )}
             </div>

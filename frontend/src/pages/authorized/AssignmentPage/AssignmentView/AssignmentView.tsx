@@ -1,6 +1,10 @@
 import AssignmentIcon from 'assets/icons/list-ul.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
-import { AssignmentPayload, PublicationDto, SubmissionDto } from 'services/api/api-client.types';
+import {
+  AssignmentPayload,
+  PublicationDto,
+  SubmissionDto,
+} from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
 
@@ -38,10 +42,14 @@ export type AssignmentViewProps = {
   submission?: SubmissionDto | null;
 };
 
-export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) => {
+export const AssignmentView = ({
+  assignment,
+  submission,
+}: AssignmentViewProps) => {
   const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
   const createdAtUTC = new Date(createdAtUTCRaw);
-  const { title, deadlineUtc: deadlineUtcRaw } = assignment.publicationPayload as AssignmentPayload;
+  const { title, deadlineUtc: deadlineUtcRaw } =
+    assignment.publicationPayload as AssignmentPayload;
   const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
   return (
@@ -95,20 +103,18 @@ export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) 
             className={styles.description}
             data-test-id="AssignmentView-description"
           >
-            {isLexicalState(content)
-              ? <LexicalViewer lexicalState={content} />
-              : <span>{content}</span>
-            }
+            <LexicalViewer lexicalState={content} />
           </div>
         )}
 
-        {assignment.attachments != null && assignment.attachments.length > 0 && (
-          <AttachmentsList
-            attachments={assignment.attachments}
-            onError={(error) => console.error('File download error:', error)}
-            data-test-id="AssignmentView-attachments"
-          />
-        )}
+        {assignment.attachments != null &&
+          assignment.attachments.length > 0 && (
+            <AttachmentsList
+              attachments={assignment.attachments}
+              onError={(error) => console.error('File download error:', error)}
+              data-test-id="AssignmentView-attachments"
+            />
+          )}
 
         {submission?.mark != null && (
           <div className={styles.markBadge} data-test-id="AssignmentView-mark">

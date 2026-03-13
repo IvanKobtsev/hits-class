@@ -1,6 +1,8 @@
-﻿namespace Team13.HitsClass.App.Features.Comments.Dto;
+﻿using Team13.HitsClass.Common;
+
+namespace Team13.HitsClass.App.Features.Comments.Dto;
 
 public class CreateCommentDto
 {
-    public string TextLexical { get; set; }
+    public LexicalState Content { get; set; }
 }

@@ -1,3 +1,4 @@
+using Jering.Javascript.NodeJS;
 using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Assignment;
 using Team13.HitsClass.App.Features.Comments;
@@ -36,5 +37,7 @@ public static class SetupServices
             .AddScoped<CommentService>()
             .AddScoped<CourseService>()
             .AddScoped<NotificationService>();
+
+        services.AddNodeJS();
     }
 }

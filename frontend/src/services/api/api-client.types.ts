@@ -321,7 +321,7 @@ export interface CommentDto  {
   createdAt: Date;
   lastEditedAt: Date | null;
   author: UserDto;
-  textLexical: string;
+  content: LexicalState;
 }
 export function deserializeCommentDto(json: string): CommentDto {
   const data = JSON.parse(json) as CommentDto;
@@ -333,6 +333,7 @@ export function initCommentDto(_data: CommentDto) {
     _data.createdAt = _data["createdAt"] ? new Date(_data["createdAt"].toString()) : <any>null;
     _data.lastEditedAt = _data["lastEditedAt"] ? new Date(_data["lastEditedAt"].toString()) : <any>null;
     _data.author = _data["author"] && initUserDto(_data["author"]);
+    _data.content = _data["content"] && initLexicalState(_data["content"]);
   }
   return _data;
 }
@@ -347,7 +348,29 @@ export function prepareSerializeCommentDto(_data: CommentDto): CommentDto {
   data["createdAt"] = _data.createdAt && _data.createdAt.toISOString();
   data["lastEditedAt"] = _data.lastEditedAt && _data.lastEditedAt.toISOString();
   data["author"] = _data.author && prepareSerializeUserDto(_data.author);
+  data["content"] = _data.content && prepareSerializeLexicalState(_data.content);
   return data as CommentDto;
+}
+export interface LexicalState  {
+  json: string;
+}
+export function deserializeLexicalState(json: string): LexicalState {
+  const data = JSON.parse(json) as LexicalState;
+  initLexicalState(data);
+  return data;
+}
+export function initLexicalState(_data: LexicalState) {
+    return _data;
+}
+export function serializeLexicalState(_data: LexicalState | undefined) {
+  if (_data) {
+    _data = prepareSerializeLexicalState(_data as LexicalState);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeLexicalState(_data: LexicalState): LexicalState {
+  const data: Record<string, any> = { ..._data };
+  return data as LexicalState;
 }
 export interface CreateSubmissionDto  {
   attachments: FileInfoDto[];
@@ -447,7 +470,7 @@ export function prepareSerializeSubmissionListItem(_data: SubmissionListItem): S
 }
 export interface MarkDto  {
   mark: string | null;
-  markComment: string | null;
+  markComment: LexicalState | null;
 }
 export function deserializeMarkDto(json: string): MarkDto {
   const data = JSON.parse(json) as MarkDto;
@@ -455,7 +478,10 @@ export function deserializeMarkDto(json: string): MarkDto {
   return data;
 }
 export function initMarkDto(_data: MarkDto) {
-    return _data;
+  if (_data) {
+    _data.markComment = _data["markComment"] && initLexicalState(_data["markComment"]);
+  }
+  return _data;
 }
 export function serializeMarkDto(_data: MarkDto | undefined) {
   if (_data) {
@@ -465,6 +491,7 @@ export function serializeMarkDto(_data: MarkDto | undefined) {
 }
 export function prepareSerializeMarkDto(_data: MarkDto): MarkDto {
   const data: Record<string, any> = { ..._data };
+  data["markComment"] = _data.markComment && prepareSerializeLexicalState(_data.markComment);
   return data as MarkDto;
 }
 export interface PagedResultOfPublicationDto  {
@@ -505,7 +532,7 @@ export interface PublicationDto  {
   id: number;
   createdAtUTC: Date;
   lastUpdatedAtUTC: Date | null;
-  content: string | null;
+  content: LexicalState | null;
   author: UserDto;
   attachments: Attachment[];
   type: PublicationType;
@@ -521,6 +548,7 @@ export function initPublicationDto(_data: PublicationDto) {
   if (_data) {
     _data.createdAtUTC = _data["createdAtUTC"] ? new Date(_data["createdAtUTC"].toString()) : <any>null;
     _data.lastUpdatedAtUTC = _data["lastUpdatedAtUTC"] ? new Date(_data["lastUpdatedAtUTC"].toString()) : <any>null;
+    _data.content = _data["content"] && initLexicalState(_data["content"]);
     _data.author = _data["author"] && initUserDto(_data["author"]);
     if (Array.isArray(_data["attachments"])) {
       _data.attachments = _data["attachments"].map(item => 
@@ -543,6 +571,7 @@ export function prepareSerializePublicationDto(_data: PublicationDto): Publicati
   const data: Record<string, any> = { ..._data };
   data["createdAtUTC"] = _data.createdAtUTC && _data.createdAtUTC.toISOString();
   data["lastUpdatedAtUTC"] = _data.lastUpdatedAtUTC && _data.lastUpdatedAtUTC.toISOString();
+  data["content"] = _data.content && prepareSerializeLexicalState(_data.content);
   data["author"] = _data.author && prepareSerializeUserDto(_data.author);
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
@@ -881,7 +910,7 @@ export function prepareSerializePatchCourseDto(_data: PatchCourseDto): PatchCour
   return data as PatchCourseDto;
 }
 export interface CreateCommentDto  {
-  textLexical: string;
+  content: LexicalState;
 }
 export function deserializeCreateCommentDto(json: string): CreateCommentDto {
   const data = JSON.parse(json) as CreateCommentDto;
@@ -889,7 +918,10 @@ export function deserializeCreateCommentDto(json: string): CreateCommentDto {
   return data;
 }
 export function initCreateCommentDto(_data: CreateCommentDto) {
-    return _data;
+  if (_data) {
+    _data.content = _data["content"] && initLexicalState(_data["content"]);
+  }
+  return _data;
 }
 export function serializeCreateCommentDto(_data: CreateCommentDto | undefined) {
   if (_data) {
@@ -899,6 +931,7 @@ export function serializeCreateCommentDto(_data: CreateCommentDto | undefined) {
 }
 export function prepareSerializeCreateCommentDto(_data: CreateCommentDto): CreateCommentDto {
   const data: Record<string, any> = { ..._data };
+  data["content"] = _data.content && prepareSerializeLexicalState(_data.content);
   return data as CreateCommentDto;
 }
 export interface PatchCommentDto  {
@@ -947,7 +980,7 @@ export function prepareSerializeAssignmentStatisticDto(_data: AssignmentStatisti
   return data as AssignmentStatisticDto;
 }
 export interface CreatePublicationDto  {
-  content: string;
+  content: LexicalState;
   targetUsersIds: string[] | null;
   attachments: Attachment[] | null;
 }
@@ -958,6 +991,7 @@ export function deserializeCreatePublicationDto(json: string): CreatePublication
 }
 export function initCreatePublicationDto(_data: CreatePublicationDto) {
   if (_data) {
+    _data.content = _data["content"] && initLexicalState(_data["content"]);
     _data.targetUsersIds = _data["targetUsersIds"];
     if (Array.isArray(_data["attachments"])) {
       _data.attachments = _data["attachments"].map(item => 
@@ -975,6 +1009,7 @@ export function serializeCreatePublicationDto(_data: CreatePublicationDto | unde
 }
 export function prepareSerializeCreatePublicationDto(_data: CreatePublicationDto): CreatePublicationDto {
   const data: Record<string, any> = { ..._data };
+  data["content"] = _data.content && prepareSerializeLexicalState(_data.content);
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
         prepareSerializeAttachment(item)
@@ -1010,7 +1045,7 @@ export function prepareSerializeCreateAssignmentDto(_data: CreateAssignmentDto):
 }
 /** The base DTO for Publication patching. */
 export interface PatchPublicationDto  {
-  content?: string;
+  content?: LexicalState;
   attachments?: Attachment[] | null;
   targetUsersIds?: string[] | null;
 }
@@ -1021,6 +1056,7 @@ export function deserializePatchPublicationDto(json: string): PatchPublicationDt
 }
 export function initPatchPublicationDto(_data: PatchPublicationDto) {
   if (_data) {
+    _data.content = _data["content"] && initLexicalState(_data["content"]);
     if (Array.isArray(_data["attachments"])) {
       _data.attachments = _data["attachments"].map(item => 
         initAttachment(item)
@@ -1038,6 +1074,7 @@ export function serializePatchPublicationDto(_data: PatchPublicationDto | undefi
 }
 export function prepareSerializePatchPublicationDto(_data: PatchPublicationDto): PatchPublicationDto {
   const data: Record<string, any> = { ..._data };
+  data["content"] = _data.content && prepareSerializeLexicalState(_data.content);
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
         prepareSerializeAttachment(item)

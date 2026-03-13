@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 import type { Attachment } from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api/index.ts';
 import { EditAnnouncementModal } from './EditAnnouncementModal';
+import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockMutateAsync = vi.fn();
 vi.mock('services/api/api-client/AnnouncementQuery', () => ({
@@ -97,7 +98,7 @@ function renderModal(
         onClose={onClose}
         onSuccess={onSuccess}
         publicationId={publicationId}
-        initialContent={initialContent}
+        initialContent={wrapInLexical(initialContent)}
         initialAttachments={initialAttachments}
       />
     </MemoryRouter>,

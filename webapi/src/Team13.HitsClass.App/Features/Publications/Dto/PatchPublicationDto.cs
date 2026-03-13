@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
+using Team13.WebApi.Domain.Helpers;
 using Team13.WebApi.Patching.Models;
 
 namespace Team13.HitsClass.App.Features.Publications.Dto;
@@ -10,7 +11,7 @@ namespace Team13.HitsClass.App.Features.Publications.Dto;
 /// </summary>
 public abstract class PatchPublicationDto : IPatchRequest
 {
-    [Required(AllowEmptyStrings = false)]
+    [RequiredOrMissing(AllowEmptyStrings = false)]
     public LexicalState Content { get; set; }
     public List<Attachment>? Attachments { get; set; }
 

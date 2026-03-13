@@ -10,9 +10,10 @@ import {
 import { OnChangePlugin } from './OnChangePlugin.tsx';
 import { useEffect, useState } from 'react';
 import { LexicalEditor } from 'lexical';
+import { LexicalState } from 'services/api/api-client.types.ts';
 
 interface LexicalViewerProps {
-  lexicalState: string;
+  lexicalState: LexicalState;
   className?: string;
 }
 
@@ -22,7 +23,7 @@ export function LexicalViewer({ lexicalState, className }: LexicalViewerProps) {
   useEffect(() => {
     if (editor && !!lexicalState) {
       editor?.update(() => {
-        editor.setEditorState(editor.parseEditorState(lexicalState));
+        editor.setEditorState(editor.parseEditorState(lexicalState.json));
       });
     }
   }, [editor, lexicalState]);
@@ -37,7 +38,7 @@ export function LexicalViewer({ lexicalState, className }: LexicalViewerProps) {
       ...PlaygroundEditorTheme,
       ...getBeautifulMentionsTheme(),
     },
-    editorState: lexicalState,
+    editorState: lexicalState.json,
     editable: false,
   };
 

@@ -5,7 +5,11 @@ import { Field } from 'components/uikit/Field';
 import { Input } from 'components/uikit/inputs/Input';
 import { TextArea } from 'components/uikit/inputs/TextArea';
 import { HookFormDatePicker } from 'components/uikit/inputs/date-time/HookFormDatePicker';
-import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
+import {
+  Button,
+  ButtonColor,
+  ButtonWidth,
+} from 'components/uikit/buttons/Button';
 import { FormError } from 'components/uikit/FormError';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useModal } from 'components/uikit/modal/useModal';
@@ -17,7 +21,11 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type { Attachment, FileInfoDto } from 'services/api/api-client.types';
+import type {
+  Attachment,
+  FileInfoDto,
+  LexicalState,
+} from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api';
 import styles from './EditAssignmentModal.module.scss';
 
@@ -28,7 +36,12 @@ function makeId(): string {
 }
 
 function fileInfoToAttachment(info: FileInfoDto): Attachment {
-  return { uuid: info.id, fileName: info.fileName, size: info.size, createdAt: info.createdAt };
+  return {
+    uuid: info.id,
+    fileName: info.fileName,
+    size: info.size,
+    createdAt: info.createdAt,
+  };
 }
 
 function attachmentToFileItem(attachment: Attachment): AttachedFileItem {
@@ -42,7 +55,7 @@ function attachmentToFileItem(attachment: Attachment): AttachedFileItem {
 
 type EditAssignmentForm = {
   title: string;
-  content: string;
+  content: LexicalState;
   deadlineUtc: Date | null;
 };
 
@@ -52,7 +65,7 @@ export type EditAssignmentModalProps = {
   onSuccess?: () => void;
   publicationId: number;
   initialTitle: string;
-  initialContent: string;
+  initialContent: LexicalState | null;
   initialDeadlineUtc: Date | null;
   initialAttachments: Attachment[];
 };
@@ -72,9 +85,8 @@ export const EditAssignmentModal = ({
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
-  const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] = useState<
-    Record<string, Attachment>
-  >({});
+  const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] =
+    useState<Record<string, Attachment>>({});
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
@@ -119,7 +131,7 @@ export const EditAssignmentModal = ({
     if (isOpen) {
       form.reset({
         title: initialTitle,
-        content: initialContent,
+        content: initialContent ?? undefined,
         deadlineUtc: initialDeadlineUtc,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
@@ -128,7 +140,7 @@ export const EditAssignmentModal = ({
       );
       setRawFiles({});
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const handleClose = () => {
@@ -202,7 +214,10 @@ export const EditAssignmentModal = ({
               withTime
             />
           </Field>
-          <Field title="Прикреплённые файлы" testId="EditAssignment-attachments">
+          <Field
+            title="Прикреплённые файлы"
+            testId="EditAssignment-attachments"
+          >
             <AttachedFilesTable files={files} onRemove={handleRemoveFile} />
             <input
               ref={fileInputRef}

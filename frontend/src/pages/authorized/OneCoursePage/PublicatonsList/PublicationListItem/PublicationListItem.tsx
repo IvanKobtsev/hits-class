@@ -32,7 +32,9 @@ import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementM
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
 import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
 import { Link, useParams } from 'react-router';
+import { LexicalViewer } from 'components/lexical/LexicalViewer.tsx';
 import { Links } from 'application/constants/links';
+import { useNavigate } from 'react-router-dom';
 
 const formatDate = (date: Date | string) => {
   const d = new Date(date);
@@ -65,7 +67,16 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     lastUpdatedAtUTC &&
     formatDate(createdAtUTC) !== formatDate(lastUpdatedAtUTC);
 
-  const link = `${isAssignment ? 'assignments' : 'announcements'}/${id}`;
+  const params = Links.Authorized.CourseRoutes.useParams();
+  const link = isAssignment
+    ? Links.Authorized.AssignmentRoutes.link({
+        courseId: params.courseId,
+        assignmentId: id,
+      })
+    : Links.Authorized.AnnouncementRoutes.link({
+        courseId: params.courseId,
+        announcementId: id,
+      });
 
   const modal = useModal();
   const queryClient = useQueryClient();
@@ -83,6 +94,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   const [isTargetUsersModalOpen, setIsTargetUsersModalOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const navigate = useNavigate();
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
@@ -131,6 +143,80 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
     }
   };
 
+  const cardContent = (
+    <CardContent
+      className={styles.content}
+      data-test-id={`PublicationItem-content-container-${id}`}
+    >
+      <Box
+        className={styles.header}
+        data-test-id={`PublicationItem-header-${id}`}
+        onClick={() => navigate(link)}
+      >
+        <Avatar
+          data-test-id={`PublicationItem-type-icon-${id}`}
+          className={clsx(
+            styles.typeIcon,
+            isAssignment
+              ? styles.typeIconAssignment
+              : styles.typeIconAnnouncement,
+          )}
+        >
+          {isAssignment ? <AssignmentIcon /> : <AnnouncementIcon />}
+        </Avatar>
+
+        <Box data-test-id={`PublicationItem-author-container-${id}`}>
+          <Typography
+            className={styles.authorName}
+            data-test-id={`PublicationItem-author-${id}`}
+          >
+            {author.legalName}
+          </Typography>
+          <Typography
+            variant="caption"
+            className={styles.date}
+            data-test-id={`PublicationItem-date-${id}`}
+          >
+            {formatDate(createdAtUTC)}
+            {hasUpdates && (
+              <Typography
+                variant="caption"
+                component="span"
+                data-test-id={`PublicationItem-updated-date-${id}`}
+              >
+                &nbsp;(ред. {formatDate(lastUpdatedAtUTC!)})
+              </Typography>
+            )}
+          </Typography>
+        </Box>
+      </Box>
+
+      {assignmentData?.title && (
+        <Typography
+          className={styles.assignmentTitle}
+          data-test-id={`PublicationItem-title-${id}`}
+        >
+          {assignmentData.title}
+        </Typography>
+      )}
+
+      <LexicalViewer lexicalState={content!} />
+
+      {assignmentData?.deadlineUtc && (
+        <Box
+          className={styles.deadlineSection}
+          data-test-id={`PublicationItem-deadline-section-${id}`}
+        >
+          <Chip
+            label={`Срок сдачи: ${formatDate(assignmentData.deadlineUtc)}`}
+            className={styles.deadlineChip}
+            data-test-id={`PublicationItem-deadline-chip-${id}`}
+          />
+        </Box>
+      )}
+    </CardContent>
+  );
+
   return (
     <>
       <Card
@@ -139,90 +225,18 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         data-test-id={`PublicationItem-${id}`}
         sx={{ position: 'relative' }}
       >
-        <CardActionArea
-          component={Link}
-          to={link}
-          className={styles.actionArea}
-          data-test-id={`PublicationItem-action-area-${id}`}
-        >
-          <CardContent
-            className={styles.content}
-            data-test-id={`PublicationItem-content-container-${id}`}
+        {isAssignment ? (
+          <CardActionArea
+            component={Link}
+            to={link}
+            className={styles.actionArea}
+            data-test-id={`PublicationItem-action-area-${id}`}
           >
-            <Box
-              className={styles.header}
-              data-test-id={`PublicationItem-header-${id}`}
-            >
-              <Avatar
-                data-test-id={`PublicationItem-type-icon-${id}`}
-                className={clsx(
-                  styles.typeIcon,
-                  isAssignment
-                    ? styles.typeIconAssignment
-                    : styles.typeIconAnnouncement,
-                )}
-              >
-                {isAssignment ? <AssignmentIcon /> : <AnnouncementIcon />}
-              </Avatar>
-
-              <Box data-test-id={`PublicationItem-author-container-${id}`}>
-                <Typography
-                  className={styles.authorName}
-                  data-test-id={`PublicationItem-author-${id}`}
-                >
-                  {author.legalName}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  className={styles.date}
-                  data-test-id={`PublicationItem-date-${id}`}
-                >
-                  {formatDate(createdAtUTC)}
-                  {hasUpdates && (
-                    <Typography
-                      variant="caption"
-                      component="span"
-                      data-test-id={`PublicationItem-updated-date-${id}`}
-                    >
-                      &nbsp;(ред. {formatDate(lastUpdatedAtUTC!)})
-                    </Typography>
-                  )}
-                </Typography>
-              </Box>
-            </Box>
-
-            {assignmentData?.title && (
-              <Typography
-                className={styles.assignmentTitle}
-                data-test-id={`PublicationItem-title-${id}`}
-              >
-                {assignmentData.title}
-              </Typography>
-            )}
-
-            {content && (
-              <Typography
-                className={styles.contentText}
-                data-test-id={`PublicationItem-content-${id}`}
-              >
-                {content}
-              </Typography>
-            )}
-
-            {assignmentData?.deadlineUtc && (
-              <Box
-                className={styles.deadlineSection}
-                data-test-id={`PublicationItem-deadline-section-${id}`}
-              >
-                <Chip
-                  label={`Срок сдачи: ${formatDate(assignmentData.deadlineUtc)}`}
-                  className={styles.deadlineChip}
-                  data-test-id={`PublicationItem-deadline-chip-${id}`}
-                />
-              </Box>
-            )}
-          </CardContent>
-        </CardActionArea>
+            {cardContent}
+          </CardActionArea>
+        ) : (
+          cardContent
+        )}
 
         {canManagePublication && (
           <>
@@ -272,7 +286,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           onClose={() => setIsEditModalOpen(false)}
           onSuccess={() => showSnackbar('Объявление обновлено')}
           publicationId={id}
-          initialContent={content ?? ''}
+          initialContent={content}
           initialAttachments={attachments ?? []}
         />
       )}
@@ -283,7 +297,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           onSuccess={() => showSnackbar('Задание обновлено')}
           publicationId={id}
           initialTitle={assignmentData?.title ?? ''}
-          initialContent={content ?? ''}
+          initialContent={content}
           initialDeadlineUtc={
             assignmentData?.deadlineUtc
               ? new Date(assignmentData.deadlineUtc)

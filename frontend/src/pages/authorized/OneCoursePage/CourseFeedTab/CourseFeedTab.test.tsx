@@ -4,9 +4,14 @@ import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
 import { CourseFeedTab } from './CourseFeedTab.tsx';
 import { PublicationDto } from 'services/api/api-client';
+import { wrapInLexical } from '../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
-vi.mock('assets/icons/announcement.svg?react', () => ({ default: () => <svg /> }));
-vi.mock('assets/icons/assignment.svg?react', () => ({ default: () => <svg /> }));
+vi.mock('assets/icons/announcement.svg?react', () => ({
+  default: () => <svg />,
+}));
+vi.mock('assets/icons/assignment.svg?react', () => ({
+  default: () => <svg />,
+}));
 vi.mock('lottie-web', () => ({
   default: { loadAnimation: vi.fn(() => ({ destroy: vi.fn() })) },
 }));
@@ -21,8 +26,13 @@ const mockPublication: PublicationDto = {
   id: 1,
   createdAtUTC: new Date(),
   lastUpdatedAtUTC: null,
-  content: 'Текст',
-  author: { id: 'u1', email: 'a@a.com', legalName: 'Иванов', groupNumber: null },
+  content: wrapInLexical('Текст'),
+  author: {
+    id: 'u1',
+    email: 'a@a.com',
+    legalName: 'Иванов',
+    groupNumber: null,
+  },
   attachments: [],
   targetUserIds: [],
   type: 'Announcement' as any,
@@ -36,7 +46,10 @@ const baseProps = {
   onCreateAnnouncement: vi.fn(),
 };
 
-function renderTab(role: 'teacher' | 'student', publications: PublicationDto[] = []) {
+function renderTab(
+  role: 'teacher' | 'student',
+  publications: PublicationDto[] = [],
+) {
   return render(
     <MemoryRouter>
       <CourseFeedTab {...baseProps} role={role} publications={publications} />
@@ -56,7 +69,10 @@ describe('CourseFeedTab', () => {
 
   test('passes publications to PublicationList', () => {
     renderTab('student', [mockPublication]);
-    expect(screen.getByTestId('PublicationList')).toHaveAttribute('data-count', '1');
+    expect(screen.getByTestId('PublicationList')).toHaveAttribute(
+      'data-count',
+      '1',
+    );
   });
 
   // --- Role: student ---
@@ -68,12 +84,16 @@ describe('CourseFeedTab', () => {
 
   test('does not show create assignment button for student', () => {
     renderTab('student');
-    expect(screen.queryByTestId('CourseFeedTab-create-assignment')).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId('CourseFeedTab-create-assignment'),
+    ).not.toBeInTheDocument();
   });
 
   test('shows create announcement button for student', () => {
     renderTab('student');
-    expect(screen.queryByTestId('CourseFeedTab-create-announcement')).toBeInTheDocument();
+    expect(
+      screen.queryByTestId('CourseFeedTab-create-announcement'),
+    ).toBeInTheDocument();
   });
 
   // --- Role: teacher ---
@@ -85,12 +105,16 @@ describe('CourseFeedTab', () => {
 
   test('shows create assignment button for teacher', () => {
     renderTab('teacher');
-    expect(screen.getByTestId('CourseFeedTab-create-assignment')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CourseFeedTab-create-assignment'),
+    ).toBeInTheDocument();
   });
 
   test('shows create announcement button for teacher', () => {
     renderTab('teacher');
-    expect(screen.getByTestId('CourseFeedTab-create-announcement')).toBeInTheDocument();
+    expect(
+      screen.getByTestId('CourseFeedTab-create-announcement'),
+    ).toBeInTheDocument();
   });
 
   // --- Callbacks ---

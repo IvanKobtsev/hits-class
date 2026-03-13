@@ -558,7 +558,7 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("jsonb");
 
                     b.Property<int>("CourseId")
                         .HasColumnType("integer");
@@ -600,6 +600,10 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -608,10 +612,6 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.Property<int>("PublicationId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("TextLexical")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -670,6 +670,10 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -678,10 +682,6 @@ namespace Team13.HitsClass.Persistence.Migrations
 
                     b.Property<int>("SubmissionId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("TextLexical")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

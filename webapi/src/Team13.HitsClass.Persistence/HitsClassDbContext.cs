@@ -135,6 +135,10 @@ public class HitsClassDbContext
         builder.Entity<PublicationComment>(b =>
         {
             b.HasOne(c => c.Author).WithMany().HasForeignKey(c => c.AuthorId);
+            b.Property(pc => pc.Content)
+                .HasConversion(v => v.Json, v => new LexicalState(v))
+                .HasColumnType("jsonb")
+                .IsRequired();
         });
     }
 

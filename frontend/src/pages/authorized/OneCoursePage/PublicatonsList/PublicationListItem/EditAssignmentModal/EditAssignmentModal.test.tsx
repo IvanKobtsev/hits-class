@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router';
 import type { Attachment } from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api/index.ts';
 import { EditAssignmentModal } from './EditAssignmentModal';
+import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockMutateAsync = vi.fn();
 vi.mock('services/api/api-client/AssignmentQuery', () => ({
@@ -108,7 +109,7 @@ function renderModal(
         onSuccess={onSuccess}
         publicationId={publicationId}
         initialTitle={initialTitle}
-        initialContent={initialContent}
+        initialContent={wrapInLexical(initialContent)}
         initialDeadlineUtc={initialDeadlineUtc}
         initialAttachments={initialAttachments}
       />
@@ -198,7 +199,10 @@ describe('EditAssignmentModal', () => {
   test('calls mutation with updated title and content on submit', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialTitle: 'Старое название', initialContent: 'Старое описание' });
+    renderModal({
+      initialTitle: 'Старое название',
+      initialContent: 'Старое описание',
+    });
 
     const titleInput = screen.getByTestId('EditAssignment-title-input');
     await user.clear(titleInput);
@@ -226,7 +230,11 @@ describe('EditAssignmentModal', () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialTitle: 'Название', initialContent: 'Описание', onClose });
+    renderModal({
+      initialTitle: 'Название',
+      initialContent: 'Описание',
+      onClose,
+    });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -239,7 +247,11 @@ describe('EditAssignmentModal', () => {
     const user = userEvent.setup();
     const onSuccess = vi.fn();
     mockMutateAsync.mockResolvedValue({});
-    renderModal({ initialTitle: 'Название', initialContent: 'Описание', onSuccess });
+    renderModal({
+      initialTitle: 'Название',
+      initialContent: 'Описание',
+      onSuccess,
+    });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
@@ -318,7 +330,11 @@ describe('EditAssignmentModal', () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     mockMutateAsync.mockRejectedValue(new Error('Server error'));
-    renderModal({ initialTitle: 'Название', initialContent: 'Описание', onClose });
+    renderModal({
+      initialTitle: 'Название',
+      initialContent: 'Описание',
+      onClose,
+    });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 

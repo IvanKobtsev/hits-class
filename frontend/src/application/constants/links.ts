@@ -13,7 +13,9 @@ export const Links = {
   },
   Authorized: {
     Dashboard: createRoute('/'),
-    CourseRoutes: createRoute('/courses/:courseId'),
+    CourseRoutes: createRoute('/courses/:courseId', {
+      courseId: RequiredNumberParam,
+    }),
     CourseNotFound: createRoute('/courses/:courseId/not-found', {
       courseId: RequiredNumberParam,
     }),

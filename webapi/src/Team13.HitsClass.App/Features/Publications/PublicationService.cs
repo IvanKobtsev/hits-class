@@ -1,7 +1,9 @@
+using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.Publications.Extensions;
+using Team13.HitsClass.App.Node.js;
 using Team13.HitsClass.App.Utils;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
@@ -18,7 +20,8 @@ namespace Team13.HitsClass.App.Features.Publications;
 public class PublicationService(
     HitsClassDbContext dbContext,
     IUserAccessor userAccessor,
-    UserManager<User> userManager
+    UserManager<User> userManager,
+    INodeJSService nodeJsService
 )
 {
     public async Task<PagedResult<PublicationDto>> GetPublications(
@@ -117,7 +120,12 @@ public class PublicationService(
             );
         }
 
-        var newPublication = new Publication(createPublicationDto.Content)
+        var newPublication = new Publication(
+            new LexicalState(
+                await nodeJsService.ValidateLexicalState(createPublicationDto.Content.Json)
+                    ?? throw new ValidationException("Invalid Lexical State.")
+            )
+        )
         {
             Type = publicationPayload.GetEventType(),
             Author = author,
@@ -177,6 +185,12 @@ public class PublicationService(
             }
             publication.TargetUsers = targetUsers;
         }
+
+        if (
+            patchPublicationDto.IsFieldPresent(nameof(patchPublicationDto.Content))
+            && await nodeJsService.ValidateLexicalState(patchPublicationDto.Content.Json) == null
+        )
+            throw new ValidationException("Invalid Lexical State.");
 
         publication.Update(patchPublicationDto);
 

@@ -39,10 +39,7 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
         if (submission == null)
             throw new ValidationException("No submission found for this assignment.");
 
-        var comment = new SubmissionComment(submission.Id, userId, dto.TextLexical)
-        {
-            Author = user,
-        };
+        var comment = new SubmissionComment(submission.Id, userId, dto.Content) { Author = user };
         submission.Comments.Add(comment);
         await dbContext.SaveChangesAsync();
 
@@ -61,10 +58,7 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
                 .FirstOrDefaultAsync(s => s.Id == submissionId)
             ?? throw new ValidationException("Submission not found.");
 
-        var comment = new SubmissionComment(submissionId, userId, dto.TextLexical)
-        {
-            Author = user,
-        };
+        var comment = new SubmissionComment(submissionId, userId, dto.Content) { Author = user };
         submission.Comments.Add(comment);
         await dbContext.SaveChangesAsync();
         return ToCommentDto(comment);
@@ -88,10 +82,7 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
 
         await dbContext.Publications.GetOne(Publication.HasId(publicationId));
 
-        var comment = new PublicationComment(publicationId, userId, dto.TextLexical)
-        {
-            Author = user,
-        };
+        var comment = new PublicationComment(publicationId, userId, dto.Content) { Author = user };
         dbContext.PublicationComments.Add(comment);
         await dbContext.SaveChangesAsync();
 
@@ -105,7 +96,7 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
             CreatedAt = c.CreatedAt,
             LastEditedAt = c.LastEditedAt,
             Author = c.Author.ToUserDto(),
-            TextLexical = c.TextLexical,
+            Content = c.Content,
         };
 
     private static CommentDto ToCommentDto(PublicationComment c) =>
@@ -115,6 +106,6 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
             CreatedAt = c.CreatedAt,
             LastEditedAt = c.LastEditedAt,
             Author = c.Author.ToUserDto(),
-            TextLexical = c.TextLexical,
+            Content = c.Content,
         };
 }

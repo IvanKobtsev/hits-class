@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, test, vi, beforeEach } from 'vitest';
 import { PublicCommentView } from './PublicCommentView';
 import type { CommentDto } from 'services/api/api-client.types';
+import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
 const mockMutate = vi.fn();
 const mockInvalidate = vi.fn();
@@ -39,9 +40,13 @@ vi.mock('components/lexical/LexicalViewer', () => ({
 
 let mockCommentsData: CommentDto[] | undefined = undefined;
 
-const makeComment = (id: number, text: string, authorName: string): CommentDto => ({
+const makeComment = (
+  id: number,
+  text: string,
+  authorName: string,
+): CommentDto => ({
   id,
-  textLexical: text,
+  content: wrapInLexical(text),
   createdAt: new Date('2025-03-01T10:00:00Z'),
   lastEditedAt: null,
   author: {
@@ -103,7 +108,9 @@ describe('PublicCommentView', () => {
     await user.click(screen.getByRole('button', { name: /отправить/i }));
 
     expect(mockMutate).toHaveBeenCalledWith(
-      expect.objectContaining({ textLexical: expect.stringContaining('Public comment') }),
+      expect.objectContaining({
+        textLexical: expect.stringContaining('Public comment'),
+      }),
       expect.any(Object),
     );
   });

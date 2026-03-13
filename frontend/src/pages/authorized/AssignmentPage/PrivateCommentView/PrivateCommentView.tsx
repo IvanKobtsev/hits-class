@@ -5,34 +5,11 @@ import { getMySubmissionQueryKey } from 'services/api/api-client/SubmissionQuery
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import type { CommentDto } from 'services/api/api-client.types';
 import styles from './PrivateCommentView.module.scss';
+import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab';
 
 interface Props {
   assignmentId: number;
   comments: CommentDto[];
-}
-
-function wrapInLexical(text: string): string {
-  return JSON.stringify({
-    root: {
-      children: [
-        {
-          children: [
-            { detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1 },
-          ],
-          direction: 'ltr',
-          format: '',
-          indent: 0,
-          type: 'paragraph',
-          version: 1,
-        },
-      ],
-      direction: 'ltr',
-      format: '',
-      indent: 0,
-      type: 'root',
-      version: 1,
-    },
-  });
 }
 
 export const PrivateCommentView = ({ assignmentId, comments }: Props) => {
@@ -42,7 +19,7 @@ export const PrivateCommentView = ({ assignmentId, comments }: Props) => {
 
   const handleSubmit = () => {
     mutate(
-      { textLexical: wrapInLexical(text) },
+      { content: wrapInLexical(text) },
       {
         onSuccess: () => {
           setText('');
@@ -61,11 +38,15 @@ export const PrivateCommentView = ({ assignmentId, comments }: Props) => {
         {comments.map((comment) => (
           <div key={comment.id} className={styles.comment}>
             <div className={styles.commentMeta}>
-              <span className={styles.commentAuthor}>{comment.author.legalName}</span>
-              <span className={styles.commentDate}>{comment.createdAt.toLocaleDateString()}</span>
+              <span className={styles.commentAuthor}>
+                {comment.author.legalName}
+              </span>
+              <span className={styles.commentDate}>
+                {comment.createdAt.toLocaleDateString()}
+              </span>
             </div>
             <div className={styles.commentText}>
-              <LexicalViewer lexicalState={comment.textLexical} />
+              <LexicalViewer lexicalState={comment.content} />
             </div>
           </div>
         ))}
@@ -79,7 +60,11 @@ export const PrivateCommentView = ({ assignmentId, comments }: Props) => {
           placeholder="Написать комментарий..."
           rows={1}
         />
-        <button className={styles.sendButton} onClick={handleSubmit} disabled={!text.trim()}>
+        <button
+          className={styles.sendButton}
+          onClick={handleSubmit}
+          disabled={!text.trim()}
+        >
           Отправить
         </button>
       </div>

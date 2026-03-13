@@ -160,7 +160,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class UserClient : BaseClient, IUserClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -1137,7 +1137,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class SubmissionClient : BaseClient, ISubmissionClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -2084,7 +2084,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class PublicationsClient : BaseClient, IPublicationsClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -2515,7 +2515,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class FilesClient : BaseClient, IFilesClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -3380,7 +3380,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class CourseClient : BaseClient, ICourseClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -4990,7 +4990,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class CommentClient : BaseClient, ICommentClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -5886,7 +5886,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class AssignmentClient : BaseClient, IAssignmentClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -6451,7 +6451,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class AnnouncementClient : BaseClient, IAnnouncementClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -6886,7 +6886,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class SignUrlClient : BaseClient, ISignUrlClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -7220,7 +7220,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class TestDataClient : BaseClient, ITestDataClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -7649,7 +7649,7 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial class VersionClient : BaseClient, IVersionClient
     {
-        private string _baseUrl = "https://localhost:5001";
+        private string _baseUrl = "https://localhost:49224";
         private System.Net.Http.HttpClient _httpClient;
         private System.Lazy<System.Text.Json.JsonSerializerOptions> _settings;
 
@@ -8193,11 +8193,23 @@ namespace Team13.HitsClass.Http.Generated
         [System.ComponentModel.DataAnnotations.Required]
         public UserDto Author { get; set; } = new UserDto();
 
-        [System.Text.Json.Serialization.JsonPropertyName("textLexical")]
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required]
+        public LexicalState Content { get; set; } = new LexicalState();
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LexicalState
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("json")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TextLexical { get; set; }
+        public string Json { get; set; }
 
     }
 
@@ -8271,7 +8283,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("markComment")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string MarkComment { get; set; }
+        public LexicalState MarkComment { get; set; }
 
     }
 
@@ -8315,7 +8327,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string Content { get; set; }
+        public LexicalState Content { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("author")]
 
@@ -8618,11 +8630,11 @@ namespace Team13.HitsClass.Http.Generated
     public partial class CreateCommentDto
     {
 
-        [System.Text.Json.Serialization.JsonPropertyName("textLexical")]
+        [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
-        public string TextLexical { get; set; }
+        [System.ComponentModel.DataAnnotations.Required]
+        public LexicalState Content { get; set; } = new LexicalState();
 
     }
 
@@ -8684,7 +8696,7 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required]
-        public string Content { get; set; }
+        public LexicalState Content { get; set; } = new LexicalState();
 
         [System.Text.Json.Serialization.JsonPropertyName("targetUsersIds")]
 
@@ -8735,7 +8747,7 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonPropertyName("content")]
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
-        public string Content { get; set; }
+        public LexicalState Content { get; set; }
 
         [System.Text.Json.Serialization.JsonPropertyName("attachments")]
 
