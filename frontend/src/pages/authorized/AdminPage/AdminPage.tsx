@@ -76,8 +76,8 @@ export const AdminPage: React.FC = () => {
     if (!searchLower) return users;
     return users.filter(
       (u) =>
-        u.legalName.toLowerCase().includes(searchLower) ||
-        u.email.toLowerCase().includes(searchLower)
+        (u.legalName ?? '').toLowerCase().includes(searchLower) ||
+        (u.email ?? '').toLowerCase().includes(searchLower)
     );
   }, [users, search]);
 
