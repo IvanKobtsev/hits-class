@@ -1,5 +1,27 @@
 @use 'src/styles/variables' as *;
 
+.wideModalContent {
+  min-width: 720px;
+}
+
+.formLayout {
+  display: flex;
+  gap: 24px;
+}
+
+.formColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.targetColumn {
+  width: 320px;
+  min-width: 280px;
+}
+
 .form {
   display: flex;
   flex-direction: column;

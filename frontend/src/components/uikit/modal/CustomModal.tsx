@@ -13,6 +13,10 @@ export type CustomModalProps<T = string> = {
   isBlocking: boolean;
   title: string;
   children: React.ReactNode;
+  /** MUI Dialog maxWidth. Use 'lg' or 'xl' for wider modals. */
+  maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | false;
+  /** Optional class for DialogContent (e.g. to set min-width). */
+  contentClassName?: string;
 } & (
   | { buttons?: undefined }
   | {
@@ -47,6 +51,8 @@ export const CustomModal: React.FC<CustomModalProps> = (props) => {
       onClick={(e) => {
         e.stopPropagation();
       }}
+      maxWidth={props.maxWidth}
+      fullWidth={!!props.maxWidth}
     >
       <DialogTitle className={styles.header}>
         {props.title}
@@ -57,7 +63,7 @@ export const CustomModal: React.FC<CustomModalProps> = (props) => {
           ></CloseIcon>
         )}
       </DialogTitle>
-      <DialogContent className={styles.content}>
+      <DialogContent className={clsx(styles.content, props.contentClassName)}>
         {props.children}
         {!!props.buttons && (
           <div className={modalStyles.footer}>

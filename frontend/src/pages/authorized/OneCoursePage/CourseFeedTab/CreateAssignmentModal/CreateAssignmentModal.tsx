@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
@@ -17,7 +17,9 @@ import { useModal } from 'components/uikit/modal/useModal';
 import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
 import { requiredRule } from 'helpers/form/react-hook-form-helper';
 import { useCreateAssignmentMutation } from 'services/api/api-client/AssignmentQuery';
+import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useUploadFileMutation } from 'services/api/api-client/FilesQuery';
+import { TargetStudents } from '../TargetStudents/TargetStudents';
 import {
   AttachedFileItem,
   AttachedFilesTable,
@@ -62,15 +64,22 @@ export const CreateAssignmentModal = ({
   onClose,
 }: CreateAssignmentModalProps) => {
   const { courseId } = useParams<{ courseId: string }>();
-  const { mutateAsync, isPending } = useCreateAssignmentMutation(
-    Number(courseId),
-  );
+  const courseIdNum = Number(courseId);
+  const { mutateAsync, isPending } = useCreateAssignmentMutation(courseIdNum);
+  const { data: course } = useGetCourseQuery(courseIdNum);
   const queryClient = useQueryClient();
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
+
+  useEffect(() => {
+    if (isOpen && course?.students) {
+      setSelectedIds(new Set(course.students.map((s) => s.id)));
+    }
+  }, [isOpen, course?.students]);
 
   const form = useAdvancedForm<CreateAssignmentForm>(
     async (data) => {
@@ -85,9 +94,14 @@ export const CreateAssignmentModal = ({
           ),
         );
         const attachments = fileInfos.map(fileInfoToAttachment);
+        const students = course?.students ?? [];
+        const targetUsersIds =
+          selectedIds.size === 0 || selectedIds.size === students.length
+            ? null
+            : [...selectedIds];
         await mutateAsync({
           content: data.content,
-          targetUsersIds: null,
+          targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
           payload: {
             publicationType: 'Assignment',
@@ -152,9 +166,13 @@ export const CreateAssignmentModal = ({
       onClose={handleClose}
       isBlocking={false}
       title="Создать задание"
+      maxWidth="lg"
+      contentClassName={styles.wideModalContent}
     >
       <Loading loading={isPending}>
-        <form onSubmit={form.handleSubmitDefault} className={styles.form}>
+        <div className={styles.formLayout}>
+          <div className={styles.formColumn}>
+          <form onSubmit={form.handleSubmitDefault} className={styles.form}>
           <Field title="Название" testId="CreateAssignment-title">
             <Input
               {...form.register('title', { ...requiredRule() })}
@@ -205,9 +223,19 @@ export const CreateAssignmentModal = ({
               type="submit"
               color={ButtonColor.Primary}
               width={ButtonWidth.Fullwidth}
+              disabled={selectedIds.size === 0}
             />
           </div>
         </form>
+          </div>
+          <div className={styles.targetColumn}>
+            <TargetStudents
+              courseId={courseIdNum}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+            />
+          </div>
+        </div>
       </Loading>
     </CustomModal>
   );

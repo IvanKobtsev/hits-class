@@ -13,6 +13,24 @@ vi.mock('services/api/api-client/AnnouncementQuery', () => ({
   }),
 }));
 
+const mockCourseData = {
+  id: 42,
+  title: 'Курс',
+  description: '',
+  inviteCode: 'abc',
+  createdAt: new Date(),
+  owner: { id: 'o1', email: 'o@t.com', legalName: 'Owner', groupNumber: null },
+  teachers: [],
+  students: [
+    { id: 's1', email: 's1@t.com', legalName: 'Студент 1', groupNumber: 'А', roles: [] },
+    { id: 's2', email: 's2@t.com', legalName: 'Студент 2', groupNumber: 'А', roles: [] },
+  ],
+};
+
+vi.mock('services/api/api-client/CourseQuery', () => ({
+  useGetCourseQuery: () => ({ data: mockCourseData, isLoading: false }),
+}));
+
 const mockInvalidateQueries = vi.fn();
 vi.mock('@tanstack/react-query', async (importActual) => {
   const actual = await importActual<typeof import('@tanstack/react-query')>();
@@ -41,6 +59,35 @@ vi.mock('services/api/api-client/FilesQuery', () => ({
 
 vi.mock('components/uikit/suspense/Loading', () => ({
   Loading: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock('../TargetStudents/TargetStudents', () => ({
+  TargetStudents: ({
+    selectedIds,
+    onSelectionChange,
+  }: {
+    selectedIds: Set<string>;
+    onSelectionChange: (ids: Set<string>) => void;
+  }) => (
+    <div data-test-id="target-students">
+      <button
+        data-test-id="target-students-deselect-one"
+        onClick={() => {
+          const next = new Set(selectedIds);
+          next.delete('s1');
+          onSelectionChange(next);
+        }}
+      >
+        Deselect s1
+      </button>
+      <button
+        data-test-id="target-students-deselect-all"
+        onClick={() => onSelectionChange(new Set())}
+      >
+        Deselect all
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('components/uikit/modal/CustomModal', () => ({
@@ -153,7 +200,7 @@ describe('CreateAnnouncementModal', () => {
     await waitFor(() => {
       expect(mockInvalidateQueries).toHaveBeenCalledWith({
         queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
-          courseId: 1,
+          courseId: 42,
         }).slice(0, 1),
       });
     });
@@ -198,6 +245,48 @@ describe('CreateAnnouncementModal', () => {
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     expect(mockMutateAsync).not.toHaveBeenCalled();
+  });
+
+  test('disables Create button when no students selected', async () => {
+    const user = userEvent.setup();
+    renderModal();
+
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст',
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('target-students-deselect-all')).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId('target-students-deselect-all'));
+
+    const createButton = screen.getByRole('button', { name: /создать/i });
+    expect(createButton).toBeDisabled();
+  });
+
+  test('passes targetUsersIds when some students deselected', async () => {
+    const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
+    renderModal();
+
+    await user.type(
+      screen.getByTestId('CreateAnnouncement-content-input'),
+      'Текст',
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId('target-students-deselect-one')).toBeInTheDocument();
+    });
+    await user.click(screen.getByTestId('target-students-deselect-one'));
+    await user.click(screen.getByRole('button', { name: /создать/i }));
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          targetUsersIds: expect.arrayContaining(['s2']),
+        }),
+      );
+      expect(mockMutateAsync.mock.calls[0][0].targetUsersIds).toHaveLength(1);
+    });
   });
 
   test('shows error popup when creation fails', async () => {

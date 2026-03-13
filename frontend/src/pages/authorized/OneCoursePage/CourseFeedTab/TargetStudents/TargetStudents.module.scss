@@ -1,0 +1,70 @@
+@use 'src/styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 280px;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $classroom-text-primary;
+  margin: 0;
+}
+
+.selectAllRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.selectAllLabel {
+  font-size: 14px;
+  color: $classroom-text-primary;
+}
+
+.list {
+  max-height: 360px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0 4px;
+}
+
+.groupSeparator {
+  flex: 1;
+  height: 1px;
+  background: #e5e7eb;
+  margin-right: 0;
+}
+
+.groupLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.empty {
+  padding: 24px 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 14px;
+}
