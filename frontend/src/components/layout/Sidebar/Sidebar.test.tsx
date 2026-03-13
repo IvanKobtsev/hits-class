@@ -2,8 +2,18 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { ReactNode } from 'react';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter, useNavigate } from 'react-router';
 import { Sidebar } from './Sidebar';
+
+const mockNavigate = vi.fn();
+vi.mock('react-router', async (importActual) => {
+  const actual = await importActual<typeof import('react-router')>();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+    useLocation: () => ({ pathname: '/courses' }),
+  };
+});
 
 vi.mock('./SidebarContext', () => ({
   useSidebar: vi.fn(),
@@ -111,6 +121,7 @@ const emptyCoursesResult = {
 describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockNavigate.mockClear();
     mockedUseGetMyCoursesQuery.mockReturnValue(emptyCoursesResult);
     mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: teacherUser } as any);
   });
@@ -440,5 +451,62 @@ describe('Sidebar', () => {
     );
 
     expect(screen.queryByText('Математика')).not.toBeInTheDocument();
+  });
+
+  // --- Admin button ---
+
+  test('shows admin button when currentUser is admin', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: adminUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText('Админ-панель')).toBeInTheDocument();
+  });
+
+  test('hides admin button when currentUser is not admin', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: studentUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Админ-панель')).not.toBeInTheDocument();
+  });
+
+  test('hides admin button when currentUser is undefined', () => {
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: undefined } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    expect(screen.queryByText('Админ-панель')).not.toBeInTheDocument();
+  });
+
+  test('navigates to /admin when admin button is clicked', async () => {
+    const user = userEvent.setup();
+    mockedUseSidebar.mockReturnValue({ isExpanded: true, toggle: vi.fn() });
+    mockedUseGetCurrentUserInfoQuery.mockReturnValue({ data: adminUser } as any);
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByText('Админ-панель'));
+
+    expect(mockNavigate).toHaveBeenCalledWith('/admin');
   });
 });

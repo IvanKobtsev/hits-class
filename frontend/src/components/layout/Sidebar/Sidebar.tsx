@@ -5,6 +5,7 @@ import SchoolIcon from 'assets/icons/school.svg?react';
 import PeopleIcon from 'assets/icons/people.svg?react';
 import AddIcon from 'assets/icons/add.svg?react';
 import LoginIcon from 'assets/icons/login.svg?react';
+import ListUlIcon from 'assets/icons/list-ul.svg?react';
 import { useGetMyCoursesQuery } from 'services/api/api-client/CourseQuery';
 import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { useSidebar } from './SidebarContext';
@@ -24,6 +25,10 @@ export const Sidebar: React.FC = () => {
     if (location.pathname !== '/courses') {
       void navigate('/courses');
     }
+  };
+
+  const handleAdminClick = () => {
+    void navigate('/admin');
   };
 
   const [isStudyingExpanded, setIsStudyingExpanded] = useState(false);
@@ -93,6 +98,16 @@ export const Sidebar: React.FC = () => {
           onClick={() => setIsJoinCourseOpen(true)}
           isExpanded={isExpanded}
         />
+        {currentUser?.isAdmin && (
+          <div className={styles.navBottom}>
+            <SidebarExpandableButton
+              title="Админ-панель"
+              icon={ListUlIcon}
+              onClick={handleAdminClick}
+              isExpanded={isExpanded}
+            />
+          </div>
+        )}
       </nav>
 
       <CreateCourseModal
