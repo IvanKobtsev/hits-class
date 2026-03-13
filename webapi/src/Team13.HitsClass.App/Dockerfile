@@ -11,12 +11,21 @@ RUN \
   && mkdir /files \
   && chmod 777 /files
 
+# Installing nodejs
+RUN apt-get update -yq \
+    && apt-get install curl gnupg -yq \
+    && curl -sL https://deb.nodesource.com/setup_22.x | bash \
+    && apt-get install nodejs -yq
+
 ENV ASPNETCORE_URLS="http://*:5000"
 COPY . /webapi
 
 RUN useradd dotnetuser --create-home --uid 4000 && \
   chown dotnetuser /webapi && \
   chown -R dotnetuser /webapi/wwwroot
+
+WORKDIR /webapi/Node.js/Scripts
+RUN npm install
 
 WORKDIR /webapi
 USER dotnetuser
