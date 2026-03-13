@@ -155,15 +155,10 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
             </button>
           </div>
           <div className={styles.selectedBody}>
-            <div className={styles.statusRow}>
-              <span className={`${styles.statusBadge} ${statusClass(selectedSubmission.state)}`}>
-                {statusLabel(selectedSubmission.state)}
+            <div>
+              <span className={`${styles.statusBadge} ${isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(selectedSubmission.state)}`}>
+                {isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(selectedSubmission.state)}
               </span>
-              {isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) && (
-                <span className={`${styles.statusBadge} ${styles.statusLate}`}>
-                  Сдано с опозданием
-                </span>
-              )}
             </div>
 
             {selectedSubmission.attachments.length > 0 && (
@@ -240,14 +235,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                   )}
                 </div>
               </div>
-              <span className={`${styles.statusBadge} ${statusClass(sub.state)}`}>
-                {statusLabel(sub.state)}
+              <span className={`${styles.statusBadge} ${isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(sub.state)}`}>
+                {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(sub.state)}
               </span>
-              {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) && (
-                <span className={`${styles.statusBadge} ${styles.statusLate}`}>
-                  Сдано с опозданием
-                </span>
-              )}
               <div className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}>
                 {sub.mark ?? '—'}
               </div>

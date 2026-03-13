@@ -67,6 +67,20 @@ describe('StudentSubmissionsTab — late submission', () => {
     expect(screen.getByText('Сдано с опозданием')).toBeInTheDocument();
   });
 
+  test('shows only "Сдано с опозданием" (not "Сдано") in the row badge when submitted after deadline', () => {
+    mockedUseGetSubmissionsQuery.mockReturnValue({
+      data: { data: [makeListItem({ lastSubmittedAtUTC: AFTER_DEADLINE })], totalCount: 1 },
+    } as any);
+
+    renderTab(DEADLINE);
+
+    const row = screen.getByTestId('submission-row-1');
+    // The row badge must say "Сдано с опозданием", not just "Сдано"
+    const badge = row.querySelector('[class*="statusBadge"]');
+    expect(badge?.textContent).toBe('Сдано с опозданием');
+    expect(badge?.textContent).not.toBe('Сдано');
+  });
+
   test('does not show "Сдано с опозданием" when submitted before deadline', () => {
     mockedUseGetSubmissionsQuery.mockReturnValue({
       data: { data: [makeListItem({ lastSubmittedAtUTC: BEFORE_DEADLINE })], totalCount: 1 },
