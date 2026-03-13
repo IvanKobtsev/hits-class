@@ -10,12 +10,14 @@ vi.mock('components/uikit/avatar/Avatar', () => ({
   ),
 }));
 
-const mockUser: UserDto = {
+/** Mock user - roles included for CI where UserDto may have roles from generated API. */
+const mockUser = {
   id: 'user-1',
   email: 'student@test.com',
   legalName: 'Иван Иванов',
   groupNumber: 'А-101',
-};
+  roles: [] as string[],
+} as UserDto;
 
 describe('StudentToBeTargeted', () => {
   beforeEach(() => {
