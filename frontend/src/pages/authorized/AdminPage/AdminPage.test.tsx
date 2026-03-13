@@ -144,4 +144,29 @@ describe('AdminPage', () => {
       expect(mockAddRoleToUser).toHaveBeenCalledWith('u1', 'Teacher');
     });
   });
+
+  test('displays current role from API as default (Admin)', () => {
+    const usersWithRoles: UserDto[] = [
+      { ...mockUsers[0], roles: ['Admin'] },
+      { ...mockUsers[1], roles: [] },
+    ];
+    setupQuery(usersWithRoles);
+    render(<AdminPage />);
+
+    const select1 = screen.getByTestId('user-with-role-select-u1') as HTMLSelectElement;
+    const select2 = screen.getByTestId('user-with-role-select-u2') as HTMLSelectElement;
+    expect(select1.value).toBe('Admin');
+    expect(select2.value).toBe('Student');
+  });
+
+  test('displays current role from API as default (Teacher)', () => {
+    const usersWithRoles: UserDto[] = [
+      { ...mockUsers[0], roles: ['Teacher'] },
+    ];
+    setupQuery(usersWithRoles);
+    render(<AdminPage />);
+
+    const select = screen.getByTestId('user-with-role-select-u1') as HTMLSelectElement;
+    expect(select.value).toBe('Teacher');
+  });
 });

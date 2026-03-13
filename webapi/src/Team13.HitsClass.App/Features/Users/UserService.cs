@@ -83,10 +83,18 @@ public class UserService
     public async Task<PagedResult<UserDto>> GetUsers(SearchUsersDto searchDto)
     {
         var query = _dbContext.Users.AsNoTracking();
+        var pagedResult = await query.ToPagingListAsync(searchDto, nameof(User.LegalName));
 
-        return await query
-            .Select(u => u.ToUserDto())
-            .ToPagingListAsync(searchDto, nameof(User.LegalName));
+        var usersWithRoles = new List<UserDto>();
+        foreach (var user in pagedResult.Data)
+        {
+            var roles = await _userManager.GetRolesAsync(user);
+            var dto = user.ToUserDto();
+            dto.Roles = roles.Where(r => UserRoles.All.Contains(r)).ToList();
+            usersWithRoles.Add(dto);
+        }
+
+        return new PagedResult<UserDto>(usersWithRoles, pagedResult.TotalCount);
     }
 
     public async Task AddRoleToUser(string userId, string role)
