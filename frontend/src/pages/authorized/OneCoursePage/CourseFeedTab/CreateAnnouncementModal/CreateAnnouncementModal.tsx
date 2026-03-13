@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
@@ -15,7 +15,9 @@ import { useModal } from 'components/uikit/modal/useModal';
 import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
 import { requiredRule } from 'helpers/form/react-hook-form-helper';
 import { useCreateAnnouncementMutation } from 'services/api/api-client/AnnouncementQuery';
+import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useUploadFileMutation } from 'services/api/api-client/FilesQuery';
+import { TargetStudents } from '../TargetStudents/TargetStudents';
 import {
   AttachedFileItem,
   AttachedFilesTable,
@@ -53,9 +55,9 @@ export const CreateAnnouncementModal = ({
   onClose,
 }: CreateAnnouncementModalProps) => {
   const { courseId } = useParams<{ courseId: string }>();
-  const { mutateAsync, isPending } = useCreateAnnouncementMutation(
-    Number(courseId),
-  );
+  const courseIdNum = Number(courseId);
+  const { mutateAsync, isPending } = useCreateAnnouncementMutation(courseIdNum);
+  const { data: course } = useGetCourseQuery(courseIdNum);
   const queryClient = useQueryClient();
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,7 +65,14 @@ export const CreateAnnouncementModal = ({
   const [uploadedFileInfos, setUploadedFileInfos] = useState<
     Record<string, FileInfoDto>
   >({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { mutate: uploadFile } = useUploadFileMutation();
+
+  useEffect(() => {
+    if (isOpen && course?.students) {
+      setSelectedIds(new Set(course.students.map((s) => s.id)));
+    }
+  }, [isOpen, course?.students]);
 
   const attachments: Attachment[] =
     Object.values(uploadedFileInfos).map(fileInfoToAttachment);
@@ -71,15 +80,20 @@ export const CreateAnnouncementModal = ({
   const form = useAdvancedForm<CreateAnnouncementForm>(
     async (data) => {
       try {
+        const students = course?.students ?? [];
+        const targetUsersIds =
+          selectedIds.size === 0 || selectedIds.size === students.length
+            ? null
+            : [...selectedIds];
         await mutateAsync({
           content: data.content,
-          targetUsersIds: null,
+          targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
           payload: { publicationType: 'Announcement' },
         });
         await queryClient.invalidateQueries({
           queryKey: QueryFactory.PublicationsQuery.getPublicationsQueryKey({
-            courseId: 1,
+            courseId: courseIdNum,
           }).slice(0, 1),
         });
         onClose();
@@ -158,9 +172,13 @@ export const CreateAnnouncementModal = ({
       onClose={handleClose}
       isBlocking={false}
       title="Создать объявление"
+      maxWidth="lg"
+      contentClassName={styles.wideModalContent}
     >
       <Loading loading={isPending}>
-        <form onSubmit={form.handleSubmitDefault} className={styles.form}>
+        <div className={styles.formLayout}>
+          <div className={styles.formColumn}>
+          <form onSubmit={form.handleSubmitDefault} className={styles.form}>
           <Field title="Содержание" testId="CreateAnnouncement-content">
             <TextArea
               {...form.register('content', { ...requiredRule() })}
@@ -204,6 +222,15 @@ export const CreateAnnouncementModal = ({
             />
           </div>
         </form>
+          </div>
+          <div className={styles.targetColumn}>
+            <TargetStudents
+              courseId={courseIdNum}
+              selectedIds={selectedIds}
+              onSelectionChange={setSelectedIds}
+            />
+          </div>
+        </div>
       </Loading>
     </CustomModal>
   );
