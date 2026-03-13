@@ -123,11 +123,13 @@ export function handleLoginErrors(e: unknown): never {
         } else if (
           response.data?.error_description === 'invalid_username_or_password'
         ) {
-          throw new Error('Login_Failed');
+          throw new Error('Неверный логин или пароль');
         }
       }
     }
   }
 
-  throw new Error('Login_Unknown_Failure');
+  throw new Error(
+    'Ошибка авторизации. Убедитесь, что ваш аккаунт подтверждён.',
+  );
 }

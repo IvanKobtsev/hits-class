@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Tabs, Tab } from '@mui/material';
+import { Tabs, Tab, Button } from '@mui/material';
 import { QueryFactory } from 'services/api';
 import { Loading } from 'components/uikit/suspense/Loading';
 import { useCourseRole } from './useCourseRole';
 import { CourseFeedTab } from './CourseFeedTab/CourseFeedTab';
+import { CreateAnnouncementModal } from './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal';
+import { CreateAssignmentModal } from './CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal';
+import { CourseMembersTab } from './CourseMembersTab/CourseMembersTab';
 import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
 import { Navigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
+import { exportMarks } from 'services/api/api-client/CourseClient';
 import { Links } from 'application/constants/links';
+import { GradeList } from './GradeList/GradeList';
 
 type TabValue = 'feed' | 'grades' | 'members';
 
@@ -18,6 +23,8 @@ export const OneCoursePage: React.FC = () => {
   const id = Number(courseId);
 
   const [activeTab, setActiveTab] = useState<TabValue>('feed');
+  const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
+  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
 
   const {
     data: course,
@@ -29,6 +36,17 @@ export const OneCoursePage: React.FC = () => {
     QueryFactory.PublicationsQuery.useGetPublicationsQuery({ courseId: id });
 
   const role = useCourseRole(course);
+
+  const handleExportMarks = async () => {
+    const response = await exportMarks(id);
+
+    const url = URL.createObjectURL(response.data);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = response.fileName ?? `Оценки.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
   const isLoading = courseLoading || pubLoading;
 
   if (!courseLoading && courseError) {
@@ -87,21 +105,40 @@ export const OneCoursePage: React.FC = () => {
                 courseId={id}
                 publications={publicationsData?.data ?? []}
                 role={role}
+                onCreateAnnouncement={() => setIsAnnouncementModalOpen(true)}
+                onCreateAssignment={() => setIsAssignmentModalOpen(true)}
               />
             )}
             {activeTab === 'grades' && (
               <div data-test-id="OneCoursePage-grades">
-                Оценки — в разработке
+                {role === 'teacher' && (
+                  <Button variant="outlined" onClick={handleExportMarks}>
+                    Экспорт оценок
+                  </Button>
+                )}
+                {
+                  role === 'student' && (
+                    <GradeList publications={publicationsData?.data ?? []} />
+                  )
+                }
               </div>
             )}
             {activeTab === 'members' && (
               <div data-test-id="OneCoursePage-members">
-                Участники — в разработке
+                <CourseMembersTab course={course} />
               </div>
             )}
           </div>
         </div>
       )}
+      <CreateAnnouncementModal
+        isOpen={isAnnouncementModalOpen}
+        onClose={() => setIsAnnouncementModalOpen(false)}
+      />
+      <CreateAssignmentModal
+        isOpen={isAssignmentModalOpen}
+        onClose={() => setIsAssignmentModalOpen(false)}
+      />
     </Loading>
   );
 };

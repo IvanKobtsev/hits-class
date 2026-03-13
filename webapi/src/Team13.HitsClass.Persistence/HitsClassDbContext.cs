@@ -22,6 +22,7 @@ public class HitsClassDbContext
     public DbSet<Publication> Publications { get; set; }
     public DbSet<Submission> Submissions { get; set; }
     public DbSet<SubmissionComment> SubmissionComments { get; set; }
+    public DbSet<PublicationComment> PublicationComments { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -94,6 +95,10 @@ public class HitsClassDbContext
             b.HasOne(p => p.Author);
             b.HasMany(p => p.TargetUsers).WithMany();
             b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
+            b.HasMany<PublicationComment>()
+                .WithOne(c => c.Publication)
+                .HasForeignKey(c => c.PublicationId)
+                .OnDelete(DeleteBehavior.Cascade);
             b.OwnsMany(
                 p => p.Attachments,
                 ownedNavigationBuilder =>
@@ -125,6 +130,11 @@ public class HitsClassDbContext
                 .HasConversion(v => v.Json, v => new LexicalState(v))
                 .HasColumnType("jsonb")
                 .IsRequired();
+        });
+
+        builder.Entity<PublicationComment>(b =>
+        {
+            b.HasOne(c => c.Author).WithMany().HasForeignKey(c => c.AuthorId);
         });
     }
 

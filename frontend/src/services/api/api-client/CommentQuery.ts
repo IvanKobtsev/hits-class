@@ -26,6 +26,10 @@ export type AddCommentToAssignmentCommentQueryParameters = {
   assignmentId: number ;
 }
 
+export type AddCommentToSubmissionCommentQueryParameters = {
+  submissionId: number ;
+}
+
 export type GetPublicationCommentsCommentQueryParameters = {
   publicationId: number ;
 }
@@ -51,7 +55,7 @@ url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
   return url_;
 }
 
-let getAssignmentCommentsDefaultOptions: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, unknown, Types.PagedResultOfCommentDto>, 'queryKey'> = {
+let getAssignmentCommentsDefaultOptions: Omit<UseQueryOptions<Types.CommentDto[], unknown, Types.CommentDto[]>, 'queryKey'> = {
   queryFn: __getAssignmentComments,
 };
 export function getGetAssignmentCommentsDefaultOptions() {
@@ -84,13 +88,13 @@ function __getAssignmentComments(context: QueryFunctionContext) {
       context.queryKey[2] as number    );
 }
 
-export function useGetAssignmentCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(dto: GetAssignmentCommentsCommentQueryParameters, options?: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetAssignmentCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(dto: GetAssignmentCommentsCommentQueryParameters, options?: Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
- * Retrieves all Comments of the specified Assignment.
+ * Retrieves all Comments of the current user's submission for the specified Assignment.
  */
-export function useGetAssignmentCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(assignmentId: number, options?: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
-export function useGetAssignmentCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
-  let options: UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData> | undefined = undefined;
+export function useGetAssignmentCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(assignmentId: number, options?: Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetAssignmentCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.CommentDto[], TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
   let assignmentId: any = undefined;
   
@@ -111,26 +115,26 @@ export function useGetAssignmentCommentsQuery<TSelectData = Types.PagedResultOfC
     options!.meta = { ...options!.meta, axiosConfig };
   }
 
-  return useQuery<Types.PagedResultOfCommentDto, TError, TSelectData>({
+  return useQuery<Types.CommentDto[], TError, TSelectData>({
     queryFn: __getAssignmentComments,
     queryKey: getAssignmentCommentsQueryKey(assignmentId),
-    ...getAssignmentCommentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>,
+    ...getAssignmentCommentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>,
     ...options,
   });
 }
 /**
- * Retrieves all Comments of the specified Assignment.
+ * Retrieves all Comments of the current user's submission for the specified Assignment.
  */
-export function setGetAssignmentCommentsData(queryClient: QueryClient, updater: (data: Types.PagedResultOfCommentDto | undefined) => Types.PagedResultOfCommentDto, assignmentId: number) {
+export function setGetAssignmentCommentsData(queryClient: QueryClient, updater: (data: Types.CommentDto[] | undefined) => Types.CommentDto[], assignmentId: number) {
   queryClient.setQueryData(getAssignmentCommentsQueryKey(assignmentId),
     updater
   );
 }
 
 /**
- * Retrieves all Comments of the specified Assignment.
+ * Retrieves all Comments of the current user's submission for the specified Assignment.
  */
-export function setGetAssignmentCommentsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PagedResultOfCommentDto | undefined) => Types.PagedResultOfCommentDto) {
+export function setGetAssignmentCommentsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.CommentDto[] | undefined) => Types.CommentDto[]) {
   queryClient.setQueryData(queryKey, updater);
 }
     
@@ -152,7 +156,7 @@ export function addCommentToAssignmentMutationKey(assignmentId: number): Mutatio
 }
 
 /**
- * Adds a Comment to the specified Assignment.
+ * Adds a Comment to the current user's submission for the specified Assignment.
  */
 export function useAddCommentToAssignmentMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.CommentDto, unknown, Types.CreateCommentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.CommentDto, unknown, Types.CreateCommentDto, TContext> {
   const key = addCommentToAssignmentMutationKey(assignmentId);
@@ -172,7 +176,7 @@ type AddCommentToAssignment__MutationParameters = AddCommentToAssignmentCommentQ
 }
 
 /**
- * Adds a Comment to the specified Assignment.
+ * Adds a Comment to the current user's submission for the specified Assignment.
  */
 export function useAddCommentToAssignmentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.CommentDto, unknown, AddCommentToAssignment__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddCommentToAssignmentCommentQueryParameters}): UseMutationResult<Types.CommentDto, unknown, AddCommentToAssignment__MutationParameters, TContext> {
   const key = addCommentToAssignmentMutationKey(options?.parameters?.assignmentId!);
@@ -187,6 +191,59 @@ return useMutation({
 });
 }
   
+export function addCommentToSubmissionUrl(submissionId: number): string {
+  let url_ = getBaseUrl() + "/api/submissions/{submissionId}/comments";
+if (submissionId === undefined || submissionId === null)
+  throw new Error("The parameter 'submissionId' must be defined.");
+url_ = url_.replace("{submissionId}", encodeURIComponent("" + submissionId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function addCommentToSubmissionMutationKey(submissionId: number): MutationKey {
+  return trimArrayEnd([
+      'CommentClient',
+      'addCommentToSubmission',
+      submissionId as any,
+    ]);
+}
+
+/**
+ * Adds a Comment to a specific Submission by its ID (for teachers).
+ */
+export function useAddCommentToSubmissionMutation<TContext>(submissionId: number, options?: Omit<UseMutationOptions<Types.CommentDto, unknown, Types.CreateCommentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.CommentDto, unknown, Types.CreateCommentDto, TContext> {
+  const key = addCommentToSubmissionMutationKey(submissionId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (createCommentDto: Types.CreateCommentDto) => Client.addCommentToSubmission(submissionId, createCommentDto),
+    mutationKey: key,
+  });
+}
+  
+type AddCommentToSubmission__MutationParameters = AddCommentToSubmissionCommentQueryParameters & {
+  createCommentDto: Types.CreateCommentDto;
+}
+
+/**
+ * Adds a Comment to a specific Submission by its ID (for teachers).
+ */
+export function useAddCommentToSubmissionMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.CommentDto, unknown, AddCommentToSubmission__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddCommentToSubmissionCommentQueryParameters}): UseMutationResult<Types.CommentDto, unknown, AddCommentToSubmission__MutationParameters, TContext> {
+  const key = addCommentToSubmissionMutationKey(options?.parameters?.submissionId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: AddCommentToSubmission__MutationParameters) => Client.addCommentToSubmission(data.submissionId ?? options?.parameters?.submissionId!, data.createCommentDto),
+  mutationKey: key,
+});
+}
+  
 export function getPublicationCommentsUrl(publicationId: number): string {
   let url_ = getBaseUrl() + "/api/publication/{publicationId}/comments";
 if (publicationId === undefined || publicationId === null)
@@ -196,7 +253,7 @@ url_ = url_.replace("{publicationId}", encodeURIComponent("" + publicationId));
   return url_;
 }
 
-let getPublicationCommentsDefaultOptions: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, unknown, Types.PagedResultOfCommentDto>, 'queryKey'> = {
+let getPublicationCommentsDefaultOptions: Omit<UseQueryOptions<Types.CommentDto[], unknown, Types.CommentDto[]>, 'queryKey'> = {
   queryFn: __getPublicationComments,
 };
 export function getGetPublicationCommentsDefaultOptions() {
@@ -229,13 +286,13 @@ function __getPublicationComments(context: QueryFunctionContext) {
       context.queryKey[2] as number    );
 }
 
-export function useGetPublicationCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(dto: GetPublicationCommentsCommentQueryParameters, options?: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPublicationCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(dto: GetPublicationCommentsCommentQueryParameters, options?: Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
  * Retrieves all Comments of the specified Publication.
  */
-export function useGetPublicationCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(publicationId: number, options?: Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
-export function useGetPublicationCommentsQuery<TSelectData = Types.PagedResultOfCommentDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
-  let options: UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData> | undefined = undefined;
+export function useGetPublicationCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(publicationId: number, options?: Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPublicationCommentsQuery<TSelectData = Types.CommentDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.CommentDto[], TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
   let publicationId: any = undefined;
   
@@ -256,17 +313,17 @@ export function useGetPublicationCommentsQuery<TSelectData = Types.PagedResultOf
     options!.meta = { ...options!.meta, axiosConfig };
   }
 
-  return useQuery<Types.PagedResultOfCommentDto, TError, TSelectData>({
+  return useQuery<Types.CommentDto[], TError, TSelectData>({
     queryFn: __getPublicationComments,
     queryKey: getPublicationCommentsQueryKey(publicationId),
-    ...getPublicationCommentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.PagedResultOfCommentDto, TError, TSelectData>, 'queryKey'>,
+    ...getPublicationCommentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.CommentDto[], TError, TSelectData>, 'queryKey'>,
     ...options,
   });
 }
 /**
  * Retrieves all Comments of the specified Publication.
  */
-export function setGetPublicationCommentsData(queryClient: QueryClient, updater: (data: Types.PagedResultOfCommentDto | undefined) => Types.PagedResultOfCommentDto, publicationId: number) {
+export function setGetPublicationCommentsData(queryClient: QueryClient, updater: (data: Types.CommentDto[] | undefined) => Types.CommentDto[], publicationId: number) {
   queryClient.setQueryData(getPublicationCommentsQueryKey(publicationId),
     updater
   );
@@ -275,7 +332,7 @@ export function setGetPublicationCommentsData(queryClient: QueryClient, updater:
 /**
  * Retrieves all Comments of the specified Publication.
  */
-export function setGetPublicationCommentsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PagedResultOfCommentDto | undefined) => Types.PagedResultOfCommentDto) {
+export function setGetPublicationCommentsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.CommentDto[] | undefined) => Types.CommentDto[]) {
   queryClient.setQueryData(queryKey, updater);
 }
     

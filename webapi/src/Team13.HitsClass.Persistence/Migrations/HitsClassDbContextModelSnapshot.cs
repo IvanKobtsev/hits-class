@@ -588,6 +588,40 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.ToTable("Publications");
                 });
 
+            modelBuilder.Entity("Team13.HitsClass.Domain.PublicationComment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AuthorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("LastEditedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("PublicationId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("TextLexical")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorId");
+
+                    b.HasIndex("PublicationId");
+
+                    b.ToTable("PublicationComments");
+                });
+
             modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>
                 {
                     b.Property<int>("Id")
@@ -953,6 +987,25 @@ namespace Team13.HitsClass.Persistence.Migrations
                     b.Navigation("Author");
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("Team13.HitsClass.Domain.PublicationComment", b =>
+                {
+                    b.HasOne("Team13.HitsClass.Domain.User", "Author")
+                        .WithMany()
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Team13.HitsClass.Domain.Publication", "Publication")
+                        .WithMany()
+                        .HasForeignKey("PublicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+
+                    b.Navigation("Publication");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>

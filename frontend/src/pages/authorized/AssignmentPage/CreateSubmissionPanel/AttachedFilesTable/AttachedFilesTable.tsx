@@ -21,7 +21,7 @@ export type AttachedFileItem = {
 
 export type AttachedFilesTableProps = {
   files: AttachedFileItem[];
-  onRemove: (id: string) => void;
+  onRemove?: (id: string) => void;
 };
 
 export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
@@ -34,15 +34,17 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
   return (
     <>
       <table className={styles.table} data-test-id="attached-files-table">
-        <thead>
-          <tr>
-            <th className={styles.colIcon} />
-            <th className={styles.colName}>Имя</th>
-            <th className={styles.colSize}>Размер</th>
-            <th className={styles.colProgress}>Статус</th>
-            <th className={styles.colAction} />
-          </tr>
-        </thead>
+        {files.length > 0 && (
+          <thead>
+            <tr>
+              <th className={styles.colIcon} />
+              <th className={styles.colName}>Имя</th>
+              <th className={styles.colSize}>Размер</th>
+              <th className={styles.colProgress}>Статус</th>
+              {onRemove && <th className={styles.colAction} />}
+            </tr>
+          </thead>
+        )}
         <tbody>
           {files.map((file) => (
             <tr key={file.id}>
@@ -65,20 +67,25 @@ export const AttachedFilesTable: React.FC<AttachedFilesTableProps> = ({
                     Размер файла не должен превышать 400 MB
                   </span>
                 )}
+                {file.status === 'uploaded' && (
+                  <span className={styles.successText}>✓</span>
+                )}
                 {file.status === 'error' && (
                   <span className={styles.errorText}>Ошибка загрузки</span>
                 )}
               </td>
-              <td className={styles.cellAction}>
-                <button
-                  type="button"
-                  className={styles.removeButton}
-                  onClick={() => onRemove(file.id)}
-                  aria-label="Remove file"
-                >
-                  ×
-                </button>
-              </td>
+              {onRemove && (
+                <td className={styles.cellAction}>
+                  <button
+                    type="button"
+                    className={styles.removeButton}
+                    onClick={() => onRemove(file.id)}
+                    aria-label="Remove file"
+                  >
+                    ×
+                  </button>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

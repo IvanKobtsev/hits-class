@@ -8,6 +8,14 @@ vi.mock('react-router', async () => {
   return { ...actual };
 });
 
+vi.mock('components/functionality-parts/DelAndEditCourseButtons/DelAndEditCourseButtons', () => ({
+  DelAndEditCourseButtons: vi.fn(({ courseId }) => (
+    <div data-test-id={`mock-edit-buttons-${courseId}`}>
+      Mock Edit Buttons
+    </div>
+  )),
+}));
+
 const mockCourse = {
   id: 1,
   title: 'Введение в программирование',

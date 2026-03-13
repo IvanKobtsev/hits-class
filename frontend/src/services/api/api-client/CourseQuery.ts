@@ -60,6 +60,26 @@ export type JoinCourseCourseQueryParameters = {
   inviteCode: string ;
 }
 
+export type ExportMarksCourseQueryParameters = {
+  courseId: number ;
+}
+
+export type AddStudentCourseQueryParameters = {
+  id: number ;
+}
+
+export type BanStudentCourseQueryParameters = {
+  id: number ;
+}
+
+export type AddTeacherCourseQueryParameters = {
+  id: number ;
+}
+
+export type DeleteTeacherCourseQueryParameters = {
+  id: number ;
+}
+
 export function getCoursesUrl(title?: string | null | undefined, createdByMe?: boolean | null | undefined, whereImTeacher?: boolean | null | undefined, whereImStudent?: boolean | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
   let url_ = getBaseUrl() + "/api/courses?";
 if (title !== undefined && title !== null)
@@ -722,6 +742,304 @@ export function useJoinCourseMutationWithParameters<TContext>(options?: Omit<Use
 return useMutation({
   ...options, 
   mutationFn: (data: JoinCourse__MutationParameters) => Client.joinCourse(data.inviteCode ?? options?.parameters?.inviteCode!),
+  mutationKey: key,
+});
+}
+  
+export function exportMarksUrl(courseId: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{courseId}/marks/export";
+if (courseId === undefined || courseId === null)
+  throw new Error("The parameter 'courseId' must be defined.");
+url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let exportMarksDefaultOptions: Omit<UseQueryOptions<Types.FileResponse, unknown, Types.FileResponse>, 'queryKey'> = {
+  queryFn: __exportMarks,
+};
+export function getExportMarksDefaultOptions() {
+  return exportMarksDefaultOptions;
+};
+export function setExportMarksDefaultOptions(options: typeof exportMarksDefaultOptions) {
+  exportMarksDefaultOptions = options;
+}
+
+export function exportMarksQueryKey(courseId: number): QueryKey;
+export function exportMarksQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { courseId,  } = params[0] as ExportMarksCourseQueryParameters;
+
+    return trimArrayEnd([
+        'CourseClient',
+        'exportMarks',
+        courseId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'CourseClient',
+        'exportMarks',
+        ...params
+      ]);
+  }
+}
+function __exportMarks(context: QueryFunctionContext) {
+  return Client.exportMarks(
+      context.queryKey[2] as number    );
+}
+
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(dto: ExportMarksCourseQueryParameters, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(courseId: number, options?: Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useExportMarksQuery<TSelectData = Types.FileResponse, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.FileResponse, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let courseId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ courseId,  } = params[0] as ExportMarksCourseQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [courseId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.FileResponse, TError, TSelectData>({
+    queryFn: __exportMarks,
+    queryKey: exportMarksQueryKey(courseId),
+    ...exportMarksDefaultOptions as unknown as Omit<UseQueryOptions<Types.FileResponse, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function setExportMarksData(queryClient: QueryClient, updater: (data: Types.FileResponse | undefined) => Types.FileResponse, courseId: number) {
+  queryClient.setQueryData(exportMarksQueryKey(courseId),
+    updater
+  );
+}
+
+/**
+ * Export marks for all students in a course as CSV
+ */
+export function setExportMarksDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.FileResponse | undefined) => Types.FileResponse) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function addStudentUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{id}/student";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function addStudentMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'addStudent',
+      id as any,
+    ]);
+}
+
+export function useAddStudentMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = addStudentMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (studentId: string) => Client.addStudent(id, studentId),
+    mutationKey: key,
+  });
+}
+  
+type AddStudent__MutationParameters = AddStudentCourseQueryParameters & {
+  studentId: string;
+}
+
+export function useAddStudentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, AddStudent__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddStudentCourseQueryParameters}): UseMutationResult<void, unknown, AddStudent__MutationParameters, TContext> {
+  const key = addStudentMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: AddStudent__MutationParameters) => Client.addStudent(data.id ?? options?.parameters?.id!, data.studentId),
+  mutationKey: key,
+});
+}
+  
+export function banStudentUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{id}/student";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function banStudentMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'banStudent',
+      id as any,
+    ]);
+}
+
+/**
+ * Bans student from course
+ */
+export function useBanStudentMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = banStudentMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (studentId: string) => Client.banStudent(id, studentId),
+    mutationKey: key,
+  });
+}
+  
+type BanStudent__MutationParameters = BanStudentCourseQueryParameters & {
+  studentId: string;
+}
+
+/**
+ * Bans student from course
+ */
+export function useBanStudentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, BanStudent__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: BanStudentCourseQueryParameters}): UseMutationResult<void, unknown, BanStudent__MutationParameters, TContext> {
+  const key = banStudentMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: BanStudent__MutationParameters) => Client.banStudent(data.id ?? options?.parameters?.id!, data.studentId),
+  mutationKey: key,
+});
+}
+  
+export function addTeacherUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{id}/teacher";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function addTeacherMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'addTeacher',
+      id as any,
+    ]);
+}
+
+/**
+ * Adds teacher to course
+ */
+export function useAddTeacherMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = addTeacherMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (teacherId: string) => Client.addTeacher(id, teacherId),
+    mutationKey: key,
+  });
+}
+  
+type AddTeacher__MutationParameters = AddTeacherCourseQueryParameters & {
+  teacherId: string;
+}
+
+/**
+ * Adds teacher to course
+ */
+export function useAddTeacherMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, AddTeacher__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddTeacherCourseQueryParameters}): UseMutationResult<void, unknown, AddTeacher__MutationParameters, TContext> {
+  const key = addTeacherMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: AddTeacher__MutationParameters) => Client.addTeacher(data.id ?? options?.parameters?.id!, data.teacherId),
+  mutationKey: key,
+});
+}
+  
+export function deleteTeacherUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{id}/teacher";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function deleteTeacherMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'deleteTeacher',
+      id as any,
+    ]);
+}
+
+/**
+ * Deletes teacher from course
+ */
+export function useDeleteTeacherMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = deleteTeacherMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (teacherId: string) => Client.deleteTeacher(id, teacherId),
+    mutationKey: key,
+  });
+}
+  
+type DeleteTeacher__MutationParameters = DeleteTeacherCourseQueryParameters & {
+  teacherId: string;
+}
+
+/**
+ * Deletes teacher from course
+ */
+export function useDeleteTeacherMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, DeleteTeacher__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: DeleteTeacherCourseQueryParameters}): UseMutationResult<void, unknown, DeleteTeacher__MutationParameters, TContext> {
+  const key = deleteTeacherMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: DeleteTeacher__MutationParameters) => Client.deleteTeacher(data.id ?? options?.parameters?.id!, data.teacherId),
   mutationKey: key,
 });
 }

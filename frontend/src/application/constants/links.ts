@@ -1,12 +1,15 @@
 import {
   createRoute,
   RequiredNumberParam,
-  StringParam,
+  RequiredStringParam,
 } from 'react-router-url-params';
 
 export const Links = {
   Unauthorized: {
     Login: createRoute('/login'),
+    ConfirmEmail: createRoute('/confirm-email/:userId', {
+      userId: RequiredStringParam,
+    }),
   },
   Authorized: {
     Dashboard: createRoute('/'),
@@ -19,6 +22,11 @@ export const Links = {
     }),
     AssignmentRoutes: createRoute(
       '/courses/:courseId/assignments/:assignmentId',
+      { courseId: RequiredNumberParam, assignmentId: RequiredNumberParam },
+    ),
+    AnnouncementRoutes: createRoute(
+      '/courses/:courseId/announcements/:announcementId',
+      { courseId: RequiredNumberParam, announcementId: RequiredNumberParam },
     ),
     Products: createRoute('/products'),
     ProductDetails: createRoute('/products/:id', {

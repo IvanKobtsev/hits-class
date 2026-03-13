@@ -4,6 +4,7 @@ import { CourseDto } from 'services/api/api-client';
 import { CourseRole } from '../useCourseRole';
 import CopyIcon from '../../../../components/lexical/icons/copy.svg?react';
 import styles from './Courseheader.module.scss';
+import { DelAndEditCourseButtons } from 'components/functionality-parts/DelAndEditCourseButtons/DelAndEditCourseButtons';
 
 type Props = {
   course: CourseDto;
@@ -46,6 +47,7 @@ export const CourseHeader: React.FC<Props> = ({ course, role }) => {
         >
           {course.title}
         </Typography>
+        <DelAndEditCourseButtons courseId={course.id} />
       </Box>
 
       {/* Info */}

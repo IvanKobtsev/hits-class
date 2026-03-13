@@ -1,7 +1,24 @@
 import AssignmentIcon from 'assets/icons/list-ul.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
-import { AssignmentDto, SubmissionDto } from 'services/api/api-client.types';
+import { AssignmentPayload, PublicationDto, SubmissionDto } from 'services/api/api-client.types';
+import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
+
+function isLexicalState(value: string): boolean {
+  try {
+    const parsed = JSON.parse(value);
+    return (
+      typeof parsed === 'object' &&
+      parsed !== null &&
+      'root' in parsed &&
+      typeof parsed.root === 'object' &&
+      parsed.root !== null &&
+      Array.isArray(parsed.root.children)
+    );
+  } catch {
+    return false;
+  }
+}
 
 function formatDateUTC(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
@@ -17,12 +34,15 @@ function formatDateTimeUTC(date: Date): string {
 }
 
 export type AssignmentViewProps = {
-  assignment: AssignmentDto;
+  assignment: PublicationDto;
   submission?: SubmissionDto | null;
 };
 
 export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) => {
-  const { title, description, author, createdAtUTC, deadlineUTC } = assignment;
+  const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
+  const createdAtUTC = new Date(createdAtUTCRaw);
+  const { title, deadlineUtc: deadlineUtcRaw } = assignment.publicationPayload as AssignmentPayload;
+  const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
   return (
     <div className={styles.container}>
@@ -63,20 +83,31 @@ export const AssignmentView = ({ assignment, submission }: AssignmentViewProps) 
               className={styles.metaValue}
               data-test-id="AssignmentView-deadline"
             >
-              {deadlineUTC ? formatDateTimeUTC(deadlineUTC) : 'Не указан'}
+              {deadlineUtc ? formatDateTimeUTC(deadlineUtc) : 'Не указан'}
             </span>
           </span>
         </div>
       </div>
 
       <div className={styles.body}>
-        {description != null && (
+        {content != null && (
           <div
             className={styles.description}
             data-test-id="AssignmentView-description"
           >
-            <LexicalViewer lexicalState={description} />
+            {isLexicalState(content)
+              ? <LexicalViewer lexicalState={content} />
+              : <span>{content}</span>
+            }
           </div>
+        )}
+
+        {assignment.attachments != null && assignment.attachments.length > 0 && (
+          <AttachmentsList
+            attachments={assignment.attachments}
+            onError={(error) => console.error('File download error:', error)}
+            data-test-id="AssignmentView-attachments"
+          />
         )}
 
         {submission?.mark != null && (

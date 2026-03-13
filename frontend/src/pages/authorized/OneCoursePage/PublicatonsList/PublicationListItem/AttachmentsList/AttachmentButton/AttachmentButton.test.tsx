@@ -12,6 +12,7 @@ const mockFile = {
   uuid: 'test-uuid-123',
   fileName: 'test-file.pdf',
   size: 1024 * 1024 * 2.5,
+  createdAt: new Date('2025-01-01'),
 };
 
 const mockDataTestId = 'attachment-button-1';

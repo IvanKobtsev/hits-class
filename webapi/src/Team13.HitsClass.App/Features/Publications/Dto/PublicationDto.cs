@@ -13,6 +13,7 @@ namespace Team13.HitsClass.App.Features.Publications.Dto
         public UserDto Author { get; set; }
         public List<Attachment> Attachments { get; set; }
         public PublicationType Type { get; set; }
+        public List<string> TargetUserIds { get; set; }
 
         public PublicationPayload PublicationPayload { get; set; }
     }

@@ -24,6 +24,10 @@ export type CreateSubmissionSubmissionQueryParameters = {
 
 export type GetSubmissionsSubmissionQueryParameters = {
   id: number ;
+  offset?: number | null | undefined ;
+  limit?: number | null | undefined ;
+  sortBy?: string | null | undefined ;
+  sortOrder?: Types.SortOrder | undefined ;
 }
 
 export type GetMySubmissionSubmissionQueryParameters = {
@@ -31,6 +35,14 @@ export type GetMySubmissionSubmissionQueryParameters = {
 }
 
 export type GetSubmissionSubmissionQueryParameters = {
+  id: number ;
+}
+
+export type SaveDraftSubmissionQueryParameters = {
+  id: number ;
+}
+
+export type RetractSubmissionSubmissionQueryParameters = {
   id: number ;
 }
 
@@ -91,11 +103,21 @@ return useMutation({
 });
 }
   
-export function getSubmissionsUrl(id: number): string {
-  let url_ = getBaseUrl() + "/api/assignments/{id}/submissions";
+export function getSubmissionsUrl(id: number, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
+  let url_ = getBaseUrl() + "/api/assignments/{id}/submissions?";
 if (id === undefined || id === null)
   throw new Error("The parameter 'id' must be defined.");
 url_ = url_.replace("{id}", encodeURIComponent("" + id));
+if (offset !== undefined && offset !== null)
+    url_ += "Offset=" + encodeURIComponent("" + offset) + "&";
+if (limit !== undefined && limit !== null)
+    url_ += "Limit=" + encodeURIComponent("" + limit) + "&";
+if (sortBy !== undefined && sortBy !== null)
+    url_ += "SortBy=" + encodeURIComponent("" + sortBy) + "&";
+if (sortOrder === null)
+    throw new Error("The parameter 'sortOrder' cannot be null.");
+else if (sortOrder !== undefined)
+    url_ += "SortOrder=" + encodeURIComponent("" + sortOrder) + "&";
   url_ = url_.replace(/[?&]$/, "");
   return url_;
 }
@@ -110,15 +132,20 @@ export function setGetSubmissionsDefaultOptions(options: typeof getSubmissionsDe
   getSubmissionsDefaultOptions = options;
 }
 
-export function getSubmissionsQueryKey(id: number): QueryKey;
+export function getSubmissionsQueryKey(dto: GetSubmissionsSubmissionQueryParameters): QueryKey;
+export function getSubmissionsQueryKey(id: number, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): QueryKey;
 export function getSubmissionsQueryKey(...params: any[]): QueryKey {
   if (params.length === 1 && isParameterObject(params[0])) {
-    const { id,  } = params[0] as GetSubmissionsSubmissionQueryParameters;
+    const { id, offset, limit, sortBy, sortOrder,  } = params[0] as GetSubmissionsSubmissionQueryParameters;
 
     return trimArrayEnd([
         'SubmissionClient',
         'getSubmissions',
         id as any,
+        offset as any,
+        limit as any,
+        sortBy as any,
+        sortOrder as any,
       ]);
   } else {
     return trimArrayEnd([
@@ -130,26 +157,34 @@ export function getSubmissionsQueryKey(...params: any[]): QueryKey {
 }
 function __getSubmissions(context: QueryFunctionContext) {
   return Client.getSubmissions(
-      context.queryKey[2] as number    );
+      context.queryKey[2] as number,       context.queryKey[3] as number | null | undefined,       context.queryKey[4] as number | null | undefined,       context.queryKey[5] as string | null | undefined,       context.queryKey[6] as Types.SortOrder | undefined    );
 }
 
 export function useGetSubmissionsQuery<TSelectData = Types.PagedResultOfSubmissionListItem, TError = unknown>(dto: GetSubmissionsSubmissionQueryParameters, options?: Omit<UseQueryOptions<Types.PagedResultOfSubmissionListItem, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
  * Gets all submissions for an assignment (check permission)
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
  */
-export function useGetSubmissionsQuery<TSelectData = Types.PagedResultOfSubmissionListItem, TError = unknown>(id: number, options?: Omit<UseQueryOptions<Types.PagedResultOfSubmissionListItem, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetSubmissionsQuery<TSelectData = Types.PagedResultOfSubmissionListItem, TError = unknown>(id: number, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined, options?: Omit<UseQueryOptions<Types.PagedResultOfSubmissionListItem, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 export function useGetSubmissionsQuery<TSelectData = Types.PagedResultOfSubmissionListItem, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
   let options: UseQueryOptions<Types.PagedResultOfSubmissionListItem, TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
   let id: any = undefined;
+  let offset: any = undefined;
+  let limit: any = undefined;
+  let sortBy: any = undefined;
+  let sortOrder: any = undefined;
   
   if (params.length > 0) {
     if (isParameterObject(params[0])) {
-      ({ id,  } = params[0] as GetSubmissionsSubmissionQueryParameters);
+      ({ id, offset, limit, sortBy, sortOrder,  } = params[0] as GetSubmissionsSubmissionQueryParameters);
       options = params[1];
       axiosConfig = params[2];
     } else {
-      [id, options, axiosConfig] = params;
+      [id, offset, limit, sortBy, sortOrder, options, axiosConfig] = params;
     }
   }
 
@@ -162,22 +197,30 @@ export function useGetSubmissionsQuery<TSelectData = Types.PagedResultOfSubmissi
 
   return useQuery<Types.PagedResultOfSubmissionListItem, TError, TSelectData>({
     queryFn: __getSubmissions,
-    queryKey: getSubmissionsQueryKey(id),
+    queryKey: getSubmissionsQueryKey(id, offset, limit, sortBy, sortOrder),
     ...getSubmissionsDefaultOptions as unknown as Omit<UseQueryOptions<Types.PagedResultOfSubmissionListItem, TError, TSelectData>, 'queryKey'>,
     ...options,
   });
 }
 /**
  * Gets all submissions for an assignment (check permission)
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
  */
-export function setGetSubmissionsData(queryClient: QueryClient, updater: (data: Types.PagedResultOfSubmissionListItem | undefined) => Types.PagedResultOfSubmissionListItem, id: number) {
-  queryClient.setQueryData(getSubmissionsQueryKey(id),
+export function setGetSubmissionsData(queryClient: QueryClient, updater: (data: Types.PagedResultOfSubmissionListItem | undefined) => Types.PagedResultOfSubmissionListItem, id: number, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined) {
+  queryClient.setQueryData(getSubmissionsQueryKey(id, offset, limit, sortBy, sortOrder),
     updater
   );
 }
 
 /**
  * Gets all submissions for an assignment (check permission)
+ * @param offset (optional) Offset of list.
+ * @param limit (optional) Number of requested records.
+ * @param sortBy (optional) Field name for sorting in DB.
+ * @param sortOrder (optional) Sort direction. Ascending or Descending.
  */
 export function setGetSubmissionsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PagedResultOfSubmissionListItem | undefined) => Types.PagedResultOfSubmissionListItem) {
   queryClient.setQueryData(queryKey, updater);
@@ -367,6 +410,110 @@ export function setGetSubmissionDataByQueryId(queryClient: QueryClient, queryKey
   queryClient.setQueryData(queryKey, updater);
 }
     
+export function saveDraftUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{id}/submission/draft";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function saveDraftMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'SubmissionClient',
+      'saveDraft',
+      id as any,
+    ]);
+}
+
+/**
+ * Save (upsert) draft submission
+ */
+export function useSaveDraftMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, Types.CreateSubmissionDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.SubmissionDto, unknown, Types.CreateSubmissionDto, TContext> {
+  const key = saveDraftMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.CreateSubmissionDto) => Client.saveDraft(id, dto),
+    mutationKey: key,
+  });
+}
+  
+type SaveDraft__MutationParameters = SaveDraftSubmissionQueryParameters & {
+  dto: Types.CreateSubmissionDto;
+}
+
+/**
+ * Save (upsert) draft submission
+ */
+export function useSaveDraftMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, SaveDraft__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: SaveDraftSubmissionQueryParameters}): UseMutationResult<Types.SubmissionDto, unknown, SaveDraft__MutationParameters, TContext> {
+  const key = saveDraftMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: SaveDraft__MutationParameters) => Client.saveDraft(data.id ?? options?.parameters?.id!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function retractSubmissionUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/assignments/{id}/submission/retract";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function retractSubmissionMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'SubmissionClient',
+      'retractSubmission',
+      id as any,
+    ]);
+}
+
+/**
+ * Retract student's own submission (sets state back to Draft)
+ */
+export function useRetractSubmissionMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.SubmissionDto, unknown, void, TContext> {
+  const key = retractSubmissionMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.retractSubmission(id),
+    mutationKey: key,
+  });
+}
+  
+type RetractSubmission__MutationParameters = RetractSubmissionSubmissionQueryParameters
+
+/**
+ * Retract student's own submission (sets state back to Draft)
+ */
+export function useRetractSubmissionMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.SubmissionDto, unknown, RetractSubmission__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: RetractSubmissionSubmissionQueryParameters}): UseMutationResult<Types.SubmissionDto, unknown, RetractSubmission__MutationParameters, TContext> {
+  const key = retractSubmissionMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: RetractSubmission__MutationParameters) => Client.retractSubmission(data.id ?? options?.parameters?.id!),
+  mutationKey: key,
+});
+}
+  
 export function markSubmissionUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/submissions/{id}/mark";
 if (id === undefined || id === null)

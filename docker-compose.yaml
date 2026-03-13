@@ -8,6 +8,8 @@ services:
       - POSTGRES_DB=hits_class
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
 
   web:
     image: 'ghcr.io/ivankobtsev/hits-class:latest'
@@ -21,6 +23,7 @@ services:
       - General__SiteUrl=${SITE_URL:-https://localhost}
       - Hangfire__EnableDashboard=false
       - TestApiEnabled=false
+      - Logging__LogLevel__Default=Information
     volumes:
       - file_storage:/files:rw
 

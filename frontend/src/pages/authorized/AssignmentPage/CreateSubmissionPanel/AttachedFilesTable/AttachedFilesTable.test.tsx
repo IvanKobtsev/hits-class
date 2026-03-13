@@ -21,8 +21,19 @@ describe('AttachedFilesTable', () => {
     expect(screen.getByTestId('attached-files-table')).toBeInTheDocument();
   });
 
-  test('renders table with five columns: icon, name, size, progress, remove', () => {
+  test('does not render table header when no files are attached', () => {
     render(<AttachedFilesTable files={[]} onRemove={vi.fn()} />);
+
+    const table = screen.getByTestId('attached-files-table');
+    const headerCells = (table.closest('table') ?? table).querySelectorAll('th');
+    expect(headerCells.length).toBe(0);
+  });
+
+  test('renders table with five columns: icon, name, size, progress, remove', () => {
+    const files = [
+      { id: '1', name: 'report.pdf', size: 1024, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} onRemove={vi.fn()} />);
 
     const table = screen.getByTestId('attached-files-table');
     expect(table).toBeInTheDocument();
@@ -63,6 +74,15 @@ describe('AttachedFilesTable', () => {
     render(<AttachedFilesTable files={files} onRemove={vi.fn()} />);
 
     expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  test('shows green tick when file is uploaded', () => {
+    const files = [
+      { id: '1', name: 'doc.pdf', size: 1000, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} onRemove={vi.fn()} />);
+
+    expect(screen.getByText('✓')).toBeInTheDocument();
   });
 
   test('hides progress bar when file is fully uploaded', () => {
@@ -156,6 +176,30 @@ describe('AttachedFilesTable', () => {
 
     rerender(<AttachedFilesTable files={currentFiles} onRemove={onRemove} />);
     expect(screen.queryByText('only.pdf')).not.toBeInTheDocument();
+  });
+
+  // --- Read-only mode (no onRemove) ---
+
+  test('renders without remove buttons when onRemove is not provided', () => {
+    const files = [
+      { id: '1', name: 'report.pdf', size: 1024, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} />);
+
+    expect(
+      screen.queryByRole('button', { name: /remove|delete|удалить|remove file/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  test('renders remove buttons when onRemove is provided', () => {
+    const files = [
+      { id: '1', name: 'report.pdf', size: 1024, status: 'uploaded' as const },
+    ];
+    render(<AttachedFilesTable files={files} onRemove={vi.fn()} />);
+
+    expect(
+      screen.getByRole('button', { name: /remove|delete|удалить|remove file/i }),
+    ).toBeInTheDocument();
   });
 
   // --- Total size over 1 GB → toast ---
