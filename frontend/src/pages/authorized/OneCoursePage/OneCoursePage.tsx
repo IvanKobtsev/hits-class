@@ -7,12 +7,14 @@ import { useCourseRole } from './useCourseRole';
 import { CourseFeedTab } from './CourseFeedTab/CourseFeedTab';
 import { CreateAnnouncementModal } from './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal';
 import { CreateAssignmentModal } from './CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal';
+import { CourseMembersTab } from './CourseMembersTab/CourseMembersTab';
 import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
 import { Navigate } from 'react-router-dom';
 import { isAxiosError } from 'axios';
 import { exportMarks } from 'services/api/api-client/CourseClient';
 import { Links } from 'application/constants/links';
+import { GradeList } from './GradeList/GradeList';
 
 type TabValue = 'feed' | 'grades' | 'members';
 
@@ -114,11 +116,16 @@ export const OneCoursePage: React.FC = () => {
                     Экспорт оценок
                   </Button>
                 )}
+                {
+                  role === 'student' && (
+                    <GradeList publications={publicationsData?.data ?? []} />
+                  )
+                }
               </div>
             )}
             {activeTab === 'members' && (
               <div data-test-id="OneCoursePage-members">
-                Участники — в разработке
+                <CourseMembersTab course={course} />
               </div>
             )}
           </div>

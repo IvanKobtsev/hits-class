@@ -7,8 +7,10 @@ import {
   getSubmissionsQueryKey,
   getSubmissionQueryKey,
 } from 'services/api/api-client/SubmissionQuery';
+import { useAddCommentToSubmissionMutation } from 'services/api/api-client/CommentQuery';
 import type { SubmissionListItem, SubmissionState, FileInfoDto, Attachment } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
+import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import styles from './StudentSubmissionsTab.module.scss';
 
 const AVATAR_COLORS = [
@@ -45,6 +47,22 @@ function statusClass(state: SubmissionState): string {
   }
 }
 
+function wrapInLexical(text: string): string {
+  return JSON.stringify({
+    root: {
+      children: [
+        {
+          children: [
+            { detail: 0, format: 0, mode: 'normal', style: '', text, type: 'text', version: 1 },
+          ],
+          direction: 'ltr', format: '', indent: 0, type: 'paragraph', version: 1,
+        },
+      ],
+      direction: 'ltr', format: '', indent: 0, type: 'root', version: 1,
+    },
+  });
+}
+
 function fileInfoToAttachment(f: FileInfoDto): Attachment {
   return { uuid: f.id, fileName: f.fileName, size: f.size, createdAt: f.createdAt };
 }
@@ -77,6 +95,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
   const [markValue, setMarkValue] = useState('');
   const [markComment, setMarkComment] = useState('');
+  const [commentText, setCommentText] = useState('');
 
   const { data: submissionsData } = useGetSubmissionsQuery(assignmentId, 0, 100);
   const submissions = submissionsData?.data ?? [];
@@ -89,6 +108,21 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const { mutate: markSubmission, isPending: isMarking } = useMarkSubmissionMutation(
     selectedSubmissionId ?? 0,
   );
+
+  const { mutate: addComment } = useAddCommentToSubmissionMutation(selectedSubmissionId ?? 0);
+
+  const handleAddComment = useCallback(() => {
+    if (!commentText.trim() || selectedSubmissionId == null) return;
+    addComment(
+      { textLexical: wrapInLexical(commentText) },
+      {
+        onSuccess: () => {
+          setCommentText('');
+          void queryClient.invalidateQueries({ queryKey: getSubmissionQueryKey(selectedSubmissionId) });
+        },
+      },
+    );
+  }, [commentText, selectedSubmissionId, addComment, queryClient]);
 
   const submittedCount = submissions.filter(
     (s) => s.state === 'Submitted' || s.state === 'Accepted',
@@ -108,6 +142,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     setSelectedSubmissionId(null);
     setMarkValue('');
     setMarkComment('');
+    setCommentText('');
   }, []);
 
   const handleSaveMark = useCallback(() => {
@@ -183,6 +218,38 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               >
                 Сохранить
               </button>
+            </div>
+
+            <div className={styles.commentsSection}>
+              <div className={styles.commentsHeader}>Комментарии к работе</div>
+              {selectedSubmission.comments.map((comment) => (
+                <div key={comment.id} className={styles.commentItem}>
+                  <div className={styles.commentMeta}>
+                    <span className={styles.commentAuthor}>{comment.author.legalName}</span>
+                    <span className={styles.commentDate}>{comment.createdAt.toLocaleDateString()}</span>
+                  </div>
+                  <div className={styles.commentBody}>
+                    <LexicalViewer lexicalState={comment.textLexical} />
+                  </div>
+                </div>
+              ))}
+              <div className={styles.commentInputArea}>
+                <textarea
+                  className={styles.commentTextarea}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  aria-label="Комментарий"
+                  placeholder="Написать комментарий..."
+                  rows={1}
+                />
+                <button
+                  className={styles.commentSendButton}
+                  onClick={handleAddComment}
+                  disabled={!commentText.trim()}
+                >
+                  Отправить
+                </button>
+              </div>
             </div>
           </div>
         </div>

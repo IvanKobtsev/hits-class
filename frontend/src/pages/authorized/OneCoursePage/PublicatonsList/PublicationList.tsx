@@ -19,6 +19,8 @@ export const PublicationList: React.FC<PublicationListProps> = ({ publications }
     );
   }
 
+  publications = publications.sort((a, b) => new Date(b.createdAtUTC).getTime() - new Date(a.createdAtUTC).getTime());
+
   return (
     <Box className={styles.container}>
       <Box className={styles.list}>

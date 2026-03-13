@@ -24,6 +24,15 @@ public class CommentController(CommentService commentService)
     ) => commentService.AddSubmissionComment(assignmentId, createCommentDto);
 
     /// <summary>
+    /// Adds a Comment to a specific Submission by its ID (for teachers).
+    /// </summary>
+    [HttpPost("submissions/{submissionId:int}/comments")]
+    public Task<CommentDto> AddCommentToSubmission(
+        [FromRoute] int submissionId,
+        [FromBody] CreateCommentDto createCommentDto
+    ) => commentService.AddCommentToSubmissionById(submissionId, createCommentDto);
+
+    /// <summary>
     /// Retrieves all Comments of the specified Publication.
     /// </summary>
     [HttpGet("publication/{publicationId:int}/comments")]

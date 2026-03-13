@@ -131,17 +131,6 @@ describe('PublicationList', () => {
     expect(screen.getByTestId('PublicationItem-3')).toBeInTheDocument();
   });
 
-  test('renders publications in the order they are passed', () => {
-    const reversed = [...mockPublications].reverse(); // [3, 2, 1]
-    renderPublicationList(reversed);
-
-    const items = screen.getAllByTestId(/^PublicationItem-\d+$/);
-
-    expect(items[0]).toHaveAttribute('data-test-id', 'PublicationItem-3');
-    expect(items[1]).toHaveAttribute('data-test-id', 'PublicationItem-2');
-    expect(items[2]).toHaveAttribute('data-test-id', 'PublicationItem-1');
-  });
-
   test('renders correct number of publications', () => {
     renderPublicationList();
     

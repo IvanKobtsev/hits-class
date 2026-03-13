@@ -49,6 +49,27 @@ public class CommentService(HitsClassDbContext dbContext, IUserAccessor userAcce
         return ToCommentDto(comment);
     }
 
+    public async Task<CommentDto> AddCommentToSubmissionById(int submissionId, CreateCommentDto dto)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var submission =
+            await dbContext
+                .Submissions.Include(s => s.Comments)
+                    .ThenInclude(c => c.Author)
+                .FirstOrDefaultAsync(s => s.Id == submissionId)
+            ?? throw new ValidationException("Submission not found.");
+
+        var comment = new SubmissionComment(submissionId, userId, dto.TextLexical)
+        {
+            Author = user,
+        };
+        submission.Comments.Add(comment);
+        await dbContext.SaveChangesAsync();
+        return ToCommentDto(comment);
+    }
+
     public async Task<List<CommentDto>> GetPublicationComments(int publicationId)
     {
         var comments = await dbContext

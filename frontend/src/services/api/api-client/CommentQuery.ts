@@ -26,6 +26,10 @@ export type AddCommentToAssignmentCommentQueryParameters = {
   assignmentId: number ;
 }
 
+export type AddCommentToSubmissionCommentQueryParameters = {
+  submissionId: number ;
+}
+
 export type GetPublicationCommentsCommentQueryParameters = {
   publicationId: number ;
 }
@@ -183,6 +187,59 @@ export function useAddCommentToAssignmentMutationWithParameters<TContext>(option
 return useMutation({
   ...options, 
   mutationFn: (data: AddCommentToAssignment__MutationParameters) => Client.addCommentToAssignment(data.assignmentId ?? options?.parameters?.assignmentId!, data.createCommentDto),
+  mutationKey: key,
+});
+}
+  
+export function addCommentToSubmissionUrl(submissionId: number): string {
+  let url_ = getBaseUrl() + "/api/submissions/{submissionId}/comments";
+if (submissionId === undefined || submissionId === null)
+  throw new Error("The parameter 'submissionId' must be defined.");
+url_ = url_.replace("{submissionId}", encodeURIComponent("" + submissionId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function addCommentToSubmissionMutationKey(submissionId: number): MutationKey {
+  return trimArrayEnd([
+      'CommentClient',
+      'addCommentToSubmission',
+      submissionId as any,
+    ]);
+}
+
+/**
+ * Adds a Comment to a specific Submission by its ID (for teachers).
+ */
+export function useAddCommentToSubmissionMutation<TContext>(submissionId: number, options?: Omit<UseMutationOptions<Types.CommentDto, unknown, Types.CreateCommentDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.CommentDto, unknown, Types.CreateCommentDto, TContext> {
+  const key = addCommentToSubmissionMutationKey(submissionId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (createCommentDto: Types.CreateCommentDto) => Client.addCommentToSubmission(submissionId, createCommentDto),
+    mutationKey: key,
+  });
+}
+  
+type AddCommentToSubmission__MutationParameters = AddCommentToSubmissionCommentQueryParameters & {
+  createCommentDto: Types.CreateCommentDto;
+}
+
+/**
+ * Adds a Comment to a specific Submission by its ID (for teachers).
+ */
+export function useAddCommentToSubmissionMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.CommentDto, unknown, AddCommentToSubmission__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: AddCommentToSubmissionCommentQueryParameters}): UseMutationResult<Types.CommentDto, unknown, AddCommentToSubmission__MutationParameters, TContext> {
+  const key = addCommentToSubmissionMutationKey(options?.parameters?.submissionId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: AddCommentToSubmission__MutationParameters) => Client.addCommentToSubmission(data.submissionId ?? options?.parameters?.submissionId!, data.createCommentDto),
   mutationKey: key,
 });
 }
