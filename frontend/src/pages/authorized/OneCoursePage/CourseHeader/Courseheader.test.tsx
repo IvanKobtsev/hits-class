@@ -37,6 +37,7 @@ const mockCourse: CourseDto = {
     },
   ],
   students: [],
+  bannedStudents: [],
 };
 
 function renderHeader(
