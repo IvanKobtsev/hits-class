@@ -41,6 +41,7 @@ const makeComment = (id: number, text: string, authorName: string): CommentDto =
     legalName: authorName,
     email: `user${id}@test.com`,
     groupNumber: null,
+    roles: null,
   },
 });
 

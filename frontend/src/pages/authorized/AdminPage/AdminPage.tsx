@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   Client,
   useGetUsersQuery,
+  useGetCurrentUserInfoQuery,
   getUsersQueryKey,
   getCurrentUserInfoQueryKey,
 } from 'services/api/api-client/UserQuery';
@@ -18,7 +19,12 @@ import {
 import type { UserDto } from 'services/api/api-client.types';
 import styles from './AdminPage.module.scss';
 
-const INITIAL_ROLE: SystemRole = STUDENT_ROLE;
+function getInitialRoleFromUser(user: UserDto): SystemRole {
+  const roles = user.roles ?? [];
+  if (roles.includes(ADMIN_ROLE)) return ADMIN_ROLE;
+  if (roles.includes(TEACHER_ROLE)) return TEACHER_ROLE;
+  return STUDENT_ROLE;
+}
 
 async function syncUserRole(userId: string, targetRole: SystemRole): Promise<void> {
   if (targetRole === STUDENT_ROLE) {
@@ -63,6 +69,7 @@ export const AdminPage: React.FC = () => {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const { data, isLoading } = useGetUsersQuery({ limit: 1000 });
+  const { data: currentUser } = useGetCurrentUserInfoQuery();
 
   const users = data?.data ?? [];
 
@@ -71,13 +78,14 @@ export const AdminPage: React.FC = () => {
     if (!searchLower) return users;
     return users.filter(
       (u) =>
-        u.legalName.toLowerCase().includes(searchLower) ||
-        u.email.toLowerCase().includes(searchLower)
+        (u.legalName ?? '').toLowerCase().includes(searchLower) ||
+        (u.email ?? '').toLowerCase().includes(searchLower)
     );
   }, [users, search]);
 
   const getSelectedRole = useCallback(
-    (user: UserDto): SystemRole => roleOverrides[user.id] ?? INITIAL_ROLE,
+    (user: UserDto): SystemRole =>
+      roleOverrides[user.id] ?? getInitialRoleFromUser(user),
     [roleOverrides]
   );
 
@@ -134,6 +142,7 @@ export const AdminPage: React.FC = () => {
               user={user}
               selectedRole={getSelectedRole(user)}
               onRoleChange={(role) => handleRoleChange(user, role)}
+              roleSelectDisabled={user.id === currentUser?.id}
             />
           ))}
         </div>

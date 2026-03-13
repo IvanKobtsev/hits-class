@@ -20,6 +20,7 @@ vi.mock('services/api/api-client/UserQuery', async (importActual) => {
       removeRolesFromUser: mockRemoveRolesFromUser,
     },
     useGetUsersQuery: vi.fn(),
+    useGetCurrentUserInfoQuery: vi.fn(),
   };
 });
 
@@ -32,9 +33,10 @@ vi.mock('@tanstack/react-query', async (importActual) => {
   };
 });
 
-import { useGetUsersQuery } from 'services/api/api-client/UserQuery';
+import { useGetUsersQuery, useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 
 const mockedUseGetUsersQuery = vi.mocked(useGetUsersQuery);
+const mockedUseGetCurrentUserInfoQuery = vi.mocked(useGetCurrentUserInfoQuery);
 
 const mockUsers: UserDto[] = [
   {
@@ -42,20 +44,25 @@ const mockUsers: UserDto[] = [
     email: 'ivan@test.com',
     legalName: 'Иванов Иван',
     groupNumber: '201',
+    roles: null,
   },
   {
     id: 'u2',
     email: 'petr@test.com',
     legalName: 'Петров Пётр',
     groupNumber: '101',
+    roles: null,
   },
 ];
 
-function setupQuery(data: UserDto[] = mockUsers) {
+function setupQuery(data: UserDto[] = mockUsers, currentUserId?: string) {
   mockedUseGetUsersQuery.mockReturnValue({
     data: { data, totalCount: data.length },
     isLoading: false,
     isError: false,
+  } as any);
+  mockedUseGetCurrentUserInfoQuery.mockReturnValue({
+    data: currentUserId ? { id: currentUserId } : undefined,
   } as any);
 }
 
@@ -143,5 +150,48 @@ describe('AdminPage', () => {
       expect(mockRemoveRolesFromUser).toHaveBeenCalledWith('u1', 'Admin');
       expect(mockAddRoleToUser).toHaveBeenCalledWith('u1', 'Teacher');
     });
+  });
+
+  test('displays current role from API as default (Admin)', () => {
+    const usersWithRoles: UserDto[] = [
+      { ...mockUsers[0], roles: ['Admin'] },
+      { ...mockUsers[1], roles: [] },
+    ];
+    setupQuery(usersWithRoles);
+    render(<AdminPage />);
+
+    const select1 = screen.getByTestId('user-with-role-select-u1') as HTMLSelectElement;
+    const select2 = screen.getByTestId('user-with-role-select-u2') as HTMLSelectElement;
+    expect(select1.value).toBe('Admin');
+    expect(select2.value).toBe('Student');
+  });
+
+  test('displays current role from API as default (Teacher)', () => {
+    const usersWithRoles: UserDto[] = [
+      { ...mockUsers[0], roles: ['Teacher'] },
+    ];
+    setupQuery(usersWithRoles);
+    render(<AdminPage />);
+
+    const select = screen.getByTestId('user-with-role-select-u1') as HTMLSelectElement;
+    expect(select.value).toBe('Teacher');
+  });
+
+  test('role dropdown is disabled for current user (admin)', () => {
+    setupQuery(mockUsers, 'u1');
+    render(<AdminPage />);
+
+    const currentUserSelect = screen.getByTestId('user-with-role-select-u1');
+    const otherUserSelect = screen.getByTestId('user-with-role-select-u2');
+    expect(currentUserSelect).toBeDisabled();
+    expect(otherUserSelect).not.toBeDisabled();
+  });
+
+  test('role dropdown is enabled for all users when current user is not in list', () => {
+    setupQuery(mockUsers, 'other-admin-id');
+    render(<AdminPage />);
+
+    expect(screen.getByTestId('user-with-role-select-u1')).not.toBeDisabled();
+    expect(screen.getByTestId('user-with-role-select-u2')).not.toBeDisabled();
   });
 });

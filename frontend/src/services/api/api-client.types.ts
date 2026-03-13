@@ -121,6 +121,8 @@ export interface UserDto  {
   email: string;
   legalName: string;
   groupNumber: string | null;
+  /** System-wide roles (Admin, Teacher). Only populated by GetUsers. Null for other endpoints. */
+  roles: string[] | null;
 }
 export function deserializeUserDto(json: string): UserDto {
   const data = JSON.parse(json) as UserDto;
@@ -128,7 +130,10 @@ export function deserializeUserDto(json: string): UserDto {
   return data;
 }
 export function initUserDto(_data: UserDto) {
-    return _data;
+  if (_data) {
+    _data.roles = _data["roles"];
+  }
+  return _data;
 }
 export function serializeUserDto(_data: UserDto | undefined) {
   if (_data) {

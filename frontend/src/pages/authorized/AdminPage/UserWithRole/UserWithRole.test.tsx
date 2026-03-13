@@ -15,6 +15,7 @@ const mockUser: UserDto = {
   email: 'user@test.com',
   legalName: 'Иванов Иван',
   groupNumber: '201',
+  roles: null,
 };
 
 describe('UserWithRole', () => {
@@ -76,5 +77,18 @@ describe('UserWithRole', () => {
 
     const select = screen.getByTestId('user-with-role-select-u1') as HTMLSelectElement;
     expect(select.value).toBe(ADMIN_ROLE);
+  });
+
+  test('role select is disabled when roleSelectDisabled is true', () => {
+    render(
+      <UserWithRole
+        user={mockUser}
+        selectedRole={STUDENT_ROLE}
+        onRoleChange={vi.fn()}
+        roleSelectDisabled
+      />
+    );
+
+    expect(screen.getByTestId('user-with-role-select-u1')).toBeDisabled();
   });
 });

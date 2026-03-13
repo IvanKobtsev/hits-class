@@ -41,6 +41,7 @@ const mockOwner: UserDto = {
   email: 'owner@test.com',
   legalName: 'Иванов И.И.',
   groupNumber: null,
+  roles: null,
 };
 
 const mockCourse: CourseDto = {
@@ -60,6 +61,7 @@ const mockStudent: UserDto = {
   email: 'student@test.com',
   legalName: 'Сидоров С.С.',
   groupNumber: '201',
+  roles: null,
 };
 
 const mockBannedUser: UserDto = {
@@ -67,6 +69,7 @@ const mockBannedUser: UserDto = {
   email: 'banned@test.com',
   legalName: 'Петров П.П.',
   groupNumber: '101',
+  roles: null,
 };
 
 const mockCourseWithStudents: CourseDto = {

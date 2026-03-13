@@ -45,6 +45,7 @@ vi.mock('services/api/api-client/UserQuery', () => ({
       email: 'teacher@test.com',
       legalName: 'Иванов Иван Иванович',
       groupNumber: null,
+      roles: null,
       username: 'ivanov',
       isTeacherSystemWide: true,
       isAdmin: false,
@@ -63,6 +64,7 @@ const mockAuthor = {
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
 };
 
 const mockDate = new Date('2024-03-15T10:00:00Z');
