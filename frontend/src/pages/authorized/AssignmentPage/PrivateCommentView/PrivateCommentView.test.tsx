@@ -50,6 +50,7 @@ const makeComment = (
     legalName: authorName,
     email: `user${id}@test.com`,
     groupNumber: null,
+    roles: null,
   },
 });
 

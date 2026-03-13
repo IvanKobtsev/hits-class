@@ -31,7 +31,7 @@ function makePublication(overrides: Partial<PublicationDto> = {}): PublicationDt
     createdAtUTC: new Date('2024-01-01T08:00:00Z'),
     lastUpdatedAtUTC: null,
     content: null,
-    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null },
+    author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null, roles: null },
     attachments: [],
     targetUserIds: [],
     publicationPayload: {
@@ -51,7 +51,7 @@ function makeSubmission(overrides = {}) {
     lastSubmittedAtUTC: null,
     lastMarkedAtUTC: null,
     attachments: [],
-    author: { id: 'u2', email: 'student@test.com', legalName: 'Студент', groupNumber: '101' },
+    author: { id: 'u2', email: 'student@test.com', legalName: 'Студент', groupNumber: '101', roles: null },
     comments: [],
     ...overrides,
   };

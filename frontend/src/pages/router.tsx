@@ -12,6 +12,7 @@ import { AnnouncementPage } from './authorized/AnnouncementPage/AnnouncementPage
 import { OneCoursePage } from './authorized/OneCoursePage/OneCoursePage';
 import { EmailConfirmPage } from './unauthorized/EmailConfirmPage/EmailConfirmPage';
 import { PageNotFound } from './authorized/PageNotFound/PageNotFound';
+import { AdminPage } from './authorized/AdminPage/AdminPage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
@@ -26,6 +27,10 @@ export const authorizedRoutes = () =>
         {
           path: Links.Authorized.Courses.route,
           element: <CoursesPage />,
+        },
+        {
+          path: Links.Authorized.Admin.route,
+          element: <AdminPage />,
         },
         {
           path: '*',

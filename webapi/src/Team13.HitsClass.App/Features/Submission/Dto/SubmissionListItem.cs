@@ -8,6 +8,7 @@ namespace Team13.HitsClass.App.Features.Submission.Dto
         public int Id { get; set; }
         public SubmissionState State { get; set; }
         public string? Mark { get; set; }
+        public DateTime? LastSubmittedAtUTC { get; set; }
         public UserDto Author { get; set; }
     }
 }

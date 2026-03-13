@@ -22,6 +22,7 @@ const mockUser = {
   email: 'user@test.com',
   legalName: 'Test User',
   groupNumber: null,
+  roles: null,
 };
 
 function renderAvatarMenu(user = mockUser) {

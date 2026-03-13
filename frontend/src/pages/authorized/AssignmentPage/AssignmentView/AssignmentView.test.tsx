@@ -30,6 +30,7 @@ const mockAuthor: UserDto = {
   email: 'teacher@example.com',
   legalName: 'Иван Петров',
   groupNumber: null,
+  roles: null,
 };
 
 const mockAssignment: PublicationDto = {
@@ -94,14 +95,23 @@ describe('AssignmentView', () => {
     expect(el.textContent).toMatch(/2025/);
   });
 
-  test('displays deadline with date and time', () => {
+  test('displays deadline in local time', () => {
     renderAssignmentView({ assignment: mockAssignment });
 
     const el = screen.getByTestId('AssignmentView-deadline');
-    // deadlineUTC — 15 марта 2025, в тексте должны быть и дата, и время
-    expect(el.textContent).toMatch(/\b15\b/);
-    expect(el.textContent).toMatch(/2025/);
-    expect(el.textContent).toMatch(/\d{1,2}:\d{2}/);
+    const deadline = new Date('2025-03-15T18:00:00Z');
+    // Expected values from local time methods (not UTC)
+    const localDay = String(deadline.getDate()).padStart(2, '0');
+    const localMonth = String(deadline.getMonth() + 1).padStart(2, '0');
+    const localYear = String(deadline.getFullYear());
+    const localHours = String(deadline.getHours()).padStart(2, '0');
+    const localMinutes = String(deadline.getMinutes()).padStart(2, '0');
+
+    expect(el.textContent).toContain(localDay);
+    expect(el.textContent).toContain(localYear);
+    expect(el.textContent).toContain(`${localHours}:${localMinutes}`);
+    // Verify date part uses local date, not UTC
+    expect(el.textContent).toContain(localMonth);
   });
 
   test('displays assignment description', () => {

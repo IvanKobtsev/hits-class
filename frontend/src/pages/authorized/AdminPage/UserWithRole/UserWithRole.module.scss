@@ -1,0 +1,62 @@
+@use 'src/styles/variables' as *;
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid $classroom-surface-alt;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.avatarWrapper {
+  flex-shrink: 0;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.memberName {
+  font-size: 14px;
+  color: $classroom-text-primary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.memberEmail {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.groupBadge {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  white-space: nowrap;
+}
+
+.roleSelect {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  background: #fff;
+  cursor: pointer;
+  min-width: 140px;
+
+  &:focus {
+    border-color: #6366f1;
+  }
+}

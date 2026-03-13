@@ -76,6 +76,7 @@ const defaultMockCurrentUser = {
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
   username: 'ivanov',
   isTeacherSystemWide: true,
   isAdmin: false,
@@ -91,6 +92,7 @@ const mockAuthor = {
   email: 'teacher@test.com',
   legalName: 'Иванов Иван Иванович',
   groupNumber: null,
+  roles: null,
 };
 
 const mockDate = new Date('2024-03-15T10:00:00Z');
@@ -212,9 +214,41 @@ describe('PublicationListItem', () => {
     ).toHaveTextContent('Важное задание');
   });
 
-  test('renders deadline when type is Assignment', () => {
+  test('renders deadline date when type is Assignment', () => {
     renderPublicationListItem(mockAssignment);
-    expect(screen.getByText('Срок сдачи: 01.04.2024')).toBeInTheDocument();
+    expect(
+      screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`),
+    ).toHaveTextContent(/Срок сдачи: 01\.04\.2024/);
+  });
+
+  test('renders deadline time alongside date', () => {
+    renderPublicationListItem(mockAssignment);
+    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    expect(chip).toHaveTextContent(/\d{2}:\d{2}/);
+  });
+
+  test('deadline chip has overdue class when deadline is in the past', () => {
+    renderPublicationListItem({
+      ...mockAssignment,
+      publicationPayload: initAssignmentPayload({
+        title: 'Просроченное задание',
+        deadlineUtc: '2020-01-01T00:00:00Z',
+      } as any),
+    });
+    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    expect(chip.className).toMatch(/deadlineChipOverdue/);
+  });
+
+  test('deadline chip does not have overdue class when deadline is in the future', () => {
+    renderPublicationListItem({
+      ...mockAssignment,
+      publicationPayload: initAssignmentPayload({
+        title: 'Актуальное задание',
+        deadlineUtc: '2099-12-31T23:59:00Z',
+      } as any),
+    });
+    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    expect(chip.className).not.toMatch(/deadlineChipOverdue/);
   });
 
   test('renders correct link for assignment', () => {

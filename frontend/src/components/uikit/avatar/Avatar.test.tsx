@@ -8,6 +8,7 @@ const mockUser: UserDto = {
   email: 'john@example.com',
   legalName: 'John Doe',
   groupNumber: null,
+  roles: null,
 };
 
 describe('Avatar', () => {

@@ -32,6 +32,7 @@ const mockPublication: PublicationDto = {
     email: 'a@a.com',
     legalName: 'Иванов',
     groupNumber: null,
+    roles: null
   },
   attachments: [],
   targetUserIds: [],

@@ -31,10 +31,13 @@ function formatDateUTC(date: Date): string {
   return `${d}.${m}.${y}`;
 }
 
-function formatDateTimeUTC(date: Date): string {
-  const h = String(date.getUTCHours()).padStart(2, '0');
-  const min = String(date.getUTCMinutes()).padStart(2, '0');
-  return `${formatDateUTC(date)} ${h}:${min}`;
+function formatDateTimeLocal(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
 }
 
 export type AssignmentViewProps = {
@@ -91,7 +94,7 @@ export const AssignmentView = ({
               className={styles.metaValue}
               data-test-id="AssignmentView-deadline"
             >
-              {deadlineUtc ? formatDateTimeUTC(deadlineUtc) : 'Не указан'}
+              {deadlineUtc ? formatDateTimeLocal(deadlineUtc) : 'Не указан'}
             </span>
           </span>
         </div>

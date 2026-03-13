@@ -125,7 +125,15 @@ public class CourseController
     /// Bans student from course
     /// </summary>
     [HttpDelete("{id:int}/student")]
-    public async Task BanStudent([FromRoute] int id, [FromBody] string studentId) { }
+    public async Task BanStudent([FromRoute] int id, [FromBody] string studentId) =>
+        await _courseService.BanStudentFromCourse(id, studentId);
+
+    /// <summary>
+    /// Unbans student for course
+    /// </summary>
+    [HttpPost("{id:int}/student/unban")]
+    public async Task UnbanStudent([FromRoute] int id, [FromBody] string studentId) =>
+        await _courseService.UnbanStudentFromCourse(id, studentId);
 
     /// <summary>
     /// Deletes teacher from course

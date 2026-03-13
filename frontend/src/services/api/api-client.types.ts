@@ -121,6 +121,8 @@ export interface UserDto  {
   email: string;
   legalName: string;
   groupNumber: string | null;
+  /** System-wide roles (Admin, Teacher). Only populated by GetUsers. Null for other endpoints. */
+  roles: string[] | null;
 }
 export function deserializeUserDto(json: string): UserDto {
   const data = JSON.parse(json) as UserDto;
@@ -128,7 +130,10 @@ export function deserializeUserDto(json: string): UserDto {
   return data;
 }
 export function initUserDto(_data: UserDto) {
-    return _data;
+  if (_data) {
+    _data.roles = _data["roles"];
+  }
+  return _data;
 }
 export function serializeUserDto(_data: UserDto | undefined) {
   if (_data) {
@@ -443,6 +448,7 @@ export interface SubmissionListItem  {
   id: number;
   state: SubmissionState;
   mark: string | null;
+  lastSubmittedAtUTC: Date | null;
   author: UserDto;
 }
 export function deserializeSubmissionListItem(json: string): SubmissionListItem {
@@ -453,6 +459,7 @@ export function deserializeSubmissionListItem(json: string): SubmissionListItem 
 export function initSubmissionListItem(_data: SubmissionListItem) {
   if (_data) {
     _data.state = _data["state"];
+    _data.lastSubmittedAtUTC = _data["lastSubmittedAtUTC"] ? new Date(_data["lastSubmittedAtUTC"].toString()) : <any>null;
     _data.author = _data["author"] && initUserDto(_data["author"]);
   }
   return _data;
@@ -465,6 +472,7 @@ export function serializeSubmissionListItem(_data: SubmissionListItem | undefine
 }
 export function prepareSerializeSubmissionListItem(_data: SubmissionListItem): SubmissionListItem {
   const data: Record<string, any> = { ..._data };
+  data["lastSubmittedAtUTC"] = _data.lastSubmittedAtUTC && _data.lastSubmittedAtUTC.toISOString();
   data["author"] = _data.author && prepareSerializeUserDto(_data.author);
   return data as SubmissionListItem;
 }
@@ -757,6 +765,7 @@ export interface CourseDto  {
   owner: UserDto;
   teachers: UserDto[];
   students: UserDto[];
+  bannedStudents: UserDto[];
   inviteCode: string;
   title: string;
   description: string;
@@ -780,6 +789,11 @@ export function initCourseDto(_data: CourseDto) {
         initUserDto(item)
       );
     }
+    if (Array.isArray(_data["bannedStudents"])) {
+      _data.bannedStudents = _data["bannedStudents"].map(item => 
+        initUserDto(item)
+      );
+    }
   }
   return _data;
 }
@@ -800,6 +814,11 @@ export function prepareSerializeCourseDto(_data: CourseDto): CourseDto {
   }
   if (Array.isArray(_data.students)) {
     data["students"] = _data.students.map(item => 
+        prepareSerializeUserDto(item)
+    );
+  }
+  if (Array.isArray(_data.bannedStudents)) {
+    data["bannedStudents"] = _data.bannedStudents.map(item => 
         prepareSerializeUserDto(item)
     );
   }

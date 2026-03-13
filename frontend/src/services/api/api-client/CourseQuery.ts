@@ -80,6 +80,10 @@ export type DeleteTeacherCourseQueryParameters = {
   id: number ;
 }
 
+export type UnbanStudentCourseQueryParameters = {
+  id: number ;
+}
+
 export function getCoursesUrl(title?: string | null | undefined, createdByMe?: boolean | null | undefined, whereImTeacher?: boolean | null | undefined, whereImStudent?: boolean | null | undefined, offset?: number | null | undefined, limit?: number | null | undefined, sortBy?: string | null | undefined, sortOrder?: Types.SortOrder | undefined): string {
   let url_ = getBaseUrl() + "/api/courses?";
 if (title !== undefined && title !== null)
@@ -1040,6 +1044,59 @@ export function useDeleteTeacherMutationWithParameters<TContext>(options?: Omit<
 return useMutation({
   ...options, 
   mutationFn: (data: DeleteTeacher__MutationParameters) => Client.deleteTeacher(data.id ?? options?.parameters?.id!, data.teacherId),
+  mutationKey: key,
+});
+}
+  
+export function unbanStudentUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/courses/{id}/student/unban";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function unbanStudentMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'CourseClient',
+      'unbanStudent',
+      id as any,
+    ]);
+}
+
+/**
+ * Unbans student for course
+ */
+export function useUnbanStudentMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, string, TContext> {
+  const key = unbanStudentMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (studentId: string) => Client.unbanStudent(id, studentId),
+    mutationKey: key,
+  });
+}
+  
+type UnbanStudent__MutationParameters = UnbanStudentCourseQueryParameters & {
+  studentId: string;
+}
+
+/**
+ * Unbans student for course
+ */
+export function useUnbanStudentMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, UnbanStudent__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: UnbanStudentCourseQueryParameters}): UseMutationResult<void, unknown, UnbanStudent__MutationParameters, TContext> {
+  const key = unbanStudentMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: UnbanStudent__MutationParameters) => Client.unbanStudent(data.id ?? options?.parameters?.id!, data.studentId),
   mutationKey: key,
 });
 }

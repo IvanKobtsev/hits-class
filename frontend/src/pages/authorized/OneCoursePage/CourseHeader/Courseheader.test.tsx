@@ -27,6 +27,7 @@ const mockCourse: CourseDto = {
     email: 'owner@test.com',
     legalName: 'Козлов Д.А.',
     groupNumber: null,
+    roles: null,
   },
   teachers: [
     {
@@ -34,9 +35,11 @@ const mockCourse: CourseDto = {
       email: 'teacher@test.com',
       legalName: 'Сидоров В.В.',
       groupNumber: null,
+      roles: null,
     },
   ],
   students: [],
+  bannedStudents: [],
 };
 
 function renderHeader(

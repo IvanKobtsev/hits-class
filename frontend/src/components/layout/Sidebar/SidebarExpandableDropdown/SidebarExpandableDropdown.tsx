@@ -13,13 +13,26 @@ export type SidebarExpandableDropdownProps = {
 
 export const SidebarExpandableDropdown: React.FC<
   SidebarExpandableDropdownProps
-> = ({ title, icon: Icon, onClick, isExpandedVertically, isExpandedHorizontally, children }) => (
+> = ({
+  title,
+  icon: Icon,
+  onClick,
+  isExpandedVertically,
+  isExpandedHorizontally,
+  children,
+}) => (
   <div className={styles.wrapper}>
     <button type="button" onClick={onClick} className={styles.header}>
-      <Icon data-test-id="sidebar-expandable-dropdown-icon" className={styles.icon} />
+      <Icon
+        data-test-id="sidebar-expandable-dropdown-icon"
+        className={styles.icon}
+      />
       {isExpandedHorizontally && (
         <>
-          <span data-test-id="sidebar-expandable-dropdown-title" className={styles.title}>
+          <span
+            data-test-id="sidebar-expandable-dropdown-title"
+            className={styles.title}
+          >
             {title}
           </span>
           <ArrowDownIcon
@@ -29,7 +42,13 @@ export const SidebarExpandableDropdown: React.FC<
       )}
     </button>
     {isExpandedVertically && isExpandedHorizontally && (
-      <div className={styles.children}>{children}</div>
+      <div className={styles.children}>
+        {React.Children.count(children) > 0 ? (
+          children
+        ) : (
+          <span className={styles.noCourses}>-- No courses --</span>
+        )}
+      </div>
     )}
   </div>
 );

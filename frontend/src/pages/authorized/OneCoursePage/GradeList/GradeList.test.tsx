@@ -39,6 +39,7 @@ function makeAssignment(
       email: 'teacher@test.com',
       legalName: 'Преподаватель',
       groupNumber: null,
+      roles: null
     },
     attachments: [],
     targetUserIds: [],
@@ -62,6 +63,7 @@ function makeAnnouncement(id: number): PublicationDto {
       email: 'teacher@test.com',
       legalName: 'Преподаватель',
       groupNumber: null,
+      roles: null
     },
     attachments: [],
     targetUserIds: [],

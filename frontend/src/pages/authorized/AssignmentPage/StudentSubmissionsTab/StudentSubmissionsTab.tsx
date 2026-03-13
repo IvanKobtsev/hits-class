@@ -120,12 +120,19 @@ function formatDate(date: Date | null | undefined): string {
   return `${day}.${month}.${d.getFullYear()} ${hours}:${minutes}`;
 }
 
+function isSubmittedLate(submittedAt: Date | null, deadline: Date | null): boolean {
+  if (!submittedAt || !deadline) return false;
+  return new Date(submittedAt) > new Date(deadline);
+}
+
 type StudentSubmissionsTabProps = {
   assignmentId: number;
+  deadlineUtc: Date | null;
 };
 
 export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   assignmentId,
+  deadlineUtc,
 }) => {
   const queryClient = useQueryClient();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<
@@ -248,9 +255,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
           <div className={styles.selectedBody}>
             <div>
               <span
-                className={`${styles.statusBadge} ${statusClass(selectedSubmission.state)}`}
+                className={`${styles.statusBadge} ${isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(selectedSubmission.state)}`}
               >
-                {statusLabel(selectedSubmission.state)}
+                {isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(selectedSubmission.state)}
               </span>
             </div>
 
@@ -373,9 +380,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                 </div>
               </div>
               <span
-                className={`${styles.statusBadge} ${statusClass(sub.state)}`}
+                className={`${styles.statusBadge} ${isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(sub.state)}`}
               >
-                {statusLabel(sub.state)}
+                {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(sub.state)}
               </span>
               <div
                 className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}

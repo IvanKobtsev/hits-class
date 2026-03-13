@@ -76,6 +76,7 @@ public static class SubmissionExtensions
             Id = submission.Id,
             State = submission.State,
             Mark = submission.Mark,
+            LastSubmittedAtUTC = submission.LastSubmittedAtUTC,
             Author = submission.Author.ToUserDto(),
         };
     }
