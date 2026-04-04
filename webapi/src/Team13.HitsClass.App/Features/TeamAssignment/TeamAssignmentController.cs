@@ -26,7 +26,7 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
         /// <summary>
         /// Create assignment (check permission)
         /// </summary>
-        [HttpPost("/api/courses/{courseId:int}/assignments")]
+        [HttpPost("/api/courses/{courseId:int}/team-assignments")]
         public async Task<PublicationDto> CreateAssignment(
             [FromRoute] int courseId,
             [FromBody] CreateTeamAssignmentDto dto
