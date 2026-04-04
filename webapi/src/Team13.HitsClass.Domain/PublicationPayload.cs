@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Common.Attributes;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
@@ -15,4 +15,5 @@ namespace Team13.HitsClass.Domain;
 )]
 [JsonDerivedType(typeof(AnnouncementPayload), nameof(PublicationType.Announcement))]
 [JsonDerivedType(typeof(AssignmentPayload), nameof(PublicationType.Assignment))]
+[JsonDerivedType(typeof(TeamAssignmentPayload), nameof(PublicationType.TeamAssignment))]
 public abstract class PublicationPayload { }

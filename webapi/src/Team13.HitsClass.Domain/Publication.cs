@@ -58,6 +58,7 @@ public class Publication
         {
             PublicationType.Announcement => root.Deserialize<AnnouncementPayload>()!,
             PublicationType.Assignment => root.Deserialize<AssignmentPayload>()!,
+            PublicationType.TeamAssignment => root.Deserialize<TeamAssignmentPayload>()!,
             _ => throw new NotSupportedException($"Unsupported type {type}"),
         };
     }
