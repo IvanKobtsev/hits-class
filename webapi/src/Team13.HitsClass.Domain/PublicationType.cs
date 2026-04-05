@@ -1,7 +1,8 @@
-﻿namespace Team13.HitsClass.Domain;
+namespace Team13.HitsClass.Domain;
 
 public enum PublicationType
 {
     Announcement = 0,
     Assignment = 1,
+    TeamAssignment = 2,
 }

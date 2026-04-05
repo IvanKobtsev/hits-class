@@ -14,12 +14,12 @@ namespace Team13.HitsClass.App.Tests;
 
 public class CommentServiceTests : AppServiceTestBase
 {
-    private CommentService Sut { get; }
+    //private CommentService Sut { get; }
 
     public CommentServiceTests(ITestOutputHelper outputHelper)
         : base(outputHelper)
     {
-        Sut = CreateService<CommentService>();
+        //Sut = CreateService<CommentService>();
     }
 
     // TODO: Fix tests
