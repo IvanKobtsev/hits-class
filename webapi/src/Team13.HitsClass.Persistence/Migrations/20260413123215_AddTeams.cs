@@ -15,15 +15,11 @@ namespace Team13.HitsClass.Persistence.Migrations
                 name: "Teams",
                 columns: table => new
                 {
-                    Id = table
-                        .Column<int>(type: "integer", nullable: false)
-                        .Annotation(
-                            "Npgsql:ValueGenerationStrategy",
-                            NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
-                        ),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "text", nullable: false),
                     CaptainId = table.Column<string>(type: "text", nullable: false),
-                    PublicationId = table.Column<int>(type: "integer", nullable: false),
+                    PublicationId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,24 +29,21 @@ namespace Team13.HitsClass.Persistence.Migrations
                         column: x => x.CaptainId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Teams_Publications_PublicationId",
                         column: x => x.PublicationId,
                         principalTable: "Publications",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
-                }
-            );
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateTable(
                 name: "TeamUser",
                 columns: table => new
                 {
                     MembersId = table.Column<string>(type: "text", nullable: false),
-                    TeamId = table.Column<int>(type: "integer", nullable: false),
+                    TeamId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -60,43 +53,39 @@ namespace Team13.HitsClass.Persistence.Migrations
                         column: x => x.MembersId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_TeamUser_Teams_TeamId",
                         column: x => x.TeamId,
                         principalTable: "Teams",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade
-                    );
-                }
-            );
+                        onDelete: ReferentialAction.Cascade);
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Teams_CaptainId",
                 table: "Teams",
-                column: "CaptainId"
-            );
+                column: "CaptainId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Teams_PublicationId",
                 table: "Teams",
-                column: "PublicationId"
-            );
+                column: "PublicationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TeamUser_TeamId",
                 table: "TeamUser",
-                column: "TeamId"
-            );
+                column: "TeamId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropTable(name: "TeamUser");
+            migrationBuilder.DropTable(
+                name: "TeamUser");
 
-            migrationBuilder.DropTable(name: "Teams");
+            migrationBuilder.DropTable(
+                name: "Teams");
         }
     }
 }

@@ -31,6 +31,7 @@ public class Publication
     public bool IsForEveryone { get; set; }
     public List<User> TargetUsers { get; set; }
     public List<Submission>? Submissions { get; set; }
+    public List<Team>? Teams { get; set; }
     public List<Attachment> Attachments { get; set; }
 
     // public List<Comment> Comments { get; set; }

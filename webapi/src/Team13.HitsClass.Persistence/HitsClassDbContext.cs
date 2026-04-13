@@ -96,6 +96,7 @@ public class HitsClassDbContext
             b.HasOne(p => p.Author);
             b.HasMany(p => p.TargetUsers).WithMany();
             b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
+            b.HasMany(p => p.Teams).WithOne(s => s.Publication);
             b.HasMany<PublicationComment>()
                 .WithOne(c => c.Publication)
                 .HasForeignKey(c => c.PublicationId)

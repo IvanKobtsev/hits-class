@@ -15,7 +15,7 @@ using Team13.HitsClass.Persistence;
 namespace Team13.HitsClass.Persistence.Migrations
 {
     [DbContext(typeof(HitsClassDbContext))]
-    [Migration("20260413111723_AddTeams")]
+    [Migration("20260413123215_AddTeams")]
     partial class AddTeams
     {
         /// <inheritdoc />
@@ -1130,7 +1130,7 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("Team13.HitsClass.Domain.Publication", "Publication")
-                        .WithMany()
+                        .WithMany("Teams")
                         .HasForeignKey("PublicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1170,6 +1170,8 @@ namespace Team13.HitsClass.Persistence.Migrations
             modelBuilder.Entity("Team13.HitsClass.Domain.Publication", b =>
                 {
                     b.Navigation("Submissions");
+
+                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>
