@@ -51,6 +51,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    AreTeamsFrozen = false,
                 },
             };
 
@@ -69,6 +70,7 @@ namespace Team13.HitsClass.App.Tests
             payload.SubmissionType.Should().Be(SubmissionType.All);
             payload.MaxTeamSize.Should().Be(6);
             payload.MinTeamSize.Should().Be(3);
+            payload.AreTeamsFrozen.Should().BeFalse();
         }
 
         [Fact]
@@ -364,6 +366,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.One,
                     MinTeamSize = 4,
                     MaxTeamSize = 5,
+                    AreTeamsFrozen = true,
                 },
             };
             dto.SetHasProperty(nameof(dto.Content));
@@ -373,6 +376,7 @@ namespace Team13.HitsClass.App.Tests
             dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.SubmissionType));
             dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.MinTeamSize));
             dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.MaxTeamSize));
+            dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.AreTeamsFrozen));
 
             var result = await _teamAssignmentService.PatchTeamAssignment(assignment.Id, dto);
 
@@ -386,6 +390,7 @@ namespace Team13.HitsClass.App.Tests
             payload.SubmissionType.Should().Be(SubmissionType.One);
             payload.MinTeamSize.Should().Be(4);
             payload.MaxTeamSize.Should().Be(5);
+            payload.AreTeamsFrozen.Should().BeTrue();
         }
 
         [Fact]
