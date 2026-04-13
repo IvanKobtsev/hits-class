@@ -15,5 +15,7 @@ namespace Team13.HitsClass.Domain.PublicationPayloadTypes
 
         [Required]
         public SubmissionType SubmissionType { get; set; }
+        public bool AreTeamsFrozen { get; set; } = false;
+        public List<Team> Teams { get; set; }
     }
 }

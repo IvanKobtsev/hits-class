@@ -23,6 +23,7 @@ public class HitsClassDbContext
     public DbSet<Submission> Submissions { get; set; }
     public DbSet<SubmissionComment> SubmissionComments { get; set; }
     public DbSet<PublicationComment> PublicationComments { get; set; }
+    public DbSet<Team> Teams { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -139,6 +140,12 @@ public class HitsClassDbContext
                 .HasConversion(v => v.Json, v => new LexicalState(v))
                 .HasColumnType("jsonb")
                 .IsRequired();
+        });
+
+        builder.Entity<Team>(b =>
+        {
+            b.HasOne(t => t.Captain).WithMany().HasForeignKey(t => t.CaptainId);
+            b.HasMany(p => p.Members).WithMany();
         });
     }
 

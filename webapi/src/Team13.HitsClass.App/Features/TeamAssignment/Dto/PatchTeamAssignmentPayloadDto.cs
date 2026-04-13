@@ -9,5 +9,6 @@ namespace Team13.HitsClass.App.Features.TeamAssignment.Dto
         public int? MaxTeamSize { get; set; }
         public TeamDistributionType DistributionType { get; set; }
         public SubmissionType SubmissionType { get; set; }
+        public bool AreTeamsFrozen { get; set; }
     }
 }
