@@ -345,6 +345,178 @@ namespace Team13.HitsClass.App.Tests
 
         #endregion
 
+        #region CreateTeam Tests
+
+        [Fact]
+        public async Task CreateTeam_OpenMode_StudentCreatesTeamSuccessfully()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("openmode.student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                distributionType: TeamDistributionType.Free
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            var result = await _teamAssignmentService.CreateTeam(
+                assignment.Id,
+                new CreateTeamDto { Name = "Team Alpha" }
+            );
+
+            result.Should().NotBeNull();
+            result.Name.Should().Be("Team Alpha");
+            result.CaptainId.Should().Be(student.Id);
+            result.PublicationId.Should().Be(assignment.Id);
+            result.MemberIds.Should().ContainSingle().Which.Should().Be(student.Id);
+        }
+
+        [Fact]
+        public async Task CreateTeam_UserIsNotStudent_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var outsider = await CreateUser("outsider@test.com");
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                distributionType: TeamDistributionType.Free
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(outsider.Id);
+
+            var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+                await _teamAssignmentService.CreateTeam(
+                    assignment.Id,
+                    new CreateTeamDto { Name = "Team X" }
+                )
+            );
+
+            exception.Message.Should().Be("You are not a student of this course.");
+        }
+
+        [Fact]
+        public async Task CreateTeam_AssignmentTargetedAndStudentNotTargeted_ThrowsAccessDeniedException()
+        {
+            var course = await CreateCourse();
+            var targetedStudent = await CreateUser("targeted@test.com");
+            var nonTargetedStudent = await CreateUser("nontargeted@test.com");
+            await AddStudentToCourse(course.Id, targetedStudent.Id);
+            await AddStudentToCourse(course.Id, nonTargetedStudent.Id);
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                forWhomUserIds: [targetedStudent.Id],
+                distributionType: TeamDistributionType.Free
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(nonTargetedStudent.Id);
+
+            var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+                await _teamAssignmentService.CreateTeam(
+                    assignment.Id,
+                    new CreateTeamDto { Name = "Team X" }
+                )
+            );
+
+            exception.Message.Should().Be("This assignment is not targeted at you.");
+        }
+
+        [Fact]
+        public async Task CreateTeam_DistributionModeIsNotFree_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("distribution.student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                distributionType: TeamDistributionType.Draft
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.CreateTeam(
+                    assignment.Id,
+                    new CreateTeamDto { Name = "Team X" }
+                )
+            );
+
+            exception.Message.Should().Be("Team creation is allowed only in open mode.");
+        }
+
+        [Fact]
+        public async Task CreateTeam_UserAlreadyBelongsToTeam_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("already.member@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                distributionType: TeamDistributionType.Free
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            await WithDbContext(async db =>
+            {
+                db.Teams.Add(
+                    new Team
+                    {
+                        Name = "Existing Team",
+                        CaptainId = student.Id,
+                        Captain = student,
+                        PublicationId = assignment.Id,
+                        Members = [student],
+                    }
+                );
+                await db.SaveChangesAsync();
+            });
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.CreateTeam(
+                    assignment.Id,
+                    new CreateTeamDto { Name = "Another Team" }
+                )
+            );
+
+            exception.Message.Should().Be("You already belong to a team for this assignment.");
+        }
+
+        [Fact]
+        public async Task CreateTeam_DuplicateNameInAssignment_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var existingCaptain = await CreateUser("existing.captain@test.com");
+            var student = await CreateUser("new.student@test.com");
+            await AddStudentToCourse(course.Id, existingCaptain.Id);
+            await AddStudentToCourse(course.Id, student.Id);
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                distributionType: TeamDistributionType.Free
+            );
+            _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+            await WithDbContext(async db =>
+            {
+                db.Teams.Add(
+                    new Team
+                    {
+                        Name = "Same Name",
+                        CaptainId = existingCaptain.Id,
+                        Captain = existingCaptain,
+                        PublicationId = assignment.Id,
+                        Members = [existingCaptain],
+                    }
+                );
+                await db.SaveChangesAsync();
+            });
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.CreateTeam(
+                    assignment.Id,
+                    new CreateTeamDto { Name = "  same name  " }
+                )
+            );
+
+            exception.Message.Should().Be("Team name must be unique for this assignment.");
+        }
+
+        #endregion
+
 
         #region PatchTeamAssignment Tests
 
@@ -693,7 +865,8 @@ namespace Team13.HitsClass.App.Tests
             int courseId,
             string title = "Test Assignment",
             DateTime? deadline = null,
-            List<string>? forWhomUserIds = null
+            List<string>? forWhomUserIds = null,
+            TeamDistributionType distributionType = TeamDistributionType.Random
         )
         {
             return await WithDbContext(async db =>
@@ -719,7 +892,7 @@ namespace Team13.HitsClass.App.Tests
                     {
                         Title = title,
                         DeadlineUtc = deadline ?? DateTime.UtcNow.AddDays(7),
-                        DistributionType = TeamDistributionType.Random,
+                        DistributionType = distributionType,
                         SubmissionType = SubmissionType.All,
                         MaxTeamSize = 6,
                         MinTeamSize = 3,
