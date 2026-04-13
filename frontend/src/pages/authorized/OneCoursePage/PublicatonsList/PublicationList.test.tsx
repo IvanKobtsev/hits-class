@@ -120,7 +120,7 @@ function renderPublicationList(
 ) {
   return render(
     <MemoryRouter>
-      <PublicationList publications={publications} />
+      <PublicationList publications={publications} filter={'all'} />
     </MemoryRouter>,
   );
 }

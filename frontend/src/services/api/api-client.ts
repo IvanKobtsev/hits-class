@@ -20,6 +20,12 @@ export * as UserQuery from './api-client/UserQuery';
 
 
 
+export * as TeamAssignmentClient from './api-client/TeamAssignmentClient';
+
+export * as TeamAssignmentQuery from './api-client/TeamAssignmentQuery';
+
+
+
 export * as SubmissionClient from './api-client/SubmissionClient';
 
 export * as SubmissionQuery from './api-client/SubmissionQuery';
@@ -173,6 +179,8 @@ export function initPersister() {
   
   addResultTypeFactory('UserClient___getCurrentUserInfo', (data: any) => Types.initCurrentUserDto(data));
   addResultTypeFactory('UserClient___getUsers', (data: any) => Types.initPagedResultOfUserDto(data));
+
+
 
 
   addResultTypeFactory('SubmissionClient___getSubmissions', (data: any) => Types.initPagedResultOfSubmissionListItem(data));

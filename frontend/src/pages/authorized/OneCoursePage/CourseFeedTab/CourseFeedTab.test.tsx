@@ -32,7 +32,7 @@ const mockPublication: PublicationDto = {
     email: 'a@a.com',
     legalName: 'Иванов',
     groupNumber: null,
-    roles: null
+    roles: null,
   },
   attachments: [],
   targetUserIds: [],
@@ -43,7 +43,8 @@ const mockPublication: PublicationDto = {
 const baseProps = {
   courseId: 1,
   publications: [],
-  onCreateAssignment: vi.fn(),
+  onCreatePersonalAssignment: vi.fn(),
+  onCreateTeamAssignment: vi.fn(),
   onCreateAnnouncement: vi.fn(),
 };
 
@@ -124,7 +125,7 @@ describe('CourseFeedTab', () => {
     const user = userEvent.setup();
     renderTab('teacher');
     await user.click(screen.getByTestId('CourseFeedTab-create-assignment'));
-    expect(baseProps.onCreateAssignment).toHaveBeenCalledTimes(1);
+    expect(baseProps.onCreatePersonalAssignment).toHaveBeenCalledTimes(1);
   });
 
   test('calls onCreateAnnouncement when button is clicked', async () => {

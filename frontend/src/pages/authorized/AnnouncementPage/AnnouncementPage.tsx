@@ -38,18 +38,21 @@ export const AnnouncementPage = () => {
               <div className={styles.iconWrapper}>
                 <AnnouncementIcon />
               </div>
-              <div className={styles.meta}>
-                <span className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Автор:</span>
-                  <span className={styles.metaValue}>{author.legalName}</span>
+              <h1 className={styles.title} data-test-id="AssignmentView-title">
+                Объявление
+              </h1>
+            </div>
+            <div className={styles.meta}>
+              <span className={styles.metaItem}>
+                <span className={styles.metaLabel}>Автор:</span>
+                <span className={styles.metaValue}>{author.legalName}</span>
+              </span>
+              <span className={styles.metaItem}>
+                <span className={styles.metaLabel}>Опубликовано:</span>
+                <span className={styles.metaValue}>
+                  {formatDateUTC(createdAtUTC)}
                 </span>
-                <span className={styles.metaItem}>
-                  <span className={styles.metaLabel}>Опубликовано:</span>
-                  <span className={styles.metaValue}>
-                    {formatDateUTC(createdAtUTC)}
-                  </span>
-                </span>
-              </div>
+              </span>
             </div>
           </div>
 

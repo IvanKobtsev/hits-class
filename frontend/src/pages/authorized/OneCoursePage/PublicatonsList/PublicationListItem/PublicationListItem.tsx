@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './PublicationListItem.module.scss';
 import AnnouncementIcon from 'assets/icons/announcement.svg?react';
+import TeamAssignmentIcon from 'assets/icons/team-assignment.svg?react';
 import AssignmentIcon from 'assets/icons/assignment.svg?react';
 import {
   Card,
@@ -31,7 +32,7 @@ import { AttachmentsList } from './AttachmentsList/AttachmentsList';
 import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
 import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
-import { Link, useParams } from 'react-router';
+import { Link } from 'react-router';
 import { LexicalViewer } from 'components/lexical/LexicalViewer.tsx';
 import { Links } from 'application/constants/links';
 import { useNavigate } from 'react-router-dom';
@@ -71,7 +72,8 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   targetUserIds,
   publicationPayload,
 }) => {
-  const isAssignment = type === PublicationType.Assignment;
+  const isTeamAssignment = type === PublicationType.TeamAssignment;
+  const isAssignment = type === PublicationType.Assignment || isTeamAssignment;
 
   const assignmentData = isAssignment
     ? (publicationPayload as AssignmentPayload)
@@ -172,11 +174,21 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           className={clsx(
             styles.typeIcon,
             isAssignment
-              ? styles.typeIconAssignment
+              ? isTeamAssignment
+                ? styles.typeIconTeamAssignment
+                : styles.typeIconAssignment
               : styles.typeIconAnnouncement,
           )}
         >
-          {isAssignment ? <AssignmentIcon /> : <AnnouncementIcon />}
+          {isAssignment ? (
+            isTeamAssignment ? (
+              <TeamAssignmentIcon />
+            ) : (
+              <AssignmentIcon />
+            )
+          ) : (
+            <AnnouncementIcon />
+          )}
         </Avatar>
 
         <Box data-test-id={`PublicationItem-author-container-${id}`}>
@@ -224,9 +236,10 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           <Chip
             label={`Срок сдачи: ${formatDeadline(assignmentData.deadlineUtc)}`}
             className={clsx(
-                    styles.deadlineChip,
-                    isDeadlinePast(assignmentData.deadlineUtc) && styles.deadlineChipOverdue,
-                  )}
+              styles.deadlineChip,
+              isDeadlinePast(assignmentData.deadlineUtc) &&
+                styles.deadlineChipOverdue,
+            )}
             data-test-id={`PublicationItem-deadline-chip-${id}`}
           />
         </Box>
@@ -272,9 +285,11 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleEditClick}>Редактировать</MenuItem>
-              <MenuItem onClick={handleTargetUsersClick}>
-                Изменить целевых пользователей
-              </MenuItem>
+              {!isTeamAssignment && (
+                <MenuItem onClick={handleTargetUsersClick}>
+                  Изменить целевых пользователей
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={() => {
                   void handleDeleteClick();
