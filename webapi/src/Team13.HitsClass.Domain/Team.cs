@@ -15,6 +15,13 @@ namespace Team13.HitsClass.Domain
         public int PublicationId { get; set; }
         public Publication Publication { get; set; }
 
-        public static Specification<Team> HasId(int id) => new(nameof(HasId), t => t.Id == id, id);
+        #region Specifications
+
+        public static Specification<Team> HasId(int id)
+        {
+            return new Specification<Team>(nameof(HasId), s => s.Id == id, id);
+        }
+
+        #endregion
     }
 }
