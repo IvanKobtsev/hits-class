@@ -8,6 +8,15 @@ namespace Team13.HitsClass.App.Features.Teams
     public class TeamController(TeamService teamService)
     {
         /// <summary>
+        /// Create a team for a team assignment (Free distribution mode only)
+        /// </summary>
+        [HttpPost("team-assignments/{assignmentId:int}/teams")]
+        public async Task<TeamDto> CreateTeam(
+            [FromRoute] int assignmentId,
+            [FromBody] CreateTeamDto dto
+        ) => await teamService.CreateTeam(assignmentId, dto);
+
+        /// <summary>
         /// Add a new member to the team (as teacher)
         /// </summary>
         [HttpPost("teams/{id:int}")]

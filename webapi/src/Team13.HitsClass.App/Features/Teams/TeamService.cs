@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Teams.Dto;
+using Team13.HitsClass.App.Utils;
+using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
@@ -16,6 +18,58 @@ namespace Team13.HitsClass.App.Features.Teams
         UserManager<User> userManager
     )
     {
+        public async Task<TeamDto> CreateTeam(int assignmentId, CreateTeamDto dto)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var publication = await dbContext
+                .Publications.Include(p => p.Course)
+                    .ThenInclude(c => c.Students)
+                .Include(p => p.Teams!)
+                    .ThenInclude(t => t.Members)
+                .GetOne(Publication.HasId(assignmentId));
+
+            if (publication.Type != PublicationType.TeamAssignment)
+                throw new ValidationException("Only team assignments can have teams.");
+
+            var payload = (TeamAssignmentPayload)publication.PublicationPayload;
+
+            if (payload.DistributionType != TeamDistributionType.Free)
+                throw new ValidationException("Team creation is not open for this assignment.");
+
+            if (payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            if (!publication.Course.Students.Any(s => s.Id == userId))
+                throw new AccessDeniedException("You are not a student of this course.");
+
+            var alreadyInTeam = publication.Teams!.Any(t =>
+                t.CaptainId == userId || t.Members.Any(m => m.Id == userId)
+            );
+            if (alreadyInTeam)
+                throw new ValidationException("You are already in a team for this assignment.");
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+            var team = new Domain.Team
+            {
+                Name = dto.Name,
+                CaptainId = userId,
+                PublicationId = assignmentId,
+                Members = [user],
+            };
+
+            dbContext.Teams.Add(team);
+            await dbContext.SaveChangesAsync();
+
+            var saved = await dbContext
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .GetOne(Domain.Team.HasId(team.Id));
+
+            return saved.ToTeamDto();
+        }
+
         public async Task<TeamDto> AddStudentToTeam(int teamId, string studentId)
         {
             var userId = userAccessor.GetUserId();
@@ -30,10 +84,14 @@ namespace Team13.HitsClass.App.Features.Teams
                         .ThenInclude(c => c.Teachers)
                 .GetOne(Team.HasId(teamId));
 
-            if (
-                !team.Publication.Course.Teachers.Any(s => s.Id == userId)
-                && !(team.Publication.Course.OwnerId == userId)
-            )
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                team.Publication.Course.OwnerId == userId
+                || team.Publication.Course.Teachers.Any(s => s.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+
+            if (!hasAccess)
                 throw new AccessDeniedException("Only teachers can add students to teams.");
 
             if (!team.Publication.Course.Students.Any(s => s.Id == studentId))
