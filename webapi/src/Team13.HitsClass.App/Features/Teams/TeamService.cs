@@ -192,5 +192,20 @@ namespace Team13.HitsClass.App.Features.Teams
 
             return saved.ToTeamDto();
         }
+
+        public async Task<List<TeamDto>> GetTeamsForAssignment(int assignmentId)
+        {
+            var publication = await dbContext
+                .Publications.Include(p => p.Teams!)
+                    .ThenInclude(t => t.Members)
+                .Include(p => p.Teams!)
+                    .ThenInclude(t => t.Captain)
+                .GetOne(Publication.HasId(assignmentId));
+
+            if (publication.Type != PublicationType.TeamAssignment)
+                throw new ValidationException("Only team assignments can have teams.");
+
+            return publication.Teams!.Select(t => t.ToTeamDto()).ToList();
+        }
     }
 }

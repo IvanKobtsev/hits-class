@@ -16,9 +16,8 @@
 }
 
 .layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   max-width: 1200px;
   margin: 0 auto;
@@ -58,6 +57,18 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   cursor: pointer;
+}
+
+.btnPrimary {
+  width: 200px;
+  text-transform: none !important;
+}
+
+.teacherActions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 25px;
 }

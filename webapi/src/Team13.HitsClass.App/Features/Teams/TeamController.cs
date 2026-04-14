@@ -8,6 +8,13 @@ namespace Team13.HitsClass.App.Features.Teams
     public class TeamController(TeamService teamService)
     {
         /// <summary>
+        /// Get teams for specific team assignment
+        /// </summary>
+        [HttpGet("team-assignments/{assignmentId:int}/teams")]
+        public async Task<List<TeamDto>> GetTeamsForAssignment([FromRoute] int assignmentId) =>
+            await teamService.GetTeamsForAssignment(assignmentId);
+
+        /// <summary>
         /// Create a team for a team assignment (Free distribution mode only)
         /// </summary>
         [HttpPost("team-assignments/{assignmentId:int}/teams")]
