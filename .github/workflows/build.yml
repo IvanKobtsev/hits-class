@@ -97,6 +97,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Sanity check secrets                                                                                                           
+        run: |        
+          echo "VM_HOST set: ${{ secrets.VM_HOST != '' }}"                                                                                   
+          echo "VM_USER set: ${{ secrets.VM_USER != '' }}"                                                                                   
+          echo "VM_PASSWORD set: ${{ secrets.VM_PASSWORD != '' }}" 
+
       - name: Copy files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
