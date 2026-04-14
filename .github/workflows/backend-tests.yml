@@ -49,6 +49,15 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Node.js scripts dependencies
+        run: npm ci
+        working-directory: webapi/src/Team13.HitsClass.App/Node.js/Scripts
+
       - name: Restore dependencies
         run: dotnet restore webapi/Team13.HitsClass.slnx
 
