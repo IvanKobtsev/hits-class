@@ -221,6 +221,94 @@ namespace Team13.HitsClass.App.Features.Teams
             return saved.ToTeamDto();
         }
 
+        public async Task<TeamDto> CreateTeamAsTeacher(int assignmentId, CreateTeamAsTeacherDto dto)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var publication = await dbContext
+                .Publications.Include(p => p.Course)
+                    .ThenInclude(c => c.Students)
+                .Include(p => p.Course)
+                    .ThenInclude(c => c.Teachers)
+                .Include(p => p.Teams!)
+                    .ThenInclude(t => t.Members)
+                .GetOne(Publication.HasId(assignmentId));
+
+            if (publication.Type != PublicationType.TeamAssignment)
+                throw new ValidationException("Only team assignments can have teams.");
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess =
+                publication.Course.OwnerId == userId
+                || publication.Course.Teachers.Any(t => t.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher]);
+
+            if (!hasAccess)
+                throw new AccessDeniedException("Only teachers can create teams.");
+
+            var payload = (TeamAssignmentPayload)publication.PublicationPayload;
+
+            if (payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            if (publication.Teams!.Count >= 100)
+                throw new ValidationException("Maximum number of teams (100) has been reached.");
+
+            if (
+                publication.Teams!.Any(t =>
+                    string.Equals(t.Name, dto.Name, StringComparison.OrdinalIgnoreCase)
+                )
+            )
+                throw new ValidationException(
+                    $"Team with name '{dto.Name}' already exists for this assignment."
+                );
+
+            if (dto.StudentIds.Count == 0)
+                throw new ValidationException("At least one student must be added to the team.");
+
+            var students = new List<Domain.User>();
+            foreach (var studentId in dto.StudentIds)
+            {
+                if (!publication.Course.Students.Any(s => s.Id == studentId))
+                    throw new ValidationException(
+                        $"User with id={studentId} is not a member of this course."
+                    );
+
+                if (publication.Teams!.Any(t => t.CaptainId == studentId))
+                    throw new ValidationException(
+                        $"Student {studentId} is already a captain of another team."
+                    );
+
+                if (publication.Teams!.Any(t => t.Members.Any(m => m.Id == studentId)))
+                    throw new ValidationException(
+                        $"Student {studentId} is already in another team."
+                    );
+
+                var student = await dbContext.Users.GetOne(User.HasId(studentId));
+                students.Add(student);
+            }
+
+            var captainId = dto.StudentIds[0];
+
+            var team = new Domain.Team
+            {
+                Name = dto.Name,
+                CaptainId = captainId,
+                PublicationId = assignmentId,
+                Members = students,
+            };
+
+            dbContext.Teams.Add(team);
+            await dbContext.SaveChangesAsync();
+
+            var saved = await dbContext
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .GetOne(Domain.Team.HasId(team.Id));
+
+            return saved.ToTeamDto();
+        }
+
         public async Task<List<TeamDto>> GetTeamsForAssignment(int assignmentId)
         {
             var publication = await dbContext

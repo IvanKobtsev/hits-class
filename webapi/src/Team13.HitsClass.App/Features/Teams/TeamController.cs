@@ -49,5 +49,14 @@ namespace Team13.HitsClass.App.Features.Teams
         {
             return await teamService.RemoveTeamMember(id, studentId);
         }
+
+        /// <summary>
+        /// Create a team for a team assignment (as teacher)
+        /// </summary>
+        [HttpPost("team-assignments/{assignmentId:int}/teams/teacher")]
+        public async Task<TeamDto> CreateTeamAsTeacher(
+            [FromRoute] int assignmentId,
+            [FromBody] CreateTeamAsTeacherDto dto
+        ) => await teamService.CreateTeamAsTeacher(assignmentId, dto);
     }
 }
