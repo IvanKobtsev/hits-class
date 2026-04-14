@@ -53,14 +53,5 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
             [FromRoute] int assignmentId,
             [FromBody] bool freezeTeams
         ) => await _teamAssignmentService.SetFrozenStatus(assignmentId, freezeTeams);
-
-        /// <summary>
-        /// Creates a team for a specific team assignment as a student.
-        /// </summary>
-        [HttpPost("{assignmentId:int}/teams")]
-        public async Task<TeamDto> CreateTeam(
-            [FromRoute] int assignmentId,
-            [FromBody] CreateTeamDto dto
-        ) => await _teamAssignmentService.CreateTeam(assignmentId, dto);
     }
 }

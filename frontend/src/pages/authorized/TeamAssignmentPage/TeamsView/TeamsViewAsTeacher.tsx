@@ -8,11 +8,11 @@ import { queryClient } from 'services/api/query-client-helper.ts';
 import { QueryFactory } from '../../../../services/api';
 import { useParams } from 'react-router';
 import { useState } from 'react';
+import { CreateTeamModal } from './CreateTeamModal/CreateTeamModal.tsx';
 
 export function TeamsViewAsTeacher() {
-  const { assignmentId, courseId } = useParams();
+  const { assignmentId } = useParams();
   const id = Number(assignmentId);
-  const cid = Number(courseId);
 
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const { mutateAsync } = useSetFrozenStatusMutation(id);
@@ -48,6 +48,11 @@ export function TeamsViewAsTeacher() {
           Заморозить команды
         </div>
       </div>
+      <CreateTeamModal
+        assignmentId={id}
+        isOpen={showCreateTeamModal}
+        onClose={() => setShowCreateTeamModal(false)}
+      />
     </div>
   );
 }
