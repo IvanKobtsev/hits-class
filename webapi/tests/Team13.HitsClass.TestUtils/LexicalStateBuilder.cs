@@ -10,9 +10,9 @@ public static class LexicalStateBuilder
     public static LexicalState BuildLexicalState(string content)
     {
         return new LexicalState(
-            "{\n  \"root\": {\n    \"children\": [\n      {\n        \"children\": [\n          {\n            \"detail\": 0,\n            \"format\": 0,\n            \"mode\": \"normal\",\n            \"style\": \"\",\n            \"text\": \""
+            "{\"root\":{\"children\":[{\"children\":[{\"detail\":0,\"format\":0,\"mode\":\"normal\",\"style\":\"\",\"text\":\""
                 + content
-                + "\",\n            \"type\": \"text\",\n            \"version\": 1\n          }\n        ],\n        \"direction\": null,\n        \"format\": \"\",\n        \"indent\": 0,\n        \"type\": \"paragraph\",\n        \"version\": 1,\n        \"textFormat\": 0,\n        \"textStyle\": \"\"\n      }\n    ],\n    \"direction\": null,\n    \"format\": \"\",\n    \"indent\": 0,\n    \"type\": \"root\",\n    \"version\": 1\n  }\n}"
+                + "\",\"type\":\"text\",\"version\":1}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"paragraph\",\"version\":1,\"textFormat\":0,\"textStyle\":\"\"}],\"direction\":null,\"format\":\"\",\"indent\":0,\"type\":\"root\",\"version\":1}}"
         );
     }
 
