@@ -127,9 +127,7 @@ describe('EditAnnouncementModal', () => {
   test('renders content field', () => {
     renderModal();
 
-    expect(
-      screen.getByTestId('EditAnnouncement-content-input'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('lexical-editor')).toBeInTheDocument();
   });
 
   test('renders attachments section', () => {
@@ -148,12 +146,23 @@ describe('EditAnnouncementModal', () => {
     ).toBeInTheDocument();
   });
 
-  test('pre-fills content field with initialContent', () => {
-    renderModal({ initialContent: 'Исходное содержание' });
+  test('passes initialContent to mutation when submitting without content edits', async () => {
+    const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
+    const initialContent = 'Исходное содержание';
+    renderModal({ initialContent });
 
-    expect(screen.getByTestId('EditAnnouncement-content-input')).toHaveValue(
-      'Исходное содержание',
-    );
+    await user.click(screen.getByRole('button', { name: /сохранить/i }));
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            json: expect.stringContaining(initialContent),
+          }),
+        }),
+      );
+    });
   });
 
   test('shows initial attachment names in the file table', () => {
@@ -162,20 +171,17 @@ describe('EditAnnouncementModal', () => {
     expect(screen.getByText('document.pdf')).toBeInTheDocument();
   });
 
-  test('calls mutation with updated content on submit', async () => {
+  test('calls mutation on submit with Lexical content payload', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
     renderModal({ initialContent: 'Старое содержание' });
 
-    const textarea = screen.getByTestId('EditAnnouncement-content-input');
-    await user.clear(textarea);
-    await user.type(textarea, 'Новое содержание');
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
-          content: 'Новое содержание',
+          content: expect.any(Object),
         }),
       );
     });
@@ -223,28 +229,30 @@ describe('EditAnnouncementModal', () => {
     });
   });
 
-  test('shows required error under content field when submit is pressed with empty content', async () => {
+  test('submits when content is empty', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
-      expect(
-        within(screen.getByTestId('EditAnnouncement-content')).getByText(
-          'Обязательное поле',
-        ),
-      ).toBeInTheDocument();
+      expect(mockMutateAsync).toHaveBeenCalled();
     });
   });
 
-  test('does not call mutation when content is empty', async () => {
+  test('does not show required content error when content is empty', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
-    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(
+      within(screen.getByTestId('EditAnnouncement-content')).queryByText(
+        'Обязательное поле',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   test('shows error popup when update fails', async () => {

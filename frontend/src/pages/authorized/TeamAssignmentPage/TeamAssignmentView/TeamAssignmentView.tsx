@@ -1,4 +1,4 @@
-import AssignmentIcon from 'assets/icons/list-ul.svg?react';
+import TeamAssignmentIcon from 'assets/icons/team-assignment.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import {
   AssignmentPayload,
@@ -6,7 +6,7 @@ import {
   SubmissionDto,
 } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
-import styles from './AssignmentView.module.scss';
+import styles from './TeamAssignmentView.module.scss';
 
 function isLexicalState(value: string): boolean {
   try {
@@ -45,7 +45,7 @@ export type AssignmentViewProps = {
   submission?: SubmissionDto | null;
 };
 
-export const AssignmentView = ({
+export const TeamAssignmentView = ({
   assignment,
   submission,
 }: AssignmentViewProps) => {
@@ -60,7 +60,7 @@ export const AssignmentView = ({
       <div className={styles.banner}>
         <div className={styles.bannerTop}>
           <div className={styles.iconWrapper}>
-            <AssignmentIcon />
+            <TeamAssignmentIcon />
           </div>
           <h1 className={styles.title} data-test-id="AssignmentView-title">
             {title}

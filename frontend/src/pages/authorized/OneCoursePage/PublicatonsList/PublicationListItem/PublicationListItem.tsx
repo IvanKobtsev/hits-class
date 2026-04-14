@@ -85,10 +85,15 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
 
   const params = Links.Authorized.CourseRoutes.useParams();
   const link = isAssignment
-    ? Links.Authorized.AssignmentRoutes.link({
-        courseId: params.courseId,
-        assignmentId: id,
-      })
+    ? isTeamAssignment
+      ? Links.Authorized.TeamAssignmentRoutes.link({
+          courseId: params.courseId,
+          assignmentId: id,
+        })
+      : Links.Authorized.AssignmentRoutes.link({
+          courseId: params.courseId,
+          assignmentId: id,
+        })
     : Links.Authorized.AnnouncementRoutes.link({
         courseId: params.courseId,
         announcementId: id,

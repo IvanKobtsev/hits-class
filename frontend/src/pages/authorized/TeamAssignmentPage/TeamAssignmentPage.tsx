@@ -6,9 +6,11 @@ import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useCourseRole } from 'pages/authorized/OneCoursePage/useCourseRole';
 import type { AssignmentPayload } from 'services/api/api-client.types';
-import { AssignmentView } from './AssignmentView/AssignmentView';
+import { TeamAssignmentView } from './TeamAssignmentView/TeamAssignmentView.tsx';
 import styles from './TeamAssignmentPage.module.scss';
 import { PublicCommentView } from '../AssignmentPage/PublicCommentView/PublicCommentView';
+import { SubmissionPanel } from '../AssignmentPage/CreateSubmissionPanel/SubmissionPanel.tsx';
+import { PrivateCommentView } from '../AssignmentPage/PrivateCommentView/PrivateCommentView.tsx';
 
 type TabValue = 'assignment' | 'submissions';
 
@@ -28,7 +30,7 @@ export const TeamAssignmentPage = () => {
   if (!publication) return null;
 
   return (
-    <div className={styles.page} data-test-id="AssignmentPage">
+    <div className={styles.page} data-test-id="TeamAssignmentPage">
       {isTeacher && (
         <div className={styles.tabsWrapper}>
           <Tabs
@@ -40,14 +42,40 @@ export const TeamAssignmentPage = () => {
             <Tab
               label="Задание"
               value="assignment"
-              data-test-id="AssignmentPage-tab-assignment"
+              data-test-id="TeamAssignmentPage-tab-assignment"
             />
             <Tab
-              label="Работы учащихся"
+              label="Команды"
+              value="teams"
+              data-test-id="TeamAssignmentPage-tab-teams"
+            />
+            <Tab
+              label="Работы"
               value="submissions"
-              data-test-id="AssignmentPage-tab-submissions"
+              data-test-id="TeamAssignmentPage-tab-submissions"
             />
           </Tabs>
+        </div>
+      )}
+
+      {activeTab === 'assignment' && (
+        <div className={styles.layout}>
+          <div className={styles.left}>
+            <TeamAssignmentView
+              assignment={publication}
+              submission={submission}
+            />
+            <PublicCommentView publicationId={id} />
+          </div>
+          {!isTeacher && (
+            <div className={styles.right}>
+              <SubmissionPanel assignmentId={id} submission={submission} />
+              <PrivateCommentView
+                assignmentId={id}
+                comments={submission?.comments ?? []}
+              />
+            </div>
+          )}
         </div>
       )}
 

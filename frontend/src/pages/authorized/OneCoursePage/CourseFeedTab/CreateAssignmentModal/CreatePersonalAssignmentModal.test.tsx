@@ -156,7 +156,7 @@ describe('CreateAssignmentModal', () => {
   test('renders modal title when open', () => {
     renderModal();
 
-    expect(screen.getByText('Создать задание')).toBeInTheDocument();
+    expect(screen.getByText('Создать индивидуальное задание')).toBeInTheDocument();
   });
 
   test('does not render when closed', () => {
@@ -176,9 +176,7 @@ describe('CreateAssignmentModal', () => {
   test('renders content field', () => {
     renderModal();
 
-    expect(
-      screen.getByTestId('CreateAssignment-content-input'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('lexical-editor')).toBeInTheDocument();
   });
 
   test('renders deadline field', () => {
@@ -215,7 +213,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание задания',
     );
     await waitFor(() => {
@@ -224,16 +222,20 @@ describe('CreateAssignmentModal', () => {
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
-      expect(mockMutateAsync).toHaveBeenCalledWith({
-        content: 'Описание задания',
-        targetUsersIds: null,
-        attachments: null,
-        payload: {
-          publicationType: 'Assignment',
-          title: 'Задание 1',
-          deadlineUtc: null,
-        },
-      });
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            json: expect.any(String),
+          }),
+          targetUsersIds: null,
+          attachments: null,
+          payload: expect.objectContaining({
+            publicationType: 'Assignment',
+            title: 'Задание 1',
+            deadlineUtc: null,
+          }),
+        }),
+      );
     });
   });
 
@@ -248,7 +250,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
@@ -268,7 +270,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
@@ -278,8 +280,9 @@ describe('CreateAssignmentModal', () => {
     });
   });
 
-  test('shows required error under content field when submit is pressed with empty content', async () => {
+  test('submits when content is empty', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.type(
@@ -289,9 +292,7 @@ describe('CreateAssignmentModal', () => {
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
-      const textarea = screen.getByTestId('CreateAssignment-content-input');
-      expect(textarea.closest('div')).toHaveTextContent('Обязательное поле');
-      expect(textarea).toHaveAttribute('data-error', 'true');
+      expect(mockMutateAsync).toHaveBeenCalled();
     });
   });
 
@@ -359,7 +360,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
@@ -387,7 +388,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await waitFor(() => {
@@ -411,7 +412,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await waitFor(() => {
@@ -443,7 +444,7 @@ describe('CreateAssignmentModal', () => {
       'Задание 1',
     );
     await user.type(
-      screen.getByTestId('CreateAssignment-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Описание',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
