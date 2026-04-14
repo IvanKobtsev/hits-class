@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace Team13.HitsClass.App.Features.Team.Dto;
+namespace Team13.HitsClass.App.Features.Teams.Dto;
 
 public class CreateTeamDto
 {
