@@ -1,0 +1,54 @@
+@model Team13.HitsClass.App.Views.Emails.TeamDisbanded.TeamDisbandedEmailModel
+
+<!DOCTYPE html>
+<style>
+  * {
+    font-family: 'Figtree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    width: 100%;
+    height: fit-content;
+    background-color: white;
+  }
+
+  .header,
+  .section,
+  .footer {
+    width: 100%;
+    height: fit-content;
+    padding: 24px 16px;
+    box-sizing: border-box;
+  }
+
+  .section p {
+    margin: 0 0 12px;
+    color: #1f2937;
+    line-height: 1.5;
+  }
+</style>
+<html lang="ru">
+  <head>
+    <title>Команда "@Model.TeamName" расформирована</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Figtree:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+  <div class="header">
+    <h1 class="title">Команда "@Model.TeamName" расформирована</h1>
+  </div>
+  <div class="section">
+    <p>Здравствуйте, @Model.RecipientLegalName!</p>
+    <p>
+      Ваша команда <strong>@Model.TeamName</strong> для задания
+      <strong>@Model.AssignmentTitle</strong> в курсе "@Model.CourseTitle" была расформирована.
+    </p>
+    <p>Все загруженные работы участников команды были удалены.</p>
+  </div>
+  <div class="footer">
+    Уведомления HitsClass.<br />
+    Все права защищены.
+  </div>
+  </body>
+</html>

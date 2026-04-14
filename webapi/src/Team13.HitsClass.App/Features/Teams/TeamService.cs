@@ -16,7 +16,8 @@ namespace Team13.HitsClass.App.Features.Teams
     public class TeamService(
         HitsClassDbContext dbContext,
         IUserAccessor userAccessor,
-        UserManager<User> userManager
+        UserManager<User> userManager,
+        NotificationService notificationService
     )
     {
         public async Task<TeamDto> CreateTeam(int assignmentId, CreateTeamDto dto)
@@ -279,6 +280,63 @@ namespace Team13.HitsClass.App.Features.Teams
                 .GetOne(Domain.Team.HasId(team.Id));
 
             return saved.ToTeamDto();
+        }
+
+        public async Task DisbandTeam(int teamId)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var team = await dbContext
+                .Teams.Include(t => t.Members)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Teachers)
+                .GetOne(Team.HasId(teamId));
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var isTeacher =
+                team.Publication.Course.OwnerId == userId
+                || team.Publication.Course.Teachers.Any(t => t.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher]);
+            var isCaptain = team.CaptainId == userId;
+
+            if (!isTeacher && !isCaptain)
+                throw new AccessDeniedException(
+                    "Only teachers or the team captain can disband a team."
+                );
+
+            var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (!isTeacher && payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            var membersToNotify = team.Members.Where(m => !isCaptain || m.Id != userId).ToList();
+
+            var notificationDto = new TeamDisbandedNotificationDto
+            {
+                TeamName = team.Name,
+                AssignmentTitle = payload.Title,
+                CourseTitle = team.Publication.Course.Title,
+                Recipients =
+                [
+                    .. membersToNotify.Select(m => new TeamDisbandedNotificationDto.RecipientInfo(
+                        m.Email,
+                        m.LegalName
+                    )),
+                ],
+            };
+
+            var teamMemberIds = team.Members.Select(m => m.Id).ToList();
+            var submissions = await dbContext
+                .Submissions.Where(s =>
+                    s.PublicationId == team.PublicationId && teamMemberIds.Contains(s.AuthorId)
+                )
+                .ToListAsync();
+            dbContext.Submissions.RemoveRange(submissions);
+
+            dbContext.Teams.Remove(team);
+            await dbContext.SaveChangesAsync();
+
+            await notificationService.TeamDisbandedNotification(notificationDto);
         }
 
         public async Task<List<TeamDto>> GetTeamsForAssignment(int assignmentId)

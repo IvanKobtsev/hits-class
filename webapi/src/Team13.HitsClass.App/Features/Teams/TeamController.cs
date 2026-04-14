@@ -51,6 +51,12 @@ namespace Team13.HitsClass.App.Features.Teams
         }
 
         /// <summary>
+        /// Disband a team (captain or teacher only)
+        /// </summary>
+        [HttpDelete("teams/{id:int}/disband")]
+        public async Task DisbandTeam([FromRoute] int id) => await teamService.DisbandTeam(id);
+
+        /// <summary>
         /// Create a team for a team assignment (as teacher)
         /// </summary>
         [HttpPost("team-assignments/{assignmentId:int}/teams/teacher")]

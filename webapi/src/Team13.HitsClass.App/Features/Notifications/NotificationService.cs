@@ -3,6 +3,7 @@ using Team13.HitsClass.App.Features.Publications.Extensions;
 using Team13.HitsClass.App.Views.Emails.AccountVerification;
 using Team13.HitsClass.App.Views.Emails.NewAnnouncementNotification;
 using Team13.HitsClass.App.Views.Emails.NewAssignmentNotification;
+using Team13.HitsClass.App.Views.Emails.TeamDisbanded;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
@@ -90,5 +91,22 @@ public class NotificationService(
                 LegalName = user.LegalName,
             }
         );
+    }
+
+    public async Task TeamDisbandedNotification(TeamDisbandedNotificationDto dto)
+    {
+        foreach (var recipient in dto.Recipients)
+        {
+            await mailSender.Send(
+                recipient.Email,
+                new TeamDisbandedEmailModel
+                {
+                    RecipientLegalName = recipient.LegalName,
+                    TeamName = dto.TeamName,
+                    AssignmentTitle = dto.AssignmentTitle,
+                    CourseTitle = dto.CourseTitle,
+                }
+            );
+        }
     }
 }
