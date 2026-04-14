@@ -955,6 +955,20 @@ namespace Team13.HitsClass.Http.Generated
     [System.CodeDom.Compiler.GeneratedCode("NSwag", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
     public partial interface ITeamClient : IBaseClient
     {
+            /// <summary>Get teams for specific team assignment</summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(TeamClientGetTeamsForAssignmentParametersDto parameters)
+        {
+            return GetTeamsForAssignmentAsync(parameters, System.Threading.CancellationToken.None);
+        }
+
+            /// <summary>Get teams for specific team assignment</summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(TeamClientGetTeamsForAssignmentParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        {
+            return GetTeamsForAssignmentAsync(parameters.assignmentId, cancellationToken);
+        }
+
             /// <summary>Check if student already has a team for this assignment</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<bool> IsStudentInATeamAsync(TeamClientIsStudentInATeamParametersDto parameters)
@@ -968,6 +982,19 @@ namespace Team13.HitsClass.Http.Generated
         {
             return IsStudentInATeamAsync(parameters.id, parameters.studentId, cancellationToken);
         }
+        /// <summary>
+        /// Get teams for specific team assignment
+        /// </summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(int assignmentId);
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get teams for specific team assignment
+        /// </summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(int assignmentId, System.Threading.CancellationToken cancellationToken);
+
         /// <summary>
         /// Create a team for a team assignment (Free distribution mode only)
         /// </summary>
@@ -1022,6 +1049,12 @@ namespace Team13.HitsClass.Http.Generated
 
     }
 
+    public partial class TeamClientGetTeamsForAssignmentParametersDto
+    {
+
+        public int assignmentId { get; set; }
+    }
+
     public partial class TeamClientIsStudentInATeamParametersDto
     {
 
@@ -1060,6 +1093,98 @@ namespace Team13.HitsClass.Http.Generated
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, string url);
         partial void PrepareRequest(System.Net.Http.HttpClient client, System.Net.Http.HttpRequestMessage request, System.Text.StringBuilder urlBuilder);
         partial void ProcessResponse(System.Net.Http.HttpClient client, System.Net.Http.HttpResponseMessage response);
+
+        /// <summary>
+        /// Get teams for specific team assignment
+        /// </summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(int assignmentId)
+        {
+            return GetTeamsForAssignmentAsync(assignmentId, System.Threading.CancellationToken.None);
+        }
+
+        /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
+        /// <summary>
+        /// Get teams for specific team assignment
+        /// </summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(int assignmentId, System.Threading.CancellationToken cancellationToken)
+        {
+            if (assignmentId == null)
+                throw new System.ArgumentNullException("assignmentId");
+
+            var urlBuilder_ = new System.Text.StringBuilder();
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/api/team-assignments/{assignmentId}/teams");
+            urlBuilder_.Replace("{assignmentId}", System.Uri.EscapeDataString(ConvertToString(assignmentId, System.Globalization.CultureInfo.InvariantCulture)));
+
+            var client_ = _httpClient;
+            var disposeClient_ = false;
+            try
+            {
+                using (var request_ = new System.Net.Http.HttpRequestMessage())
+                {
+                    request_.Method = new System.Net.Http.HttpMethod("GET");
+                    request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
+
+                    PrepareRequest(client_, request_, urlBuilder_);
+
+                    var url_ = urlBuilder_.ToString();
+                    request_.RequestUri = new System.Uri(url_, System.UriKind.RelativeOrAbsolute);
+
+                    PrepareRequest(client_, request_, url_);
+
+                    var response_ = await client_.SendAsync(request_, System.Net.Http.HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                    var disposeResponse_ = true;
+                    try
+                    {
+                        var headers_ = System.Linq.Enumerable.ToDictionary(response_.Headers, h_ => h_.Key, h_ => h_.Value);
+                        if (response_.Content != null && response_.Content.Headers != null)
+                        {
+                            foreach (var item_ in response_.Content.Headers)
+                                headers_[item_.Key] = item_.Value;
+                        }
+
+                        ProcessResponse(client_, response_);
+
+                        var status_ = (int)response_.StatusCode;
+                        if (status_ == 400)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<ValidationProblemDetails>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            throw new ApiException<ValidationProblemDetails>("A server side error occurred.", status_, objectResponse_.Text, headers_, objectResponse_.Object, null);
+                        }
+                        else
+                        if (status_ == 200)
+                        {
+                            var objectResponse_ = await ReadObjectResponseAsync<System.Collections.Generic.ICollection<TeamDto>>(response_, headers_, cancellationToken).ConfigureAwait(false);
+                            if (objectResponse_.Object == null)
+                            {
+                                throw new ApiException("Response was null which was not expected.", status_, objectResponse_.Text, headers_, null);
+                            }
+                            return objectResponse_.Object;
+                        }
+                        else
+                        {
+                            var responseData_ = response_.Content == null ? null : await response_.Content.ReadAsStringAsync().ConfigureAwait(false);
+                            throw new ApiException("The HTTP status code of the response was not expected (" + status_ + ").", status_, responseData_, headers_, null);
+                        }
+                    }
+                    finally
+                    {
+                        if (disposeResponse_)
+                            response_.Dispose();
+                    }
+                }
+            }
+            finally
+            {
+                if (disposeClient_)
+                    client_.Dispose();
+            }
+        }
 
         /// <summary>
         /// Create a team for a team assignment (Free distribution mode only)
@@ -1555,6 +1680,20 @@ namespace Team13.HitsClass.Http.Generated
             var result = System.Convert.ToString(value, cultureInfo);
             return result == null ? "" : result;
         }
+            /// <summary>Get teams for specific team assignment</summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(TeamClientGetTeamsForAssignmentParametersDto parameters)
+        {
+            return GetTeamsForAssignmentAsync(parameters, System.Threading.CancellationToken.None);
+        }
+
+            /// <summary>Get teams for specific team assignment</summary>
+        /// <exception cref="ApiException">A server side error occurred.</exception>
+        public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(TeamClientGetTeamsForAssignmentParametersDto parameters, System.Threading.CancellationToken cancellationToken)
+        {
+            return GetTeamsForAssignmentAsync(parameters.assignmentId, cancellationToken);
+        }
+
             /// <summary>Check if student already has a team for this assignment</summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<bool> IsStudentInATeamAsync(TeamClientIsStudentInATeamParametersDto parameters)

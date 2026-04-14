@@ -187,6 +187,7 @@ export function initPersister() {
   addResultTypeFactory('UserClient___getUsers', (data: any) => Types.initPagedResultOfUserDto(data));
 
 
+  addResultTypeFactory('TeamClient___getTeamsForAssignment', (data: any) => Types.initTeamDto(data));
 
 
 

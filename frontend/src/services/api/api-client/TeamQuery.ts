@@ -18,6 +18,10 @@ import * as Client from './TeamClient'
 export { Client };
 import type { AxiosRequestConfig } from 'axios';
 
+export type GetTeamsForAssignmentTeamQueryParameters = {
+  assignmentId: number ;
+}
+
 export type CreateTeamTeamQueryParameters = {
   assignmentId: number ;
 }
@@ -34,6 +38,98 @@ export type IsStudentInATeamTeamQueryParameters = {
   id: number ;
 }
 
+export function getTeamsForAssignmentUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getTeamsForAssignmentDefaultOptions: Omit<UseQueryOptions<Types.TeamDto[], unknown, Types.TeamDto[]>, 'queryKey'> = {
+  queryFn: __getTeamsForAssignment,
+};
+export function getGetTeamsForAssignmentDefaultOptions() {
+  return getTeamsForAssignmentDefaultOptions;
+};
+export function setGetTeamsForAssignmentDefaultOptions(options: typeof getTeamsForAssignmentDefaultOptions) {
+  getTeamsForAssignmentDefaultOptions = options;
+}
+
+export function getTeamsForAssignmentQueryKey(assignmentId: number): QueryKey;
+export function getTeamsForAssignmentQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { assignmentId,  } = params[0] as GetTeamsForAssignmentTeamQueryParameters;
+
+    return trimArrayEnd([
+        'TeamClient',
+        'getTeamsForAssignment',
+        assignmentId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'TeamClient',
+        'getTeamsForAssignment',
+        ...params
+      ]);
+  }
+}
+function __getTeamsForAssignment(context: QueryFunctionContext) {
+  return Client.getTeamsForAssignment(
+      context.queryKey[2] as number    );
+}
+
+export function useGetTeamsForAssignmentQuery<TSelectData = Types.TeamDto[], TError = unknown>(dto: GetTeamsForAssignmentTeamQueryParameters, options?: Omit<UseQueryOptions<Types.TeamDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Get teams for specific team assignment
+ */
+export function useGetTeamsForAssignmentQuery<TSelectData = Types.TeamDto[], TError = unknown>(assignmentId: number, options?: Omit<UseQueryOptions<Types.TeamDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetTeamsForAssignmentQuery<TSelectData = Types.TeamDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.TeamDto[], TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let assignmentId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ assignmentId,  } = params[0] as GetTeamsForAssignmentTeamQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [assignmentId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.TeamDto[], TError, TSelectData>({
+    queryFn: __getTeamsForAssignment,
+    queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+    ...getTeamsForAssignmentDefaultOptions as unknown as Omit<UseQueryOptions<Types.TeamDto[], TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Get teams for specific team assignment
+ */
+export function setGetTeamsForAssignmentData(queryClient: QueryClient, updater: (data: Types.TeamDto[] | undefined) => Types.TeamDto[], assignmentId: number) {
+  queryClient.setQueryData(getTeamsForAssignmentQueryKey(assignmentId),
+    updater
+  );
+}
+
+/**
+ * Get teams for specific team assignment
+ */
+export function setGetTeamsForAssignmentDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.TeamDto[] | undefined) => Types.TeamDto[]) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
 export function createTeamUrl(assignmentId: number): string {
   let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
 if (assignmentId === undefined || assignmentId === null)

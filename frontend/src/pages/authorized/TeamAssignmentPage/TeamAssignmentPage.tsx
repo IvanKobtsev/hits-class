@@ -35,35 +35,34 @@ export const TeamAssignmentPage = () => {
 
   return (
     <div className={styles.page} data-test-id="TeamAssignmentPage">
-      {isTeacher && (
-        <div className={styles.tabsWrapper}>
-          <Tabs
-            value={activeTab}
-            onChange={(_, v: TabValue) => setActiveTab(v)}
-            className={styles.tabs}
-            data-test-id="AssignmentPage-tabs"
-          >
-            <Tab
-              label="Задание"
-              value="assignment"
-              data-test-id="TeamAssignmentPage-tab-assignment"
-            />
-            <Tab
-              label="Команды"
-              value="teams"
-              data-test-id="TeamAssignmentPage-tab-teams"
-            />
+      <div className={styles.tabsWrapper}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v: TabValue) => setActiveTab(v)}
+          className={styles.tabs}
+          data-test-id="AssignmentPage-tabs"
+        >
+          <Tab
+            label="Задание"
+            value="assignment"
+            data-test-id="TeamAssignmentPage-tab-assignment"
+          />
+          <Tab
+            label="Команды"
+            value="teams"
+            data-test-id="TeamAssignmentPage-tab-teams"
+          />
+          {isTeacher && (
             <Tab
               label="Работы"
               value="submissions"
               data-test-id="TeamAssignmentPage-tab-submissions"
             />
-          </Tabs>
-        </div>
-      )}
-
+          )}
+        </Tabs>
+      </div>
       {activeTab === 'assignment' && (
-        <div className={styles.layout}>
+        <div className={styles.grid}>
           <div className={styles.left}>
             <TeamAssignmentView
               assignment={publication}
@@ -82,10 +81,8 @@ export const TeamAssignmentPage = () => {
           )}
         </div>
       )}
-
       {activeTab === 'teams' &&
         (isTeacher ? <TeamsViewAsTeacher /> : <TeamsViewAsStudent />)}
-
       {activeTab === 'submissions' && isTeacher && (
         <div className={styles.submissionsLayout}></div>
       )}

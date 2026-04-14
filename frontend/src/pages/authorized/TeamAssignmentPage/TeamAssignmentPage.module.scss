@@ -15,6 +15,16 @@
   border-bottom: 1px solid $border-input;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
 .layout {
   display: flex;
   flex-direction: column;
@@ -49,8 +59,10 @@
 
 .invites {
   width: 100%;
-  background-color: #000;
-  height: 200px;
+}
+
+.header {
+
 }
 
 .freezeTeams {
