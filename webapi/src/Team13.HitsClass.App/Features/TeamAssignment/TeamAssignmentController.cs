@@ -48,6 +48,12 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
         public async Task DeleteAssignment([FromRoute] int assignmentId) =>
             await _teamAssignmentService.DeleteTeamAssignment(assignmentId);
 
+        [HttpPatch("{assignmentId:int}/freeze-teams-status")]
+        public async Task<PublicationDto> SetFrozenStatus(
+            [FromRoute] int assignmentId,
+            [FromBody] bool freezeTeams
+        ) => await _teamAssignmentService.SetFrozenStatus(assignmentId, freezeTeams);
+
         /// <summary>
         /// Creates a team for a specific team assignment as a student.
         /// </summary>

@@ -39,6 +39,17 @@
   color: #16a34a !important;
 }
 
+.typeIconTeamAssignment {
+  background-color: #d4e4ff !important;
+  color: #1653a3 !important;
+
+  svg {
+    path {
+      stroke: #1653a3 !important;
+    }
+  }
+}
+
 .authorName {
   font-weight: 600 !important;
   color: #111827;

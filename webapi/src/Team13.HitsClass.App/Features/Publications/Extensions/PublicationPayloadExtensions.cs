@@ -10,6 +10,7 @@ public static class PublicationPayloadExtensions
         return publicationPayload switch
         {
             AnnouncementPayload => PublicationType.Announcement,
+            TeamAssignmentPayload => PublicationType.TeamAssignment,
             AssignmentPayload => PublicationType.Assignment,
             null => throw new NullReferenceException(
                 $"Received null as {nameof(PublicationPayload)}"

@@ -1127,7 +1127,7 @@ namespace Team13.HitsClass.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("Team13.HitsClass.Domain.Publication", "Publication")
-                        .WithMany()
+                        .WithMany("Teams")
                         .HasForeignKey("PublicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1167,6 +1167,8 @@ namespace Team13.HitsClass.Persistence.Migrations
             modelBuilder.Entity("Team13.HitsClass.Domain.Publication", b =>
                 {
                     b.Navigation("Submissions");
+
+                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("Team13.HitsClass.Domain.Submission", b =>

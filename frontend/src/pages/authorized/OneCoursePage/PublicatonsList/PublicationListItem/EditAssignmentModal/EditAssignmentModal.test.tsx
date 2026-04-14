@@ -145,9 +145,7 @@ describe('EditAssignmentModal', () => {
   test('renders content field', () => {
     renderModal();
 
-    expect(
-      screen.getByTestId('EditAssignment-content-input'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('lexical-editor')).toBeInTheDocument();
   });
 
   test('renders deadline field', () => {
@@ -182,12 +180,23 @@ describe('EditAssignmentModal', () => {
     );
   });
 
-  test('pre-fills content field with initialContent', () => {
-    renderModal({ initialContent: 'Решить задачи 1–10' });
+  test('passes initialContent to mutation when submitting without content edits', async () => {
+    const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
+    const initialContent = 'Решить задачи 1–10';
+    renderModal({ initialTitle: 'Задание', initialContent });
 
-    expect(screen.getByTestId('EditAssignment-content-input')).toHaveValue(
-      'Решить задачи 1–10',
-    );
+    await user.click(screen.getByRole('button', { name: /сохранить/i }));
+
+    await waitFor(() => {
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            json: expect.stringContaining(initialContent),
+          }),
+        }),
+      );
+    });
   });
 
   test('shows initial attachment names in the file table', () => {
@@ -208,16 +217,12 @@ describe('EditAssignmentModal', () => {
     await user.clear(titleInput);
     await user.type(titleInput, 'Новое название');
 
-    const contentInput = screen.getByTestId('EditAssignment-content-input');
-    await user.clear(contentInput);
-    await user.type(contentInput, 'Новое описание');
-
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
       expect(mockMutateAsync).toHaveBeenCalledWith(
         expect.objectContaining({
-          content: 'Новое описание',
+          content: expect.any(Object),
           payload: expect.objectContaining({
             title: 'Новое название',
           }),
@@ -291,16 +296,15 @@ describe('EditAssignmentModal', () => {
     });
   });
 
-  test('shows required error under content field when submit is pressed with empty content', async () => {
+  test('submits without content when title is provided', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal({ initialTitle: 'Название' });
 
     await user.click(screen.getByRole('button', { name: /сохранить/i }));
 
     await waitFor(() => {
-      const textarea = screen.getByTestId('EditAssignment-content-input');
-      expect(textarea.closest('div')).toHaveTextContent('Обязательное поле');
-      expect(textarea).toHaveAttribute('data-error', 'true');
+      expect(mockMutateAsync).toHaveBeenCalled();
     });
   });
 
