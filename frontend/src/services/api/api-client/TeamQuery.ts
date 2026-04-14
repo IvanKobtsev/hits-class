@@ -39,6 +39,10 @@ export type IsStudentInATeamTeamQueryParameters = {
   studentId?: string | undefined ;
 }
 
+export type CreateTeamAsTeacherTeamQueryParameters = {
+  assignmentId: number ;
+}
+
 export function getTeamsForAssignmentUrl(assignmentId: number): string {
   let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
 if (assignmentId === undefined || assignmentId === null)
@@ -390,4 +394,57 @@ export function setIsStudentInATeamData(queryClient: QueryClient, updater: (data
  */
 export function setIsStudentInATeamDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: boolean | undefined) => boolean) {
   queryClient.setQueryData(queryKey, updater);
+}
+    
+export function createTeamAsTeacherUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams/teacher";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function createTeamAsTeacherMutationKey(assignmentId: number): MutationKey {
+  return trimArrayEnd([
+      'TeamClient',
+      'createTeamAsTeacher',
+      assignmentId as any,
+    ]);
+}
+
+/**
+ * Create a team for a team assignment (as teacher)
+ */
+export function useCreateTeamAsTeacherMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.TeamDto, unknown, Types.CreateTeamAsTeacherDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.TeamDto, unknown, Types.CreateTeamAsTeacherDto, TContext> {
+  const key = createTeamAsTeacherMutationKey(assignmentId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.CreateTeamAsTeacherDto) => Client.createTeamAsTeacher(assignmentId, dto),
+    mutationKey: key,
+  });
+}
+  
+type CreateTeamAsTeacher__MutationParameters = CreateTeamAsTeacherTeamQueryParameters & {
+  dto: Types.CreateTeamAsTeacherDto;
+}
+
+/**
+ * Create a team for a team assignment (as teacher)
+ */
+export function useCreateTeamAsTeacherMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.TeamDto, unknown, CreateTeamAsTeacher__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreateTeamAsTeacherTeamQueryParameters}): UseMutationResult<Types.TeamDto, unknown, CreateTeamAsTeacher__MutationParameters, TContext> {
+  const key = createTeamAsTeacherMutationKey(options?.parameters?.assignmentId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: CreateTeamAsTeacher__MutationParameters) => Client.createTeamAsTeacher(data.assignmentId ?? options?.parameters?.assignmentId!, data.dto),
+  mutationKey: key,
+});
 }

@@ -248,7 +248,6 @@ export function prepareSerializeTeamDto(_data: TeamDto): TeamDto {
 }
 export interface CreateTeamDto  {
   name: string;
-  captainId: string | null;
 }
 export function deserializeCreateTeamDto(json: string): CreateTeamDto {
   const data = JSON.parse(json) as CreateTeamDto;
@@ -267,6 +266,31 @@ export function serializeCreateTeamDto(_data: CreateTeamDto | undefined) {
 export function prepareSerializeCreateTeamDto(_data: CreateTeamDto): CreateTeamDto {
   const data: Record<string, any> = { ..._data };
   return data as CreateTeamDto;
+}
+export interface CreateTeamAsTeacherDto  {
+  name: string;
+  studentIds: string[];
+}
+export function deserializeCreateTeamAsTeacherDto(json: string): CreateTeamAsTeacherDto {
+  const data = JSON.parse(json) as CreateTeamAsTeacherDto;
+  initCreateTeamAsTeacherDto(data);
+  return data;
+}
+export function initCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto) {
+  if (_data) {
+    _data.studentIds = _data["studentIds"];
+  }
+  return _data;
+}
+export function serializeCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateTeamAsTeacherDto(_data as CreateTeamAsTeacherDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto): CreateTeamAsTeacherDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateTeamAsTeacherDto;
 }
 export interface PublicationDto  {
   id: number;
