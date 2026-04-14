@@ -97,18 +97,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sanity check secrets                                                                                                           
-        run: |        
-          echo "VM_HOST set: ${{ secrets.VM_HOST != '' }}"                                                                                   
-          echo "VM_USER set: ${{ secrets.VM_USER != '' }}"                                                                                   
-          echo "VM_PASSWORD set: ${{ secrets.VM_PASSWORD != '' }}" 
-
       - name: Copy files to VM
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          password: ${{ secrets.VM_PASSWORD }}
+          key: ${{ secrets.VM_SSH_KEY }}
           source: docker-compose.yaml,nginx.conf
           target: ~/hits-class
 
@@ -117,7 +111,7 @@ jobs:
         with:
           host: ${{ secrets.VM_HOST }}
           username: ${{ secrets.VM_USER }}
-          password: ${{ secrets.VM_PASSWORD }}
+          key: ${{ secrets.VM_SSH_KEY }}
           script: |
             cd ~/hits-class
 
