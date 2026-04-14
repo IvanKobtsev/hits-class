@@ -32,7 +32,7 @@ const mockPublication: PublicationDto = {
     email: 'a@a.com',
     legalName: 'Иванов',
     groupNumber: null,
-    roles: null
+    roles: null,
   },
   attachments: [],
   targetUserIds: [],
@@ -43,7 +43,8 @@ const mockPublication: PublicationDto = {
 const baseProps = {
   courseId: 1,
   publications: [],
-  onCreateAssignment: vi.fn(),
+  onCreatePersonalAssignment: vi.fn(),
+  onCreateTeamAssignment: vi.fn(),
   onCreateAnnouncement: vi.fn(),
 };
 
@@ -86,7 +87,7 @@ describe('CourseFeedTab', () => {
   test('does not show create assignment button for student', () => {
     renderTab('student');
     expect(
-      screen.queryByTestId('CourseFeedTab-create-assignment'),
+      screen.queryByTestId('CourseFeedTab-create-individual-assignment'),
     ).not.toBeInTheDocument();
   });
 
@@ -107,7 +108,7 @@ describe('CourseFeedTab', () => {
   test('shows create assignment button for teacher', () => {
     renderTab('teacher');
     expect(
-      screen.getByTestId('CourseFeedTab-create-assignment'),
+      screen.getByTestId('CourseFeedTab-create-individual-assignment'),
     ).toBeInTheDocument();
   });
 
@@ -123,8 +124,8 @@ describe('CourseFeedTab', () => {
   test('calls onCreateAssignment when button is clicked', async () => {
     const user = userEvent.setup();
     renderTab('teacher');
-    await user.click(screen.getByTestId('CourseFeedTab-create-assignment'));
-    expect(baseProps.onCreateAssignment).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByTestId('CourseFeedTab-create-individual-assignment'));
+    expect(baseProps.onCreatePersonalAssignment).toHaveBeenCalledTimes(1);
   });
 
   test('calls onCreateAnnouncement when button is clicked', async () => {

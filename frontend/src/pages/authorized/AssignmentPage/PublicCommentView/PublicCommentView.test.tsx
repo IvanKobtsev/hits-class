@@ -33,8 +33,17 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
 });
 
 vi.mock('components/lexical/LexicalViewer', () => ({
-  LexicalViewer: ({ lexicalState }: { lexicalState: string }) => (
-    <div data-test-id="lexical-viewer">{lexicalState}</div>
+  LexicalViewer: ({ lexicalState }: { lexicalState: { json: string } }) => (
+    <div data-test-id="lexical-viewer">{lexicalState?.json ?? ''}</div>
+  ),
+}));
+
+vi.mock('components/lexical/text-area/LexicalTextArea', () => ({
+  LexicalTextArea: ({ onChange, placeholder }: any) => (
+    <textarea
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+    />
   ),
 }));
 
@@ -110,7 +119,9 @@ describe('PublicCommentView', () => {
 
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        textLexical: expect.stringContaining('Public comment'),
+        content: expect.objectContaining({
+          json: expect.stringContaining('Public comment'),
+        }),
       }),
       expect.any(Object),
     );

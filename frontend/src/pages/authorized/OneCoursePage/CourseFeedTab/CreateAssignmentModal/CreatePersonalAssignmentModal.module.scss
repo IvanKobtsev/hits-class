@@ -52,3 +52,15 @@
     min-height: 100px !important;
   }
 }
+
+.submissionType,
+.distributionType {
+  display: flex;
+  margin-top: 10px;
+  gap: 20px;
+}
+
+.teamSize {
+  display: flex;
+  gap: 40px;
+}

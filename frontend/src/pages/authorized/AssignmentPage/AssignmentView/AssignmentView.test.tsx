@@ -11,9 +11,20 @@ import {
 import { wrapInLexical } from '../StudentSubmissionsTab/StudentSubmissionsTab';
 
 vi.mock('components/lexical/LexicalViewer', () => ({
-  LexicalViewer: ({ lexicalState }: { lexicalState: string }) => (
-    <div>{lexicalState}</div>
-  ),
+  LexicalViewer: ({ lexicalState }: { lexicalState: { json: string } }) => {
+    try {
+      const state = JSON.parse(lexicalState.json);
+      const extractText = (node: any): string => {
+        if (typeof node.text === 'string') return node.text;
+        if (Array.isArray(node.children))
+          return node.children.map(extractText).join('');
+        return '';
+      };
+      return <div>{extractText(state.root)}</div>;
+    } catch {
+      return <div>{lexicalState.json}</div>;
+    }
+  },
 }));
 
 vi.mock(

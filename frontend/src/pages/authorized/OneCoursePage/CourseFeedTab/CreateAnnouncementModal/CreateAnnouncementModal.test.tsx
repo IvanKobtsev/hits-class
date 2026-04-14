@@ -144,9 +144,7 @@ describe('CreateAnnouncementModal', () => {
   test('renders content field', () => {
     renderModal();
 
-    expect(
-      screen.getByTestId('CreateAnnouncement-content-input'),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId('lexical-editor')).toBeInTheDocument();
   });
 
   test('renders attachments section', () => {
@@ -165,24 +163,28 @@ describe('CreateAnnouncementModal', () => {
     ).toBeInTheDocument();
   });
 
-  test('calls mutation with content and empty attachments on submit', async () => {
+  test('calls mutation with Lexical content and empty attachments on submit', async () => {
     const user = userEvent.setup();
     mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст объявления',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
-      expect(mockMutateAsync).toHaveBeenCalledWith({
-        content: 'Текст объявления',
-        targetUsersIds: null,
-        attachments: null,
-        payload: { publicationType: 'Announcement' },
-      });
+      expect(mockMutateAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            json: expect.any(String),
+          }),
+          targetUsersIds: null,
+          attachments: null,
+          payload: { publicationType: 'Announcement' },
+        }),
+      );
     });
   });
 
@@ -192,7 +194,7 @@ describe('CreateAnnouncementModal', () => {
     renderModal();
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
@@ -213,7 +215,7 @@ describe('CreateAnnouncementModal', () => {
     renderModal(true, onClose);
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));
@@ -223,28 +225,30 @@ describe('CreateAnnouncementModal', () => {
     });
   });
 
-  test('shows required error under content field when submit is pressed with empty content', async () => {
+  test('submits when content is empty', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
     await waitFor(() => {
-      expect(
-        within(screen.getByTestId('CreateAnnouncement-content')).getByText(
-          'Обязательное поле',
-        ),
-      ).toBeInTheDocument();
+      expect(mockMutateAsync).toHaveBeenCalled();
     });
   });
 
-  test('does not call mutation when content is empty', async () => {
+  test('does not show required error when content is empty', async () => {
     const user = userEvent.setup();
+    mockMutateAsync.mockResolvedValue({});
     renderModal();
 
     await user.click(screen.getByRole('button', { name: /создать/i }));
 
-    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(
+      within(screen.getByTestId('CreateAnnouncement-content')).queryByText(
+        'Обязательное поле',
+      ),
+    ).not.toBeInTheDocument();
   });
 
   test('disables Create button when no students selected', async () => {
@@ -252,7 +256,7 @@ describe('CreateAnnouncementModal', () => {
     renderModal();
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст',
     );
     await waitFor(() => {
@@ -270,7 +274,7 @@ describe('CreateAnnouncementModal', () => {
     renderModal();
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст',
     );
     await waitFor(() => {
@@ -296,7 +300,7 @@ describe('CreateAnnouncementModal', () => {
     renderModal();
 
     await user.type(
-      screen.getByTestId('CreateAnnouncement-content-input'),
+      screen.getByTestId('lexical-editor'),
       'Текст',
     );
     await user.click(screen.getByRole('button', { name: /создать/i }));

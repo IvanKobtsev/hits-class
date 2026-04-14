@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CustomModal } from 'components/uikit/modal/CustomModal';
 import { Field } from 'components/uikit/Field';
 import { Input } from 'components/uikit/inputs/Input';
-import { TextArea } from 'components/uikit/inputs/TextArea';
 import { HookFormDatePicker } from 'components/uikit/inputs/date-time/HookFormDatePicker';
 import {
   Button,
@@ -29,7 +28,7 @@ import type {
   FileInfoDto,
   LexicalState,
 } from 'services/api/api-client.types';
-import styles from './CreateAssignmentModal.module.scss';
+import styles from './CreatePersonalAssignmentModal.module.scss';
 import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { LexicalTextAreaControlled } from 'components/lexical/text-area/LexicalTextArea.tsx';
 
@@ -48,21 +47,21 @@ function fileInfoToAttachment(info: FileInfoDto): Attachment {
   };
 }
 
-type CreateAssignmentForm = {
+type CreatePersonalAssignmentForm = {
   title: string;
   content: LexicalState;
   deadlineUtc: Date | null;
 };
 
-export type CreateAssignmentModalProps = {
+export type CreatePersonalAssignmentModalProps = {
   isOpen: boolean;
   onClose: () => void;
 };
 
-export const CreateAssignmentModal = ({
+export const CreatePersonalAssignmentModal = ({
   isOpen,
   onClose,
-}: CreateAssignmentModalProps) => {
+}: CreatePersonalAssignmentModalProps) => {
   const { courseId } = useParams<{ courseId: string }>();
   const courseIdNum = Number(courseId);
   const { mutateAsync, isPending } = useCreateAssignmentMutation(courseIdNum);
@@ -81,7 +80,7 @@ export const CreateAssignmentModal = ({
     }
   }, [isOpen, course?.students]);
 
-  const form = useAdvancedForm<CreateAssignmentForm>(
+  const form = useAdvancedForm<CreatePersonalAssignmentForm>(
     async (data) => {
       try {
         const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
@@ -165,68 +164,68 @@ export const CreateAssignmentModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       isBlocking={false}
-      title="Создать задание"
+      title="Создать индивидуальное задание"
       maxWidth="lg"
       contentClassName={styles.wideModalContent}
     >
       <Loading loading={isPending}>
         <div className={styles.formLayout}>
           <div className={styles.formColumn}>
-          <form onSubmit={form.handleSubmitDefault} className={styles.form}>
-          <Field title="Название" testId="CreateAssignment-title">
-            <Input
-              {...form.register('title', { ...requiredRule() })}
-              errorText={form.formState.errors.title?.message}
-              testId="CreateAssignment-title-input"
-            />
-          </Field>
-          <Field title="Описание">
-            <LexicalTextAreaControlled
-              className={styles.content}
-              form={form}
-              name={'content'}
-              testId="CreateAssignment-content-input"
-            />
-          </Field>
-          <Field title="Срок сдачи">
-            <HookFormDatePicker
-              name="deadlineUtc"
-              control={form.control}
-              withTime
-            />
-          </Field>
-          <Field
-            title="Прикреплённые файлы"
-            testId="CreateAssignment-attachments"
-          >
-            <AttachedFilesTable files={files} onRemove={handleRemoveFile} />
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className={styles.fileInput}
-              data-test-id="CreateAssignment-file-input"
-              onChange={handleFileInputChange}
-            />
-            <Button
-              title="Добавить файл"
-              color={ButtonColor.Default}
-              width={ButtonWidth.Fullwidth}
-              className={styles.addFileButton}
-              onClick={() => fileInputRef.current?.click()}
-            />
-          </Field>
-          <FormError>{form.overallError || null}</FormError>
-          <div className={styles.footer}>
-            <Button
-              title="Создать"
-              type="submit"
-              color={ButtonColor.Primary}
-              width={ButtonWidth.Fullwidth}
-              disabled={selectedIds.size === 0}
-            />
-          </div>
-        </form>
+            <form onSubmit={form.handleSubmitDefault} className={styles.form}>
+              <Field title="Название" testId="CreateAssignment-title">
+                <Input
+                  {...form.register('title', { ...requiredRule() })}
+                  errorText={form.formState.errors.title?.message}
+                  testId="CreateAssignment-title-input"
+                />
+              </Field>
+              <Field title="Описание">
+                <LexicalTextAreaControlled
+                  className={styles.content}
+                  form={form}
+                  name={'content'}
+                  testId="CreateAssignment-content-input"
+                />
+              </Field>
+              <Field title="Срок сдачи">
+                <HookFormDatePicker
+                  name="deadlineUtc"
+                  control={form.control}
+                  withTime
+                />
+              </Field>
+              <Field
+                title="Прикреплённые файлы"
+                testId="CreateAssignment-attachments"
+              >
+                <AttachedFilesTable files={files} onRemove={handleRemoveFile} />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className={styles.fileInput}
+                  data-test-id="CreateAssignment-file-input"
+                  onChange={handleFileInputChange}
+                />
+                <Button
+                  title="Добавить файл"
+                  color={ButtonColor.Default}
+                  width={ButtonWidth.Fullwidth}
+                  className={styles.addFileButton}
+                  onClick={() => fileInputRef.current?.click()}
+                />
+              </Field>
+              <FormError>{form.overallError || null}</FormError>
+              <div className={styles.footer}>
+                <Button
+                  title="Создать"
+                  type="submit"
+                  color={ButtonColor.Primary}
+                  width={ButtonWidth.Fullwidth}
+                  disabled={selectedIds.size === 0}
+                />
+              </div>
+            </form>
           </div>
           <div className={styles.targetColumn}>
             <TargetStudents
