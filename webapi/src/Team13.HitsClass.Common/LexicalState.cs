@@ -1,8 +1,6 @@
 ﻿namespace Team13.HitsClass.Common;
 
-public sealed class LexicalState(string json)
+public sealed record LexicalState(string Json)
 {
-    public string Json { get; } = json;
-
     public static implicit operator string(LexicalState state) => state.Json;
 }
