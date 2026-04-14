@@ -36,7 +36,7 @@ namespace Team13.HitsClass.App.Features.Teams
         /// Check if student already has a team for this assignment
         /// </summary>
         [HttpGet("team-assignments/{id:int}/team")]
-        public async Task<bool> IsStudentInATeam([FromRoute] int id, [FromBody] string studentId)
+        public async Task<bool> IsStudentInATeam([FromRoute] int id, [FromQuery] string studentId)
         {
             return await teamService.IsStudentInATeam(id, studentId);
         }

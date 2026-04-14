@@ -81,7 +81,7 @@ function processGetTeamsForAssignment(response: AxiosResponse): Promise<Types.Te
 }
 
 /**
- * Create a team for a team assignment (Free distribution mode only)
+ * Create a team for a team assignment
  */
 export function createTeam(assignmentId: number, dto: Types.CreateTeamDto, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
     let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
@@ -283,25 +283,26 @@ function processRemoveTeamMember(response: AxiosResponse): Promise<Types.TeamDto
 
 /**
  * Check if student already has a team for this assignment
+ * @param studentId (optional) 
  */
-export function isStudentInATeam(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<boolean> {
-    let url_ = getBaseUrl() + "/api/team-assignments/{id}/team";
+export function isStudentInATeam(id: number, studentId?: string | undefined, config?: AxiosRequestConfig | undefined): Promise<boolean> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{id}/team?";
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    if (studentId === null)
+        throw new Error("The parameter 'studentId' cannot be null.");
+    else if (studentId !== undefined)
+        url_ += "studentId=" + encodeURIComponent("" + studentId) + "&";
       url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = JSON.stringify(studentId);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigIsStudentInATeam,
         ...config,
-        data: content_,
         method: "GET",
         url: url_,
         headers: {
             ..._requestConfigIsStudentInATeam?.headers,
-            "Content-Type": "application/json",
             "Accept": "application/json"
         }
     };

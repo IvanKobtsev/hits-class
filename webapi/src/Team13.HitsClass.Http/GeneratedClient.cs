@@ -996,14 +996,14 @@ namespace Team13.HitsClass.Http.Generated
         System.Threading.Tasks.Task<System.Collections.Generic.ICollection<TeamDto>> GetTeamsForAssignmentAsync(int assignmentId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
-        /// Create a team for a team assignment (Free distribution mode only)
+        /// Create a team for a team assignment
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TeamDto> CreateTeamAsync(int assignmentId, CreateTeamDto dto);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Create a team for a team assignment (Free distribution mode only)
+        /// Create a team for a team assignment
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         System.Threading.Tasks.Task<TeamDto> CreateTeamAsync(int assignmentId, CreateTeamDto dto, System.Threading.CancellationToken cancellationToken);
@@ -1187,7 +1187,7 @@ namespace Team13.HitsClass.Http.Generated
         }
 
         /// <summary>
-        /// Create a team for a team assignment (Free distribution mode only)
+        /// Create a team for a team assignment
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual System.Threading.Tasks.Task<TeamDto> CreateTeamAsync(int assignmentId, CreateTeamDto dto)
@@ -1197,7 +1197,7 @@ namespace Team13.HitsClass.Http.Generated
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
-        /// Create a team for a team assignment (Free distribution mode only)
+        /// Create a team for a team assignment
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public virtual async System.Threading.Tasks.Task<TeamDto> CreateTeamAsync(int assignmentId, CreateTeamDto dto, System.Threading.CancellationToken cancellationToken)
@@ -1502,12 +1502,14 @@ namespace Team13.HitsClass.Http.Generated
             if (id == null)
                 throw new System.ArgumentNullException("id");
 
-            if (studentId == null)
-                throw new System.ArgumentNullException("studentId");
-
             var urlBuilder_ = new System.Text.StringBuilder();
-            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/api/team-assignments/{id}/team");
+            urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/api/team-assignments/{id}/team?");
             urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
+            if (studentId != null)
+            {
+                urlBuilder_.Append(System.Uri.EscapeDataString("studentId") + "=").Append(System.Uri.EscapeDataString(ConvertToString(studentId, System.Globalization.CultureInfo.InvariantCulture))).Append("&");
+            }
+            urlBuilder_.Length--;
 
             var client_ = _httpClient;
             var disposeClient_ = false;
@@ -1515,10 +1517,6 @@ namespace Team13.HitsClass.Http.Generated
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var json_ = System.Text.Json.JsonSerializer.Serialize(studentId, _settings.Value);
-                    var content_ = new System.Net.Http.StringContent(json_);
-                    content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
-                    request_.Content = content_;
                     request_.Method = new System.Net.Http.HttpMethod("GET");
                     request_.Headers.Accept.Add(System.Net.Http.Headers.MediaTypeWithQualityHeaderValue.Parse("application/json"));
 
@@ -9530,6 +9528,11 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         [System.ComponentModel.DataAnnotations.Required]
         public string Name { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("captainId")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public string CaptainId { get; set; }
 
     }
 
