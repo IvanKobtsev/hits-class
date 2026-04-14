@@ -172,7 +172,6 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
       <Box
         className={styles.header}
         data-test-id={`PublicationItem-header-${id}`}
-        onClick={() => navigate(link)}
       >
         <Avatar
           data-test-id={`PublicationItem-type-icon-${id}`}
@@ -231,7 +230,9 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
         </Typography>
       )}
 
-      <LexicalViewer lexicalState={content!} />
+      <div data-test-id={`PublicationItem-content-${id}`}>
+        <LexicalViewer lexicalState={content!} />
+      </div>
 
       {assignmentData?.deadlineUtc && (
         <Box
@@ -270,7 +271,14 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             {cardContent}
           </CardActionArea>
         ) : (
-          cardContent
+          <CardActionArea
+            component={Link}
+            to={link}
+            className={styles.actionArea}
+            data-test-id={`PublicationItem-action-area-${id}`}
+          >
+            {cardContent}
+          </CardActionArea>
         )}
 
         {canManagePublication && (

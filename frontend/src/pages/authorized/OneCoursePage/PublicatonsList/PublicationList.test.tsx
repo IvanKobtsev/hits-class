@@ -22,11 +22,58 @@ vi.mock('components/uikit/modal/useModal', () => ({
   useModal: () => ({ showConfirm: vi.fn() }),
 }));
 
+vi.mock('application/constants/links', () => ({
+  Links: {
+    Authorized: {
+      CourseRoutes: {
+        useParams: () => ({ courseId: 1 }),
+      },
+      AssignmentRoutes: {
+        link: ({ courseId, assignmentId }: { courseId: number; assignmentId: number }) =>
+          `/courses/${courseId}/personal-assignments/${assignmentId}`,
+      },
+      TeamAssignmentRoutes: {
+        link: ({ courseId, assignmentId }: { courseId: number; assignmentId: number }) =>
+          `/courses/${courseId}/team-assignments/${assignmentId}`,
+      },
+      AnnouncementRoutes: {
+        link: ({ courseId, announcementId }: { courseId: number; announcementId: number }) =>
+          `/courses/${courseId}/announcements/${announcementId}`,
+      },
+    },
+  },
+}));
+
+vi.mock('components/lexical/LexicalViewer', () => ({
+  LexicalViewer: ({ lexicalState }: { lexicalState: { json: string } }) => {
+    try {
+      const state = JSON.parse(lexicalState.json);
+      const extractText = (node: any): string => {
+        if (typeof node.text === 'string') return node.text;
+        if (Array.isArray(node.children))
+          return node.children.map(extractText).join('');
+        return '';
+      };
+      return <div>{extractText(state.root)}</div>;
+    } catch {
+      return <div>{lexicalState.json}</div>;
+    }
+  },
+}));
+
 vi.mock('@tanstack/react-query', async (importActual) => {
   const actual = await importActual<typeof import('@tanstack/react-query')>();
   return {
     ...actual,
     useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
+
+vi.mock('react-router-dom', async (importActual) => {
+  const actual = await importActual<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
   };
 });
 

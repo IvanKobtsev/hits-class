@@ -87,7 +87,7 @@ describe('CourseFeedTab', () => {
   test('does not show create assignment button for student', () => {
     renderTab('student');
     expect(
-      screen.queryByTestId('CourseFeedTab-create-assignment'),
+      screen.queryByTestId('CourseFeedTab-create-individual-assignment'),
     ).not.toBeInTheDocument();
   });
 
@@ -108,7 +108,7 @@ describe('CourseFeedTab', () => {
   test('shows create assignment button for teacher', () => {
     renderTab('teacher');
     expect(
-      screen.getByTestId('CourseFeedTab-create-assignment'),
+      screen.getByTestId('CourseFeedTab-create-individual-assignment'),
     ).toBeInTheDocument();
   });
 
@@ -124,7 +124,7 @@ describe('CourseFeedTab', () => {
   test('calls onCreateAssignment when button is clicked', async () => {
     const user = userEvent.setup();
     renderTab('teacher');
-    await user.click(screen.getByTestId('CourseFeedTab-create-assignment'));
+    await user.click(screen.getByTestId('CourseFeedTab-create-individual-assignment'));
     expect(baseProps.onCreatePersonalAssignment).toHaveBeenCalledTimes(1);
   });
 
