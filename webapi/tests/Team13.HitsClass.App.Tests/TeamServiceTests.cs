@@ -553,6 +553,167 @@ public class TeamServiceTests : AppServiceTestBase
     }
     #endregion
 
+
+    #region PassCaptainRole Tests
+    [Fact]
+    public async Task PassCaptainRole_AsCourseOwner_ChangesCaptain()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var captain = await CreateUser("captain@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var newTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(newTeam.Id, student.Id);
+
+        var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == captain.Id);
+        result.Captain.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_AsCourseTeacher_ChangesCaptain()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var teacher = await CreateUser("teacher@gmail.com");
+        var captain = await CreateUser("captain@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var newTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(newTeam.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == captain.Id);
+        result.Captain.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_AsCaptainAndDistributionTypeIsFree_ChangesCaptain()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var captain = await CreateUser("captain@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.Free
+        );
+        var newTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(newTeam.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == captain.Id);
+        result.Captain.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_AsCaptainAndDistributionTypeIsByTeacher_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var captain = await CreateUser("captain@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var newTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(newTeam.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await _teamService.PassCaptainRole(newTeam.Id, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_AsTeamMember_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.Free
+        );
+        var teamId = assignment.Teams.First().Id;
+        await AddStudentToTeam(teamId, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
+            await _teamService.PassCaptainRole(teamId, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_TeamsAreFrozen_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            true
+        );
+        var teamId = assignment.Teams.First().Id;
+        await AddStudentToTeam(teamId, student.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await _teamService.PassCaptainRole(teamId, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_StudentIsNotATeamMember_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            true
+        );
+        var teamId = assignment.Teams.First().Id;
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await _teamService.PassCaptainRole(teamId, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task PassCaptainRole_TeamDoesNotExist_ThrowsResourceNotFoundException()
+    {
+        var student = await CreateUser("student@gmail.com");
+
+        var exception = await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
+            await _teamService.PassCaptainRole(999, student.Id)
+        );
+    }
+    #endregion
+
     #region Helpers
 
     private async Task<Course> CreateCourse(
