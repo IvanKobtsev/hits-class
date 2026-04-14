@@ -30,6 +30,10 @@ export type DeleteAssignmentTeamAssignmentQueryParameters = {
   assignmentId: number ;
 }
 
+export type SetFrozenStatusTeamAssignmentQueryParameters = {
+  assignmentId: number ;
+}
+
 export function createAssignmentUrl(courseId: number): string {
   let url_ = getBaseUrl() + "/api/courses/{courseId}/team-assignments";
 if (courseId === undefined || courseId === null)
@@ -183,6 +187,53 @@ export function useDeleteAssignmentMutationWithParameters<TContext>(options?: Om
 return useMutation({
   ...options, 
   mutationFn: (data: DeleteAssignment__MutationParameters) => Client.deleteAssignment(data.assignmentId ?? options?.parameters?.assignmentId!),
+  mutationKey: key,
+});
+}
+  
+export function setFrozenStatusUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/freeze-teams-status";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function setFrozenStatusMutationKey(assignmentId: number): MutationKey {
+  return trimArrayEnd([
+      'TeamAssignmentClient',
+      'setFrozenStatus',
+      assignmentId as any,
+    ]);
+}
+
+export function useSetFrozenStatusMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, boolean, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PublicationDto, unknown, boolean, TContext> {
+  const key = setFrozenStatusMutationKey(assignmentId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (freezeTeams: boolean) => Client.setFrozenStatus(assignmentId, freezeTeams),
+    mutationKey: key,
+  });
+}
+  
+type SetFrozenStatus__MutationParameters = SetFrozenStatusTeamAssignmentQueryParameters & {
+  freezeTeams: boolean;
+}
+
+export function useSetFrozenStatusMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PublicationDto, unknown, SetFrozenStatus__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: SetFrozenStatusTeamAssignmentQueryParameters}): UseMutationResult<Types.PublicationDto, unknown, SetFrozenStatus__MutationParameters, TContext> {
+  const key = setFrozenStatusMutationKey(options?.parameters?.assignmentId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: SetFrozenStatus__MutationParameters) => Client.setFrozenStatus(data.assignmentId ?? options?.parameters?.assignmentId!, data.freezeTeams),
   mutationKey: key,
 });
 }

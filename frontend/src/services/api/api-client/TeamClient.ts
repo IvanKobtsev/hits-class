@@ -14,25 +14,25 @@ import { throwException, isAxiosError } from '../api-client.types';
 import { getAxios, getBaseUrl } from './helpers';
 
 /**
- * Create assignment (check permission)
+ * Create a team for a team assignment (Free distribution mode only)
  */
-export function createAssignment(courseId: number, dto: Types.CreateTeamAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
-    let url_ = getBaseUrl() + "/api/courses/{courseId}/team-assignments";
-    if (courseId === undefined || courseId === null)
-      throw new Error("The parameter 'courseId' must be defined.");
-    url_ = url_.replace("{courseId}", encodeURIComponent("" + courseId));
+export function createTeam(assignmentId: number, dto: Types.CreateTeamDto, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = JSON.stringify(dto);
+    const content_ = Types.serializeCreateTeamDto(dto);
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigCreateAssignment,
+        ..._requestConfigCreateTeam,
         ...config,
         data: content_,
         method: "POST",
         url: url_,
         headers: {
-            ..._requestConfigCreateAssignment?.headers,
+            ..._requestConfigCreateTeam?.headers,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -45,11 +45,11 @@ export function createAssignment(courseId: number, dto: Types.CreateTeamAssignme
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processCreateAssignment(_response);
+        return processCreateTeam(_response);
     });
 }
 
-function processCreateAssignment(response: AxiosResponse): Promise<Types.PublicationDto> {
+function processCreateTeam(response: AxiosResponse): Promise<Types.TeamDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -70,36 +70,36 @@ function processCreateAssignment(response: AxiosResponse): Promise<Types.Publica
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPublicationDto(resultData200);
-        return Promise.resolve<Types.PublicationDto>(result200);
+        result200 = Types.initTeamDto(resultData200);
+        return Promise.resolve<Types.TeamDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PublicationDto>(null as any);
+    return Promise.resolve<Types.TeamDto>(null as any);
 }
 
 /**
- * Update specific team assignment (check permission)
+ * Add a new member to the team (as teacher)
  */
-export function patchAssignment(assignmentId: number, dto: Types.PatchTeamAssignmentDto, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
-    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}";
-    if (assignmentId === undefined || assignmentId === null)
-      throw new Error("The parameter 'assignmentId' must be defined.");
-    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+export function addTeamMember(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
+    let url_ = getBaseUrl() + "/api/teams/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = JSON.stringify(dto);
+    const content_ = JSON.stringify(studentId);
 
     let options_: AxiosRequestConfig = {
-        ..._requestConfigPatchAssignment,
+        ..._requestConfigAddTeamMember,
         ...config,
         data: content_,
-        method: "PUT",
+        method: "POST",
         url: url_,
         headers: {
-            ..._requestConfigPatchAssignment?.headers,
+            ..._requestConfigAddTeamMember?.headers,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -112,11 +112,11 @@ export function patchAssignment(assignmentId: number, dto: Types.PatchTeamAssign
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processPatchAssignment(_response);
+        return processAddTeamMember(_response);
     });
 }
 
-function processPatchAssignment(response: AxiosResponse): Promise<Types.PublicationDto> {
+function processAddTeamMember(response: AxiosResponse): Promise<Types.TeamDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -137,92 +137,36 @@ function processPatchAssignment(response: AxiosResponse): Promise<Types.Publicat
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPublicationDto(resultData200);
-        return Promise.resolve<Types.PublicationDto>(result200);
+        result200 = Types.initTeamDto(resultData200);
+        return Promise.resolve<Types.TeamDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PublicationDto>(null as any);
+    return Promise.resolve<Types.TeamDto>(null as any);
 }
 
 /**
- * Delete specific teamassignment (check permission)
+ * Remove member of a team
  */
-export function deleteAssignment(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<void> {
-    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}";
-    if (assignmentId === undefined || assignmentId === null)
-      throw new Error("The parameter 'assignmentId' must be defined.");
-    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+export function removeTeamMember(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
+    let url_ = getBaseUrl() + "/api/teams/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
       url_ = url_.replace(/[?&]$/, "");
 
+    const content_ = JSON.stringify(studentId);
+
     let options_: AxiosRequestConfig = {
-        ..._requestConfigDeleteAssignment,
+        ..._requestConfigRemoveTeamMember,
         ...config,
+        data: content_,
         method: "DELETE",
         url: url_,
         headers: {
-            ..._requestConfigDeleteAssignment?.headers,
-        }
-    };
-
-    return getAxios().request(options_).catch((_error: any) => {
-        if (isAxiosError(_error) && _error.response) {
-            return _error.response;
-        } else {
-            throw _error;
-        }
-    }).then((_response: AxiosResponse) => {
-        return processDeleteAssignment(_response);
-    });
-}
-
-function processDeleteAssignment(response: AxiosResponse): Promise<void> {
-    const status = response.status;
-    let _headers: any = {};
-    if (response.headers && typeof response.headers === "object") {
-        for (let k in response.headers) {
-            if (response.headers.hasOwnProperty(k)) {
-                _headers[k] = response.headers[k];
-            }
-        }
-    }
-    if (status === 400) {
-        const _responseText = response.data;
-        let result400: any = null;
-        let resultData400  = _responseText;
-        result400 = Types.initValidationProblemDetails(resultData400);
-        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
-
-    } else if (status === 200) {
-        const _responseText = response.data;
-        return Promise.resolve<void>(null as any);
-
-    } else if (status !== 200 && status !== 204) {
-        const _responseText = response.data;
-        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
-    }
-    return Promise.resolve<void>(null as any);
-}
-
-export function setFrozenStatus(assignmentId: number, freezeTeams: boolean, config?: AxiosRequestConfig | undefined): Promise<Types.PublicationDto> {
-    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/freeze-teams-status";
-    if (assignmentId === undefined || assignmentId === null)
-      throw new Error("The parameter 'assignmentId' must be defined.");
-    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
-      url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = JSON.stringify(freezeTeams);
-
-    let options_: AxiosRequestConfig = {
-        ..._requestConfigSetFrozenStatus,
-        ...config,
-        data: content_,
-        method: "PATCH",
-        url: url_,
-        headers: {
-            ..._requestConfigSetFrozenStatus?.headers,
+            ..._requestConfigRemoveTeamMember?.headers,
             "Content-Type": "application/json",
             "Accept": "application/json"
         }
@@ -235,11 +179,11 @@ export function setFrozenStatus(assignmentId: number, freezeTeams: boolean, conf
             throw _error;
         }
     }).then((_response: AxiosResponse) => {
-        return processSetFrozenStatus(_response);
+        return processRemoveTeamMember(_response);
     });
 }
 
-function processSetFrozenStatus(response: AxiosResponse): Promise<Types.PublicationDto> {
+function processRemoveTeamMember(response: AxiosResponse): Promise<Types.TeamDto> {
     const status = response.status;
     let _headers: any = {};
     if (response.headers && typeof response.headers === "object") {
@@ -260,55 +204,124 @@ function processSetFrozenStatus(response: AxiosResponse): Promise<Types.Publicat
         const _responseText = response.data;
         let result200: any = null;
         let resultData200  = _responseText;
-        result200 = Types.initPublicationDto(resultData200);
-        return Promise.resolve<Types.PublicationDto>(result200);
+        result200 = Types.initTeamDto(resultData200);
+        return Promise.resolve<Types.TeamDto>(result200);
 
     } else if (status !== 200 && status !== 204) {
         const _responseText = response.data;
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
-    return Promise.resolve<Types.PublicationDto>(null as any);
-}
-let _requestConfigCreateAssignment: Partial<AxiosRequestConfig> | null;
-export function getCreateAssignmentRequestConfig() {
-  return _requestConfigCreateAssignment;
-}
-export function setCreateAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAssignment = value;
-}
-export function patchCreateAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigCreateAssignment = patch(_requestConfigCreateAssignment ?? {});
+    return Promise.resolve<Types.TeamDto>(null as any);
 }
 
-let _requestConfigPatchAssignment: Partial<AxiosRequestConfig> | null;
-export function getPatchAssignmentRequestConfig() {
-  return _requestConfigPatchAssignment;
-}
-export function setPatchAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigPatchAssignment = value;
-}
-export function patchPatchAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigPatchAssignment = patch(_requestConfigPatchAssignment ?? {});
+/**
+ * Check if student already has a team for this assignment
+ */
+export function isStudentInATeam(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<boolean> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{id}/team";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(studentId);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigIsStudentInATeam,
+        ...config,
+        data: content_,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigIsStudentInATeam?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processIsStudentInATeam(_response);
+    });
 }
 
-let _requestConfigDeleteAssignment: Partial<AxiosRequestConfig> | null;
-export function getDeleteAssignmentRequestConfig() {
-  return _requestConfigDeleteAssignment;
+function processIsStudentInATeam(response: AxiosResponse): Promise<boolean> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+    
+        result200 = resultData200;
+    
+        return Promise.resolve<boolean>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<boolean>(null as any);
 }
-export function setDeleteAssignmentRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigDeleteAssignment = value;
+let _requestConfigCreateTeam: Partial<AxiosRequestConfig> | null;
+export function getCreateTeamRequestConfig() {
+  return _requestConfigCreateTeam;
 }
-export function patchDeleteAssignmentRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigDeleteAssignment = patch(_requestConfigDeleteAssignment ?? {});
+export function setCreateTeamRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateTeam = value;
+}
+export function patchCreateTeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateTeam = patch(_requestConfigCreateTeam ?? {});
 }
 
-let _requestConfigSetFrozenStatus: Partial<AxiosRequestConfig> | null;
-export function getSetFrozenStatusRequestConfig() {
-  return _requestConfigSetFrozenStatus;
+let _requestConfigAddTeamMember: Partial<AxiosRequestConfig> | null;
+export function getAddTeamMemberRequestConfig() {
+  return _requestConfigAddTeamMember;
 }
-export function setSetFrozenStatusRequestConfig(value: Partial<AxiosRequestConfig>) {
-  _requestConfigSetFrozenStatus = value;
+export function setAddTeamMemberRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigAddTeamMember = value;
 }
-export function patchSetFrozenStatusRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
-  _requestConfigSetFrozenStatus = patch(_requestConfigSetFrozenStatus ?? {});
+export function patchAddTeamMemberRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigAddTeamMember = patch(_requestConfigAddTeamMember ?? {});
+}
+
+let _requestConfigRemoveTeamMember: Partial<AxiosRequestConfig> | null;
+export function getRemoveTeamMemberRequestConfig() {
+  return _requestConfigRemoveTeamMember;
+}
+export function setRemoveTeamMemberRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigRemoveTeamMember = value;
+}
+export function patchRemoveTeamMemberRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigRemoveTeamMember = patch(_requestConfigRemoveTeamMember ?? {});
+}
+
+let _requestConfigIsStudentInATeam: Partial<AxiosRequestConfig> | null;
+export function getIsStudentInATeamRequestConfig() {
+  return _requestConfigIsStudentInATeam;
+}
+export function setIsStudentInATeamRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigIsStudentInATeam = value;
+}
+export function patchIsStudentInATeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigIsStudentInATeam = patch(_requestConfigIsStudentInATeam ?? {});
 }

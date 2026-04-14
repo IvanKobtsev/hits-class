@@ -207,6 +207,66 @@ export enum SortOrder {
     Asc = "Asc",
     Desc = "Desc",
 }
+export interface TeamDto  {
+  id: number;
+  name: string;
+  captain: UserDto;
+  members: UserDto[];
+  publicationId: number;
+}
+export function deserializeTeamDto(json: string): TeamDto {
+  const data = JSON.parse(json) as TeamDto;
+  initTeamDto(data);
+  return data;
+}
+export function initTeamDto(_data: TeamDto) {
+  if (_data) {
+    _data.captain = _data["captain"] && initUserDto(_data["captain"]);
+    if (Array.isArray(_data["members"])) {
+      _data.members = _data["members"].map(item => 
+        initUserDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeTeamDto(_data: TeamDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeTeamDto(_data as TeamDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeTeamDto(_data: TeamDto): TeamDto {
+  const data: Record<string, any> = { ..._data };
+  data["captain"] = _data.captain && prepareSerializeUserDto(_data.captain);
+  if (Array.isArray(_data.members)) {
+    data["members"] = _data.members.map(item => 
+        prepareSerializeUserDto(item)
+    );
+  }
+  return data as TeamDto;
+}
+export interface CreateTeamDto  {
+  name: string;
+}
+export function deserializeCreateTeamDto(json: string): CreateTeamDto {
+  const data = JSON.parse(json) as CreateTeamDto;
+  initCreateTeamDto(data);
+  return data;
+}
+export function initCreateTeamDto(_data: CreateTeamDto) {
+    return _data;
+}
+export function serializeCreateTeamDto(_data: CreateTeamDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateTeamDto(_data as CreateTeamDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateTeamDto(_data: CreateTeamDto): CreateTeamDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateTeamDto;
+}
 export interface PublicationDto  {
   id: number;
   createdAtUTC: Date;
