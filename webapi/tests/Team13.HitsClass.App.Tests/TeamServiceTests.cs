@@ -178,7 +178,7 @@ public class TeamServiceTests : AppServiceTestBase
             _teamService.CreateTeam(assignment.Id, new CreateTeamDto { Name = "Second Team" })
         );
 
-        exception.Message.Should().Be("You are already in a team for this assignment.");
+        exception.Message.Should().Be("Selected captain is already in a team for this assignment.");
     }
 
     [Fact]
@@ -196,7 +196,7 @@ public class TeamServiceTests : AppServiceTestBase
             _teamService.CreateTeam(assignment.Id, new CreateTeamDto { Name = "Second Team" })
         );
 
-        exception.Message.Should().Be("You are already in a team for this assignment.");
+        exception.Message.Should().Be("Selected captain is already in a team for this assignment.");
     }
 
     [Fact]
@@ -210,17 +210,67 @@ public class TeamServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task CreateTeam_CourseOwnerNotEnrolledAsStudent_ThrowsAccessDeniedException()
+    public async Task CreateTeam_CourseOwnerCanCreateTeam_WhenCaptainIsProvided()
     {
         var course = await CreateCourse();
         var assignment = await CreateFreeTeamAssignment(course.Id);
+        var student = await CreateUser("owner-picked-captain@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
 
         // _defaultUser owns the course but is not enrolled as a student
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
 
-        await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            _teamService.CreateTeam(assignment.Id, new CreateTeamDto { Name = "Team" })
+        var result = await _teamService.CreateTeam(
+            assignment.Id,
+            new CreateTeamDto { Name = "Team", CaptainId = student.Id }
         );
+
+        result.Captain.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task CreateTeam_TeacherCanCreateInNonFreeMode_WhenCaptainIsProvided()
+    {
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher-create-team@test.com");
+        var student = await CreateUser("team-captain@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.Draft
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var result = await _teamService.CreateTeam(
+            assignment.Id,
+            new CreateTeamDto { Name = "Teacher Team", CaptainId = student.Id }
+        );
+
+        result.Captain.Id.Should().Be(student.Id);
+    }
+
+    [Fact]
+    public async Task CreateTeam_TeacherCanCreateWhenTeamsFrozen_WhenCaptainIsProvided()
+    {
+        var course = await CreateCourse();
+        var teacher = await CreateUser("teacher-frozen@test.com");
+        var student = await CreateUser("team-captain-frozen@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            true
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var result = await _teamService.CreateTeam(
+            assignment.Id,
+            new CreateTeamDto { Name = "Teacher Team", CaptainId = student.Id }
+        );
+
+        result.Captain.Id.Should().Be(student.Id);
     }
 
     [Fact]

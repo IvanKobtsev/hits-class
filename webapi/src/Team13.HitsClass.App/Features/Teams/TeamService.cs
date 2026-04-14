@@ -26,6 +26,8 @@ namespace Team13.HitsClass.App.Features.Teams
             var publication = await dbContext
                 .Publications.Include(p => p.Course)
                     .ThenInclude(c => c.Students)
+                .Include(p => p.Course)
+                    .ThenInclude(c => c.Teachers)
                 .Include(p => p.Teams!)
                     .ThenInclude(t => t.Members)
                 .GetOne(Publication.HasId(assignmentId));
@@ -34,30 +36,56 @@ namespace Team13.HitsClass.App.Features.Teams
                 throw new ValidationException("Only team assignments can have teams.");
 
             var payload = (TeamAssignmentPayload)publication.PublicationPayload;
+            var currentUser = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasElevatedAccess =
+                publication.Course.OwnerId == userId
+                || publication.Course.Teachers.Any(t => t.Id == userId)
+                || await userManager.HasAnyOfRoles(
+                    currentUser,
+                    [UserRoles.Admin, UserRoles.Teacher]
+                );
 
-            if (payload.DistributionType != TeamDistributionType.Free)
-                throw new ValidationException("Team creation is not open for this assignment.");
+            string captainId;
+            if (hasElevatedAccess)
+            {
+                if (string.IsNullOrWhiteSpace(dto.CaptainId))
+                    throw new ValidationException("Captain must be specified.");
 
-            if (payload.AreTeamsFrozen)
-                throw new ValidationException("Teams are frozen.");
+                captainId = dto.CaptainId;
+            }
+            else
+            {
+                if (payload.DistributionType != TeamDistributionType.Free)
+                    throw new ValidationException("Team creation is not open for this assignment.");
 
-            if (!publication.Course.Students.Any(s => s.Id == userId))
-                throw new AccessDeniedException("You are not a student of this course.");
+                if (payload.AreTeamsFrozen)
+                    throw new ValidationException("Teams are frozen.");
+
+                if (!publication.Course.Students.Any(s => s.Id == userId))
+                    throw new AccessDeniedException("You are not a student of this course.");
+
+                captainId = userId;
+            }
+
+            if (!publication.Course.Students.Any(s => s.Id == captainId))
+                throw new ValidationException("Captain must be a student of this course.");
 
             var alreadyInTeam = publication.Teams!.Any(t =>
-                t.CaptainId == userId || t.Members.Any(m => m.Id == userId)
+                t.CaptainId == captainId || t.Members.Any(m => m.Id == captainId)
             );
             if (alreadyInTeam)
-                throw new ValidationException("You are already in a team for this assignment.");
+                throw new ValidationException(
+                    "Selected captain is already in a team for this assignment."
+                );
 
-            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var captain = await dbContext.Users.GetOne(User.HasId(captainId));
 
             var team = new Domain.Team
             {
                 Name = dto.Name,
-                CaptainId = userId,
+                CaptainId = captainId,
                 PublicationId = assignmentId,
-                Members = [user],
+                Members = [captain],
             };
 
             dbContext.Teams.Add(team);

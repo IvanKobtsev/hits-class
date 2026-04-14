@@ -43,7 +43,7 @@ export function TeamsViewAsStudent() {
       <h2 className={styles.header}>Команды</h2>
       <div className={styles.teamsContainer}>
         {teamsQuery.data?.map((t) => (
-          <TeamCard teamDto={t} assignment={publication} />
+          <TeamCard key={t.id} teamDto={t} assignment={publication} />
         ))}
       </div>
       <CreateTeamModal

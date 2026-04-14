@@ -15,7 +15,7 @@ namespace Team13.HitsClass.App.Features.Teams
             await teamService.GetTeamsForAssignment(assignmentId);
 
         /// <summary>
-        /// Create a team for a team assignment (Free distribution mode only)
+        /// Create a team for a team assignment
         /// </summary>
         [HttpPost("team-assignments/{assignmentId:int}/teams")]
         public async Task<TeamDto> CreateTeam(

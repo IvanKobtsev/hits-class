@@ -6,4 +6,6 @@ public class CreateTeamDto
 {
     [Required]
     public string Name { get; set; }
+
+    public string? CaptainId { get; set; }
 }

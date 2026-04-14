@@ -248,6 +248,7 @@ export function prepareSerializeTeamDto(_data: TeamDto): TeamDto {
 }
 export interface CreateTeamDto  {
   name: string;
+  captainId: string | null;
 }
 export function deserializeCreateTeamDto(json: string): CreateTeamDto {
   const data = JSON.parse(json) as CreateTeamDto;
