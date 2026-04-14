@@ -22,14 +22,22 @@ export type FieldProps = {
   children?: React.ReactNode;
   className?: string;
   titleClassName?: string;
+  fieldClassName?: string;
   linkProps?: FieldLinkProps;
   hint?: string;
   testId?: string;
 };
 
 export const Field: FC<FieldProps> = (props) => {
-  const { children, className, linkProps, title, titleClassName, testId } =
-    props;
+  const {
+    children,
+    className,
+    linkProps,
+    title,
+    titleClassName,
+    fieldClassName,
+    testId,
+  } = props;
   return (
     <div
       className={clsx(className, styles.container)}
@@ -61,7 +69,7 @@ export const Field: FC<FieldProps> = (props) => {
             linkProps.title
           ))}
       </div>
-      <div className={styles.field}>{children}</div>
+      <div className={clsx(styles.field, fieldClassName)}>{children}</div>
     </div>
   );
 };

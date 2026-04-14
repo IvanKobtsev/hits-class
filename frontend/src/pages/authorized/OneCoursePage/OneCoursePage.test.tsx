@@ -37,8 +37,20 @@ vi.mock(
   }),
 );
 
-vi.mock('./CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal', () => ({
-  CreateAssignmentModal: vi.fn(() => null),
+vi.mock('./CourseFeedTab/CreateAssignmentModal/CreatePersonalAssignmentModal', () => ({
+  CreatePersonalAssignmentModal: vi.fn(() => null),
+}));
+
+vi.mock('./CourseFeedTab/CreateTeamAssignmentModal/CreateTeamAssignmentModal', () => ({
+  CreateTeamAssignmentModal: vi.fn(() => null),
+}));
+
+vi.mock('./GradeList/GradeList', () => ({
+  GradeList: vi.fn(() => <div data-test-id="GradeList" />),
+}));
+
+vi.mock('./CourseMembersTab/CourseMembersTab', () => ({
+  CourseMembersTab: vi.fn(() => <div data-test-id="CourseMembersTab" />),
 }));
 
 vi.mock('./useCourseRole', () => ({

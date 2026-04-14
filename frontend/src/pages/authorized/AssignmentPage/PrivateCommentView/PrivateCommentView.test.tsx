@@ -42,7 +42,8 @@ const makeComment = (
   authorName: string,
 ): CommentDto => ({
   id,
-  content: wrapInLexical(text),
+  // @ts-ignore
+  content: JSON.stringify(wrapInLexical(text)),
   createdAt: new Date('2025-03-01T10:00:00Z'),
   lastEditedAt: null,
   author: {
@@ -104,7 +105,9 @@ describe('PrivateCommentView', () => {
 
     expect(mockMutate).toHaveBeenCalledWith(
       expect.objectContaining({
-        textLexical: expect.stringContaining('My comment'),
+        content: {
+          json: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"My comment","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
+        },
       }),
       expect.any(Object),
     );

@@ -1,0 +1,86 @@
+@use 'src/styles/variables' as *;
+
+.page {
+  min-height: 100%;
+  background: $classroom-surface-alt;
+  padding: 24px;
+}
+
+.tabsWrapper {
+  max-width: 1200px;
+  margin: 0 auto 16px;
+}
+
+.tabs {
+  border-bottom: 1px solid $border-input;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.left {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.right {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 24px;
+}
+
+.submissionsLayout {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.invites {
+  width: 100%;
+}
+
+.header {
+
+}
+
+.freezeTeams {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+.btnPrimary {
+  width: 200px;
+  text-transform: none !important;
+}
+
+.teacherActions {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 25px;
+}

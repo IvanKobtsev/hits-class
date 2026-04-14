@@ -9,6 +9,7 @@
 .actions {
   display: flex;
   gap: 8px;
+  max-height: 36px;
 }
 
 .icon {
@@ -23,4 +24,32 @@
 
 .btnSecondary {
   text-transform: none !important;
+}
+
+.createActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+.filters {
+  width: 100%;
+  flex: 1 1 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.select {
+  max-height: 100%;
+  //min-width: 100px;
 }
