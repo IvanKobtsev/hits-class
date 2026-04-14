@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Teams.Dto;
 using Team13.HitsClass.App.Utils;
 using Team13.HitsClass.Common;
@@ -129,7 +130,7 @@ namespace Team13.HitsClass.App.Features.Teams
             var saved = await dbContext
                 .Teams.Include(t => t.Captain)
                 .Include(t => t.Members)
-                .GetOne(Domain.Team.HasId(teamId));
+                .GetOne(Team.HasId(teamId));
 
             return saved.ToTeamDto();
         }
@@ -144,6 +145,52 @@ namespace Team13.HitsClass.App.Features.Teams
             return assignment.Teams.Any(t =>
                 t.CaptainId == studentId || t.Members.Any(m => m.Id == studentId)
             );
+        }
+
+        public async Task<TeamDto> RemoveTeamMember(int teamId, string studentId)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var team = await dbContext
+                .Teams.Include(t => t.Members)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Students)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Teachers)
+                .GetOne(Team.HasId(teamId));
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                team.CaptainId == userId
+                || team.Publication.Course.OwnerId == userId
+                || team.Publication.Course.Teachers.Any(s => s.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+
+            if (!hasAccess)
+                throw new AccessDeniedException(
+                    "Only teachers or captains can remove team members."
+                );
+
+            if (!team.Members.Any(m => m.Id == studentId))
+                throw new ValidationException("Student is not a member of this team.");
+
+            var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            var student = await dbContext.Users.GetOne(User.HasId(studentId));
+            team.Members.Remove(student);
+            await dbContext.SaveChangesAsync();
+
+            var saved = await dbContext
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .GetOne(Team.HasId(teamId));
+
+            return saved.ToTeamDto();
         }
     }
 }

@@ -33,5 +33,14 @@ namespace Team13.HitsClass.App.Features.Teams
         {
             return await teamService.IsStudentInATeam(id, studentId);
         }
+
+        /// <summary>
+        /// Remove member of a team
+        /// </summary>
+        [HttpDelete("teams/{id:int}")]
+        public async Task<TeamDto> RemoveTeamMember([FromRoute] int id, [FromBody] string studentId)
+        {
+            return await teamService.RemoveTeamMember(id, studentId);
+        }
     }
 }
