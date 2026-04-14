@@ -443,6 +443,116 @@ public class TeamServiceTests : AppServiceTestBase
     #endregion
 
 
+    #region RemoveTeamMember Tests
+    [Fact]
+    public async Task RemoveTeamMember_AsCourseOwner_RemovesTeamMember()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var teamId = assignment.Teams.First().Id;
+        await AddStudentToTeam(teamId, student.Id);
+
+        var result = await _teamService.RemoveTeamMember(teamId, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+    }
+
+    [Fact]
+    public async Task RemoveTeamMember_AsCourseTeacher_RemovesTeamMember()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var teacher = await CreateUser("teacher@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var teamId = assignment.Teams.First().Id;
+        await AddStudentToTeam(teamId, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var result = await _teamService.RemoveTeamMember(teamId, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+    }
+
+    [Fact]
+    public async Task RemoveTeamMember_AsCaptain_RemovesTeamMember()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var captain = await CreateUser("captain@gmail.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var newTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(newTeam.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        var result = await _teamService.RemoveTeamMember(newTeam.Id, student.Id);
+
+        result.Should().NotBeNull();
+        result.Members.Should().NotContain(m => m.Id == student.Id);
+    }
+
+    [Fact]
+    public async Task RemoveTeamMember_TeamsAreFrozen_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            true
+        );
+        var teamId = assignment.Teams.First().Id;
+        await AddStudentToTeam(teamId, student.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await _teamService.RemoveTeamMember(teamId, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task RemoveTeamMember_StudentIsNotATeamMember_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@gmail.com");
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            true
+        );
+        var teamId = assignment.Teams.First().Id;
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await _teamService.RemoveTeamMember(teamId, student.Id)
+        );
+    }
+
+    [Fact]
+    public async Task RemoveTeamMember_TeamDoesNotExist_ThrowsResourceNotFoundException()
+    {
+        var student = await CreateUser("student@gmail.com");
+
+        var exception = await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(async () =>
+            await _teamService.RemoveTeamMember(999, student.Id)
+        );
+    }
+    #endregion
+
     #region Helpers
 
     private async Task<Course> CreateCourse(
@@ -584,6 +694,19 @@ public class TeamServiceTests : AppServiceTestBase
                 .FirstAsync(c => c.Id == courseId);
             var student = await db.Users.FirstAsync(u => u.Id == studentId);
             course.Students.Add(student);
+            await db.SaveChangesAsync();
+        });
+    }
+
+    private async Task AddTeacherToCourse(int courseId, string teacherId)
+    {
+        await WithDbContext(async db =>
+        {
+            var course = await db
+                .Courses.Include(c => c.Teachers)
+                .FirstAsync(c => c.Id == courseId);
+            var teacher = await db.Users.FirstAsync(u => u.Id == teacherId);
+            course.Teachers.Add(teacher);
             await db.SaveChangesAsync();
         });
     }
