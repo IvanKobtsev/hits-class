@@ -539,6 +539,72 @@ function processGetTeamSubmission(response: AxiosResponse): Promise<Types.TeamSu
     }
     return Promise.resolve<Types.TeamSubmissionDto>(null as any);
 }
+
+/**
+ * Mark a team member.
+ */
+export function markTeamMember(teamId: number, memberId: string, dto: Types.MarkDto, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/teams/{teamId}/members/{memberId}/mark";
+    if (teamId === undefined || teamId === null)
+      throw new Error("The parameter 'teamId' must be defined.");
+    url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+    if (memberId === undefined || memberId === null)
+      throw new Error("The parameter 'memberId' must be defined.");
+    url_ = url_.replace("{memberId}", encodeURIComponent("" + memberId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeMarkDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigMarkTeamMember,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigMarkTeamMember?.headers,
+            "Content-Type": "application/json",
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processMarkTeamMember(_response);
+    });
+}
+
+function processMarkTeamMember(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
 let _requestConfigCreateSubmission: Partial<AxiosRequestConfig> | null;
 export function getCreateSubmissionRequestConfig() {
   return _requestConfigCreateSubmission;
@@ -625,4 +691,15 @@ export function setGetTeamSubmissionRequestConfig(value: Partial<AxiosRequestCon
 }
 export function patchGetTeamSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigGetTeamSubmission = patch(_requestConfigGetTeamSubmission ?? {});
+}
+
+let _requestConfigMarkTeamMember: Partial<AxiosRequestConfig> | null;
+export function getMarkTeamMemberRequestConfig() {
+  return _requestConfigMarkTeamMember;
+}
+export function setMarkTeamMemberRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigMarkTeamMember = value;
+}
+export function patchMarkTeamMemberRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigMarkTeamMember = patch(_requestConfigMarkTeamMember ?? {});
 }
