@@ -24,6 +24,7 @@ public class HitsClassDbContext
     public DbSet<SubmissionComment> SubmissionComments { get; set; }
     public DbSet<PublicationComment> PublicationComments { get; set; }
     public DbSet<Team> Teams { get; set; }
+    public DbSet<Invitation> Invitations { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -147,6 +148,12 @@ public class HitsClassDbContext
         {
             b.HasOne(t => t.Captain).WithMany().HasForeignKey(t => t.CaptainId);
             b.HasMany(p => p.Members).WithMany();
+        });
+
+        builder.Entity<Invitation>(b =>
+        {
+            b.HasOne(i => i.User).WithMany().HasForeignKey(i => i.UserId);
+            b.HasOne(i => i.Team).WithMany().HasForeignKey(i => i.TeamId);
         });
     }
 
