@@ -152,10 +152,6 @@ export const EditTeamModal = ({
                 variant="contained"
                 data-test-id="CourseFeedTab-create-team"
                 className={clsx(styles.btnPrimary, styles.red)}
-                disabled={
-                  teamQuery.data.members.length >=
-                  (assignmentPayload.maxTeamSize ?? 100)
-                }
                 onClick={() => setDisbandOpen(true)}
               >
                 {'Расформировать команду'}

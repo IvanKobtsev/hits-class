@@ -51,8 +51,8 @@ export function TeamCard({
       <div className={styles.header}>
         <div className={styles.teamTitle}>
           <TruncatingContainer title={teamDto.name} />
+          {myTeam && <span className={styles.myTeam}>[моя команда]</span>}
         </div>
-        {myTeam && <span className={styles.myTeam}>[моя команда]</span>}
         <div className={styles.participantsNumber}>
           {teamDto.members.length}
           {!!payload.maxTeamSize && !payload.areTeamsFrozen && !forceHideDetails

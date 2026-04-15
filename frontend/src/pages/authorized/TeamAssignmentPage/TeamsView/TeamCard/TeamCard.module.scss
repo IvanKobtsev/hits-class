@@ -10,7 +10,9 @@
 
   .myTeam {
     margin-left: 10px;
+    margin-right: 5px;
     opacity: .6;
+    white-space: nowrap;
   }
 
   &.clickable {
@@ -25,6 +27,7 @@
     align-items: center;
 
     .teamTitle {
+      display: flex;
       min-width: 0;
       max-width: 100%;
       font-weight: 300;
