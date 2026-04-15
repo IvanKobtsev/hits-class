@@ -485,7 +485,25 @@ namespace Team13.HitsClass.App.Features.Teams
             if (publication.Teams!.Count > 0)
                 throw new ConflictException("Teams have already been distributed.");
 
-            var students = publication.Course.Students.ToList();
+            var privilegedRoleIds = await dbContext
+                .Roles.Where(r => r.Name == UserRoles.Admin || r.Name == UserRoles.Teacher)
+                .Select(r => r.Id)
+                .ToListAsync();
+
+            var privilegedUserIds = await dbContext
+                .UserRoles.Where(ur => privilegedRoleIds.Contains(ur.RoleId))
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var teacherIds = publication.Course.Teachers.Select(t => t.Id).ToHashSet();
+            var students = publication
+                .Course.Students.Where(s =>
+                    !privilegedUserIds.Contains(s.Id)
+                    && !teacherIds.Contains(s.Id)
+                    && s.Id != publication.Course.OwnerId
+                )
+                .ToList();
             if (students.Count == 0)
                 return [];
 

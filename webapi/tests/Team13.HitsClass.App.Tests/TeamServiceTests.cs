@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Team13.HitsClass.App.Features.Teams;
@@ -1435,6 +1436,32 @@ public class TeamServiceTests : AppServiceTestBase
     }
 
     [Fact]
+    public async Task DistributeRandomly_ExcludesAdminFromDistribution()
+    {
+        var course = await CreateCourse();
+        for (var i = 0; i < 5; i++)
+        {
+            var s = await CreateUser($"student{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+        }
+
+        var admin = await CreateUser("admin-in-course@test.com");
+        await AddRoleToUser(admin.Id, UserRoles.Admin);
+        await AddStudentToCourse(course.Id, admin.Id);
+
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.SelectMany(t => t.Members).Should().NotContain(u => u.Id == admin.Id);
+    }
+
+    [Fact]
     public async Task DistributeRandomly_NotTeacher_ThrowsAccessDeniedException()
     {
         var course = await CreateCourse();
@@ -1568,6 +1595,32 @@ public class TeamServiceTests : AppServiceTestBase
             await db.SaveChangesAsync();
 
             return user;
+        });
+    }
+
+    private async Task AddRoleToUser(string userId, string role)
+    {
+        await WithDbContext(async db =>
+        {
+            var normalized = role.ToUpperInvariant();
+            var roleEntity = await db.Roles.FirstOrDefaultAsync(r => r.Name == role);
+            if (roleEntity == null)
+            {
+                roleEntity = new IdentityRole(role) { NormalizedName = normalized };
+                db.Roles.Add(roleEntity);
+                await db.SaveChangesAsync();
+            }
+
+            var exists = await db.UserRoles.AnyAsync(ur =>
+                ur.UserId == userId && ur.RoleId == roleEntity.Id
+            );
+            if (!exists)
+            {
+                db.UserRoles.Add(
+                    new IdentityUserRole<string> { UserId = userId, RoleId = roleEntity.Id }
+                );
+                await db.SaveChangesAsync();
+            }
         });
     }
 
