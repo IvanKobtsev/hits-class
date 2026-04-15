@@ -60,6 +60,17 @@ namespace Team13.HitsClass.App.Features.Teams
         }
 
         /// <summary>
+        /// Pass the role of the captain
+        /// </summary>
+        [HttpPut("teams/{id:int}")]
+        public async Task<TeamDto> PassCaptainRole(
+            [FromRoute] int id,
+            [FromBody] string newCaptainId
+        )
+        {
+            return await teamService.PassCaptainRole(id, newCaptainId);
+        }
+      
         /// Disband a team (captain or teacher only)
         /// </summary>
         [HttpDelete("teams/{id:int}/disband")]

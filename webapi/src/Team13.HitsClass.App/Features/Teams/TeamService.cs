@@ -194,6 +194,62 @@ namespace Team13.HitsClass.App.Features.Teams
             return saved.ToTeamDto();
         }
 
+        public async Task<TeamDto> PassCaptainRole(int teamId, string newCaptainId)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var team = await dbContext
+                .Teams.Include(t => t.Members)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Students)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Teachers)
+                .GetOne(Team.HasId(teamId));
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess = (
+                team.CaptainId == userId
+                || team.Publication.Course.OwnerId == userId
+                || team.Publication.Course.Teachers.Any(s => s.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            );
+
+            if (!hasAccess)
+                throw new AccessDeniedException(
+                    "Only teachers or captains can choose new captain."
+                );
+
+            if (!team.Members.Any(m => m.Id == newCaptainId))
+                throw new ValidationException("Student is not a member of this team.");
+
+            var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            if (
+                (
+                    payload.DistributionType == TeamDistributionType.Draft
+                    || payload.DistributionType == TeamDistributionType.ByTeacher
+                )
+                && team.CaptainId == userId
+            )
+                throw new AccessDeniedException(
+                    "Only teachers can change captain for this distribution type."
+                );
+
+            var newCaptain = await dbContext.Users.GetOne(User.HasId(newCaptainId));
+            team.CaptainId = newCaptainId;
+            await dbContext.SaveChangesAsync();
+            var saved = await dbContext
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .GetOne(Team.HasId(teamId));
+
+            return saved.ToTeamDto();
+        }
+
         public async Task<TeamDto> CreateTeamAsTeacher(int assignmentId, CreateTeamAsTeacherDto dto)
         {
             var userId = userAccessor.GetUserId();
