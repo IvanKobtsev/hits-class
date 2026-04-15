@@ -484,6 +484,65 @@ function processIsStudentInATeam(response: AxiosResponse): Promise<boolean> {
     return Promise.resolve<boolean>(null as any);
 }
 
+/**
+ * Leave a team (non-captain member only)
+ */
+export function leaveTeam(teamId: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/teams/{teamId}/members/me";
+    if (teamId === undefined || teamId === null)
+      throw new Error("The parameter 'teamId' must be defined.");
+    url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigLeaveTeam,
+        ...config,
+        method: "DELETE",
+        url: url_,
+        headers: {
+            ..._requestConfigLeaveTeam?.headers,
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processLeaveTeam(_response);
+    });
+}
+
+function processLeaveTeam(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
 export function disbandTeam(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/teams/{id}/disband";
     if (id === undefined || id === null)
@@ -748,6 +807,17 @@ export function setIsStudentInATeamRequestConfig(value: Partial<AxiosRequestConf
 }
 export function patchIsStudentInATeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigIsStudentInATeam = patch(_requestConfigIsStudentInATeam ?? {});
+}
+
+let _requestConfigLeaveTeam: Partial<AxiosRequestConfig> | null;
+export function getLeaveTeamRequestConfig() {
+  return _requestConfigLeaveTeam;
+}
+export function setLeaveTeamRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigLeaveTeam = value;
+}
+export function patchLeaveTeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigLeaveTeam = patch(_requestConfigLeaveTeam ?? {});
 }
 
 let _requestConfigDisbandTeam: Partial<AxiosRequestConfig> | null;

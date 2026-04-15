@@ -48,6 +48,10 @@ export type IsStudentInATeamTeamQueryParameters = {
   studentId?: string | undefined ;
 }
 
+export type LeaveTeamTeamQueryParameters = {
+  teamId: number ;
+}
+
 export type DisbandTeamTeamQueryParameters = {
   id: number ;
 }
@@ -564,6 +568,57 @@ export function setIsStudentInATeamDataByQueryId(queryClient: QueryClient, query
   queryClient.setQueryData(queryKey, updater);
 }
     
+export function leaveTeamUrl(teamId: number): string {
+  let url_ = getBaseUrl() + "/api/teams/{teamId}/members/me";
+if (teamId === undefined || teamId === null)
+  throw new Error("The parameter 'teamId' must be defined.");
+url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function leaveTeamMutationKey(teamId: number): MutationKey {
+  return trimArrayEnd([
+      'TeamClient',
+      'leaveTeam',
+      teamId as any,
+    ]);
+}
+
+/**
+ * Leave a team (non-captain member only)
+ */
+export function useLeaveTeamMutation<TContext>(teamId: number, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
+  const key = leaveTeamMutationKey(teamId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.leaveTeam(teamId),
+    mutationKey: key,
+  });
+}
+  
+type LeaveTeam__MutationParameters = LeaveTeamTeamQueryParameters
+
+/**
+ * Leave a team (non-captain member only)
+ */
+export function useLeaveTeamMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, LeaveTeam__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: LeaveTeamTeamQueryParameters}): UseMutationResult<void, unknown, LeaveTeam__MutationParameters, TContext> {
+  const key = leaveTeamMutationKey(options?.parameters?.teamId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: LeaveTeam__MutationParameters) => Client.leaveTeam(data.teamId ?? options?.parameters?.teamId!),
+  mutationKey: key,
+});
+}
+  
 export function disbandTeamUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/teams/{id}/disband";
 if (id === undefined || id === null)
