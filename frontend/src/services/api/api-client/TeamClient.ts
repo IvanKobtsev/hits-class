@@ -348,6 +348,73 @@ function processRemoveTeamMember(response: AxiosResponse): Promise<Types.TeamDto
 }
 
 /**
+ * Pass the role of the captain
+ */
+export function passCaptainRole(id: number, newCaptainId: string, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
+    let url_ = getBaseUrl() + "/api/teams/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = JSON.stringify(newCaptainId);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigPassCaptainRole,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigPassCaptainRole?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processPassCaptainRole(_response);
+    });
+}
+
+function processPassCaptainRole(response: AxiosResponse): Promise<Types.TeamDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initTeamDto(resultData200);
+        return Promise.resolve<Types.TeamDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.TeamDto>(null as any);
+}
+
+/**
  * Check if student already has a team for this assignment
  * @param studentId (optional) 
  */
@@ -417,9 +484,6 @@ function processIsStudentInATeam(response: AxiosResponse): Promise<boolean> {
     return Promise.resolve<boolean>(null as any);
 }
 
-/**
- * Disband a team (captain or teacher only)
- */
 export function disbandTeam(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/teams/{id}/disband";
     if (id === undefined || id === null)
@@ -662,6 +726,17 @@ export function setRemoveTeamMemberRequestConfig(value: Partial<AxiosRequestConf
 }
 export function patchRemoveTeamMemberRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigRemoveTeamMember = patch(_requestConfigRemoveTeamMember ?? {});
+}
+
+let _requestConfigPassCaptainRole: Partial<AxiosRequestConfig> | null;
+export function getPassCaptainRoleRequestConfig() {
+  return _requestConfigPassCaptainRole;
+}
+export function setPassCaptainRoleRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigPassCaptainRole = value;
+}
+export function patchPassCaptainRoleRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigPassCaptainRole = patch(_requestConfigPassCaptainRole ?? {});
 }
 
 let _requestConfigIsStudentInATeam: Partial<AxiosRequestConfig> | null;

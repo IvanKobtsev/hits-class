@@ -7,7 +7,6 @@ import {
   TeamAssignmentPayload,
   TeamDistributionType,
 } from '../../../../services/api/api-client.types.ts';
-import { useParams } from 'react-router';
 import { TeamCard } from './TeamCard/TeamCard.tsx';
 import { useState } from 'react';
 import { CreateTeamModal } from './CreateTeamModal/CreateTeamModal.tsx';
@@ -27,6 +26,7 @@ export function TeamsViewAsStudent() {
   if (!publication || !teamsQuery.data) return <Loading loading={true} />;
 
   const payload = publication.publicationPayload as TeamAssignmentPayload;
+  const isAdmin = !!me?.isAdmin;
 
   const myTeamId = teamsQuery.data?.find((t) =>
     t.members.some((m) => m.id === me?.id),
@@ -59,7 +59,7 @@ export function TeamsViewAsStudent() {
               teamDto={teamsQuery.data.find((t) => t.id === myTeamId)!}
               assignment={publication}
               onClick={() => {
-                if (!payload.areTeamsFrozen)
+                if (!payload.areTeamsFrozen || isAdmin)
                   params.setQueryParams({ teamId: myTeamId });
               }}
               myTeam
@@ -68,7 +68,14 @@ export function TeamsViewAsStudent() {
           {teamsQuery.data
             ?.filter((t) => t.id !== myTeamId)
             .map((t) => (
-              <TeamCard key={t.id} teamDto={t} assignment={publication} />
+              <TeamCard
+                key={t.id}
+                teamDto={t}
+                assignment={publication}
+                onClick={
+                  isAdmin ? () => params.setQueryParams({ teamId: t.id }) : undefined
+                }
+              />
             ))}
         </div>
       </Loading>
@@ -84,6 +91,7 @@ export function TeamsViewAsStudent() {
           isOpen={!!params.queryParams.teamId}
           onClose={() => params.setQueryParams({ teamId: undefined })}
           assignmentPayload={payload}
+          teacherView={isAdmin}
         />
       )}
     </div>

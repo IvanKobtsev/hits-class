@@ -39,6 +39,10 @@ export type RemoveTeamMemberTeamQueryParameters = {
   id: number ;
 }
 
+export type PassCaptainRoleTeamQueryParameters = {
+  id: number ;
+}
+
 export type IsStudentInATeamTeamQueryParameters = {
   id: number ;
   studentId?: string | undefined ;
@@ -405,6 +409,59 @@ return useMutation({
 });
 }
   
+export function passCaptainRoleUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/teams/{id}";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function passCaptainRoleMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'TeamClient',
+      'passCaptainRole',
+      id as any,
+    ]);
+}
+
+/**
+ * Pass the role of the captain
+ */
+export function usePassCaptainRoleMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.TeamDto, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.TeamDto, unknown, string, TContext> {
+  const key = passCaptainRoleMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (newCaptainId: string) => Client.passCaptainRole(id, newCaptainId),
+    mutationKey: key,
+  });
+}
+  
+type PassCaptainRole__MutationParameters = PassCaptainRoleTeamQueryParameters & {
+  newCaptainId: string;
+}
+
+/**
+ * Pass the role of the captain
+ */
+export function usePassCaptainRoleMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.TeamDto, unknown, PassCaptainRole__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: PassCaptainRoleTeamQueryParameters}): UseMutationResult<Types.TeamDto, unknown, PassCaptainRole__MutationParameters, TContext> {
+  const key = passCaptainRoleMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: PassCaptainRole__MutationParameters) => Client.passCaptainRole(data.id ?? options?.parameters?.id!, data.newCaptainId),
+  mutationKey: key,
+});
+}
+  
 export function isStudentInATeamUrl(id: number, studentId?: string | undefined): string {
   let url_ = getBaseUrl() + "/api/team-assignments/{id}/team?";
 if (id === undefined || id === null)
@@ -524,9 +581,6 @@ export function disbandTeamMutationKey(id: number): MutationKey {
     ]);
 }
 
-/**
- * Disband a team (captain or teacher only)
- */
 export function useDisbandTeamMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
   const key = disbandTeamMutationKey(id);
   
@@ -542,9 +596,6 @@ export function useDisbandTeamMutation<TContext>(id: number, options?: Omit<UseM
   
 type DisbandTeam__MutationParameters = DisbandTeamTeamQueryParameters
 
-/**
- * Disband a team (captain or teacher only)
- */
 export function useDisbandTeamMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, DisbandTeam__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: DisbandTeamTeamQueryParameters}): UseMutationResult<void, unknown, DisbandTeam__MutationParameters, TContext> {
   const key = disbandTeamMutationKey(options?.parameters?.id!);
   

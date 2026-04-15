@@ -82,11 +82,15 @@ export function TeamMembersList({
   color,
   payload,
   hideExtraSlots,
+  canAssignCaptainRole,
+  onAssignCaptainRole,
 }: {
   teamDto: TeamDto;
   color?: 'red' | 'green' | 'yellow' | 'blue';
   payload: TeamAssignmentPayload;
   hideExtraSlots?: boolean;
+  canAssignCaptainRole?: boolean;
+  onAssignCaptainRole?: (member: UserDto) => Promise<void> | void;
 }) {
   const numberOfMembers = teamDto.members.length;
   const numberOfSlots = !payload.maxTeamSize
@@ -106,8 +110,14 @@ export function TeamMembersList({
       <TeamMemberEntry member={teamDto.captain} color={color} isCaptain />
       {(members.length === 0 && (payload.areTeamsFrozen || hideExtraSlots)) || (
         <div className={styles.otherMembers}>
-          {members.map((member) => (
-            <TeamMemberEntry member={member} color={color} />
+          {members.map((member, index) => (
+            <TeamMemberEntry
+              key={member?.id ?? `free-slot-${index}`}
+              member={member}
+              color={color}
+              canAssignCaptain={canAssignCaptainRole && !!member}
+              onAssignCaptain={onAssignCaptainRole}
+            />
           ))}
         </div>
       )}
