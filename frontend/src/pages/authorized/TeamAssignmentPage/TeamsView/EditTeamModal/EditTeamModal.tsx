@@ -62,8 +62,6 @@ export const EditTeamModal = ({
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
   const { data: course } = useGetCourseQuery(params.courseId);
-  const [passCaptainRoleErrorOpen, setPassCaptainRoleErrorOpen] =
-    useState(false);
   const { data: me } = useGetCurrentUserInfoQuery();
 
   // const form = useAdvancedForm<EditTeamForm>(
@@ -213,7 +211,10 @@ export const EditTeamModal = ({
                       (assignmentPayload.maxTeamSize ?? 100)
                   }
                   onClick={() => {
-                    if (teacherView) setAddMemberOpen(true);
+                    if (teacherView) {
+                      setAddMemberOpen(true);
+                      console.log("set");
+                    }
                   }}
                 >
                   {teacherView ? 'Добавить в команду' : 'Пригласить в команду'}
