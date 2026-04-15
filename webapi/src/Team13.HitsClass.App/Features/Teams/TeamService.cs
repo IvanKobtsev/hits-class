@@ -182,6 +182,16 @@ namespace Team13.HitsClass.App.Features.Teams
             if (payload.AreTeamsFrozen)
                 throw new ValidationException("Teams are frozen.");
 
+            if (team.CaptainId == studentId)
+            {
+                var nextCaptain = team.Members.FirstOrDefault(m => m.Id != studentId);
+                if (nextCaptain == null)
+                    throw new ValidationException(
+                        "Cannot remove the captain when there are no other team members."
+                    );
+                team.CaptainId = nextCaptain.Id;
+            }
+
             var student = await dbContext.Users.GetOne(User.HasId(studentId));
             team.Members.Remove(student);
             await dbContext.SaveChangesAsync();
