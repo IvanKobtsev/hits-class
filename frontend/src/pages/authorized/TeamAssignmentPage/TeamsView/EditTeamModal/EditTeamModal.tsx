@@ -7,6 +7,7 @@ import {
   getTeamForAssignmentQueryKey,
   getTeamsForAssignmentQueryKey,
   usePassCaptainRoleMutation,
+  useRemoveTeamMemberMutation,
   useGetTeamForAssignmentQuery,
 } from '../../../../../services/api/api-client/TeamQuery.ts';
 import AddMemberIcon from 'assets/icons/add-member.svg?react';
@@ -50,6 +51,9 @@ export const EditTeamModal = ({
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const [disbandOpen, setDisbandOpen] = useState(false);
   const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [removeTeamMemberErrorOpen, setRemoveTeamMemberErrorOpen] =
+    useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<UserDto | null>(null);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
   const { data: course } = useGetCourseQuery(params.courseId);
@@ -71,8 +75,10 @@ export const EditTeamModal = ({
 
   const teamQuery = useGetTeamForAssignmentQuery(assignmentId, teamId);
   const passCaptainRoleMutation = usePassCaptainRoleMutation(teamId);
+  const removeTeamMemberMutation = useRemoveTeamMemberMutation(teamId);
   const canAssignCaptainRole =
     !!teamQuery.data && (teacherView || teamQuery.data.captain.id === me?.id);
+  const canRemoveTeamMember = canAssignCaptainRole;
 
   const handleAssignCaptainRole = async (member: UserDto) => {
     try {
@@ -93,6 +99,30 @@ export const EditTeamModal = ({
 
   const handleClose = () => {
     onClose();
+  };
+
+  const handleRemoveTeamMember = async (member: UserDto) => {
+    setMemberToRemove(member);
+  };
+
+  const confirmRemoveTeamMember = async () => {
+    if (!memberToRemove) return;
+    try {
+      await removeTeamMemberMutation.mutateAsync(memberToRemove.id);
+      setMemberToRemove(null);
+      await queryClient.invalidateQueries({
+        queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getTeamForAssignmentQueryKey({
+          teamId,
+          assignmentId,
+        }),
+      });
+    } catch {
+      setMemberToRemove(null);
+      setRemoveTeamMemberErrorOpen(true);
+    }
   };
 
   return (
@@ -183,6 +213,8 @@ export const EditTeamModal = ({
                 payload={assignmentPayload}
                 canAssignCaptainRole={canAssignCaptainRole}
                 onAssignCaptainRole={handleAssignCaptainRole}
+                canRemoveTeamMember={canRemoveTeamMember}
+                onRemoveTeamMember={handleRemoveTeamMember}
               />
             </div>
             <div className={styles.footer}>
@@ -230,6 +262,27 @@ export const EditTeamModal = ({
               </Typography>
             </CustomModal>
             <CustomModal
+              isOpen={!!memberToRemove}
+              isBlocking={false}
+              title="Исключить из команды"
+              onClose={() => setMemberToRemove(null)}
+              buttons="ok-cancel"
+              okButtonColor={ButtonColor.Danger}
+              okButtonText="Исключить"
+              onButtonClick={async (btn: 'ok' | 'cancel') => {
+                if (btn === 'ok') {
+                  await confirmRemoveTeamMember();
+                } else {
+                  setMemberToRemove(null);
+                }
+              }}
+            >
+              <Typography>
+                Вы уверены, что хотите исключить{' '}
+                <b>{memberToRemove?.legalName ?? 'участника'}</b> из команды?
+              </Typography>
+            </CustomModal>
+            <CustomModal
               isOpen={passCaptainRoleErrorOpen}
               isBlocking={false}
               title="Ошибка"
@@ -240,6 +293,19 @@ export const EditTeamModal = ({
             >
               <Typography>
                 Вы не можете передавать роль капитана в режиме драфта
+              </Typography>
+            </CustomModal>
+            <CustomModal
+              isOpen={removeTeamMemberErrorOpen}
+              isBlocking={false}
+              title="Ошибка"
+              onClose={() => setRemoveTeamMemberErrorOpen(false)}
+              buttons="ok"
+              okButtonText="Понятно"
+              onButtonClick={() => setRemoveTeamMemberErrorOpen(false)}
+            >
+              <Typography>
+                Не удалось исключить участника из команды
               </Typography>
             </CustomModal>
           </>
