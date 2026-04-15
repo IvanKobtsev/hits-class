@@ -4,14 +4,10 @@ import { Loading } from 'components/uikit/suspense/Loading.tsx';
 import { TeamCard } from '../TeamsView/TeamCard/TeamCard.tsx';
 import { Links } from '../../../../application/constants/links.ts';
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery.ts';
-import { useGetCourseQuery } from 'services/api/api-client/CourseQuery.ts';
 import { TeamAssignmentPayload } from '../../../../services/api/api-client.types.ts';
-import { EditTeamModal } from '../TeamsView/EditTeamModal/EditTeamModal.tsx';
 import { TeamSubmissionsModal } from './TeamSubmissionsModal/TeamSubmissionsModal.tsx';
 
-interface TeamSubmissionsViewProps {}
-
-export function TeamSubmissionsView({}: TeamSubmissionsViewProps) {
+export function TeamSubmissionsView() {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const teamsQuery = useGetTeamsForAssignmentQuery(params.assignmentId);
 
