@@ -13,6 +13,7 @@ import {
 } from '../../../../../services/api/api-client/TeamQuery.ts';
 import AddMemberIcon from 'assets/icons/add-member.svg?react';
 import {
+  TeamDistributionType,
   TeamAssignmentPayload,
   UserDto,
 } from '../../../../../services/api/api-client.types.ts';
@@ -23,7 +24,7 @@ import {
   disbandTeam,
   updateTeamName,
 } from '../../../../../services/api/api-client/TeamClient.ts';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ButtonColor } from '../../../../../components/uikit/buttons/Button.tsx';
 import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
@@ -58,6 +59,7 @@ export const EditTeamModal = ({
   const [removeTeamMemberErrorOpen, setRemoveTeamMemberErrorOpen] =
     useState(false);
   const [leaveTeamErrorOpen, setLeaveTeamErrorOpen] = useState(false);
+  const [disbandDraftErrorOpen, setDisbandDraftErrorOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<UserDto | null>(null);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
@@ -147,6 +149,14 @@ export const EditTeamModal = ({
       setLeaveTeamErrorOpen(true);
     }
   };
+
+  useEffect(() => {
+    if (!disbandDraftErrorOpen) return;
+    const timeoutId = setTimeout(() => {
+      setDisbandDraftErrorOpen(false);
+    }, 2200);
+    return () => clearTimeout(timeoutId);
+  }, [disbandDraftErrorOpen]);
 
   return (
     <CustomModal
@@ -304,11 +314,16 @@ export const EditTeamModal = ({
               okButtonText={'Расформировать'}
               onButtonClick={async (btn: 'ok' | 'cancel') => {
                 if (btn === 'ok') {
-                  await disbandTeam(teamId);
-                  params.setQueryParams({ teamId: undefined });
-                  await queryClient.invalidateQueries({
-                    queryKey: getTeamsForAssignmentQueryKey(assignmentId),
-                  });
+                  try {
+                    await disbandTeam(teamId);
+                    params.setQueryParams({ teamId: undefined });
+                    await queryClient.invalidateQueries({
+                      queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+                    });
+                  } catch {
+                    setDisbandOpen(false);
+                    setDisbandDraftErrorOpen(true);
+                  }
                 } else setDisbandOpen(false);
               }}
             >
@@ -339,6 +354,16 @@ export const EditTeamModal = ({
               </Typography>
             </CustomModal>
             <CustomModal
+              isOpen={disbandDraftErrorOpen}
+              isBlocking={false}
+              title="Ошибка"
+              onClose={() => setDisbandDraftErrorOpen(false)}
+            >
+              <Typography>
+                Вы не можете расформировать команду в режиме драфта
+              </Typography>
+            </CustomModal>
+            <CustomModal
               isOpen={passCaptainRoleErrorOpen}
               isBlocking={false}
               title="Ошибка"
@@ -348,7 +373,9 @@ export const EditTeamModal = ({
               onButtonClick={() => setPassCaptainRoleErrorOpen(false)}
             >
               <Typography>
-                Вы не можете передавать роль капитана в режиме драфта
+                {assignmentPayload.distributionType === TeamDistributionType.ByTeacher
+                  ? 'Вы не можете передать роль капитана в режиме ручного распределения'
+                  : 'Вы не можете передавать роль капитана в режиме драфта'}
               </Typography>
             </CustomModal>
             <CustomModal

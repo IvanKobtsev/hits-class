@@ -227,7 +227,6 @@ export const CreateTeamAssignmentModal = ({
                 <RadioButton
                   {...form.register('distributionType')}
                   value={TeamDistributionType.Draft}
-                  disabled={true}
                   title={'Драфт'}
                 />
                 <RadioButton

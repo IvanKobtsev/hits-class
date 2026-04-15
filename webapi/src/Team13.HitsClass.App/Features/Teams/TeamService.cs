@@ -408,6 +408,9 @@ namespace Team13.HitsClass.App.Features.Teams
                 );
 
             var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (!isTeacher && payload.DistributionType == TeamDistributionType.Draft)
+                throw new AccessDeniedException("Captain cannot disband team in draft mode.");
+
             if (!isTeacher && payload.AreTeamsFrozen)
                 throw new ValidationException("Teams are frozen.");
 
