@@ -267,6 +267,31 @@ export function prepareSerializeCreateTeamDto(_data: CreateTeamDto): CreateTeamD
   const data: Record<string, any> = { ..._data };
   return data as CreateTeamDto;
 }
+export interface CreateTeamAsTeacherDto  {
+  name: string;
+  studentIds: string[];
+}
+export function deserializeCreateTeamAsTeacherDto(json: string): CreateTeamAsTeacherDto {
+  const data = JSON.parse(json) as CreateTeamAsTeacherDto;
+  initCreateTeamAsTeacherDto(data);
+  return data;
+}
+export function initCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto) {
+  if (_data) {
+    _data.studentIds = _data["studentIds"];
+  }
+  return _data;
+}
+export function serializeCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateTeamAsTeacherDto(_data as CreateTeamAsTeacherDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateTeamAsTeacherDto(_data: CreateTeamAsTeacherDto): CreateTeamAsTeacherDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateTeamAsTeacherDto;
+}
 export interface PublicationDto  {
   id: number;
   createdAtUTC: Date;
@@ -626,6 +651,8 @@ export function prepareSerializePatchTeamAssignmentDto(_data: PatchTeamAssignmen
   return data as PatchTeamAssignmentDto;
 }
 export interface PatchTeamAssignmentPayloadDto  {
+  title?: string;
+  deadlineUtc?: Date | null;
   minTeamSize?: number | null;
   maxTeamSize?: number | null;
   distributionType?: TeamDistributionType;
@@ -639,6 +666,7 @@ export function deserializePatchTeamAssignmentPayloadDto(json: string): PatchTea
 }
 export function initPatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayloadDto) {
   if (_data) {
+    _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
     _data.distributionType = _data["distributionType"];
     _data.submissionType = _data["submissionType"];
   }
@@ -652,6 +680,7 @@ export function serializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmen
 }
 export function prepareSerializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayloadDto): PatchTeamAssignmentPayloadDto {
   const data: Record<string, any> = { ..._data };
+  data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
   return data as PatchTeamAssignmentPayloadDto;
 }
 export interface SubmissionDto  {

@@ -1,0 +1,52 @@
+@use 'src/styles/variables' as *;
+
+.footer {
+  margin-top: 16px;
+  height: fit-content !important;
+}
+
+.btnPrimary {
+  text-transform: none !important;
+}
+
+.addToTeam {
+  width: 200px;
+}
+
+.teamMembers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.red {
+  background-color: red !important;
+  font-weight: 700 !important;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px !important;
+
+  .members {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  .membersCount {
+    margin-left: 15px;
+  }
+}
+
+.nameInputWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .input {
+    width: 1030px;
+  }
+}

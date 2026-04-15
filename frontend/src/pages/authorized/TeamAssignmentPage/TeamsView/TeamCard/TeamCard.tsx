@@ -3,67 +3,143 @@ import {
   PublicationDto,
   TeamAssignmentPayload,
   TeamDto,
+  UserDto,
 } from '../../../../../services/api/api-client.types.ts';
 import clsx from 'clsx';
 import RedStatusIcon from 'assets/icons/red-status.svg?react';
 import YellowStatusIcon from 'assets/icons/yellow-status.svg?react';
 import GreenStatusIcon from 'assets/icons/green-status.svg?react';
 import { TeamMemberEntry } from './TeamMemberEntry/TeamMemberEntry.tsx';
+import TruncatingContainer from '../../../../../components/uikit/truncatingContainer/TruncatingContainer.tsx';
+import { Links } from 'application/constants/links.ts';
+import { useTeamStatus } from './useTeamStatus.ts';
 
 interface TeamCardProps {
   teamDto: TeamDto;
   assignment: PublicationDto;
+  myTeam?: boolean;
+  teacherView?: boolean;
 }
 
-export function TeamCard({ teamDto, assignment }: TeamCardProps) {
+export function TeamCard({
+  teamDto,
+  assignment,
+  myTeam,
+  teacherView,
+}: TeamCardProps) {
+  const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const payload = assignment.publicationPayload as TeamAssignmentPayload;
-  const isRed =
-    !!payload.maxTeamSize && teamDto.members.length > payload.maxTeamSize;
-  const isYellow = teamDto.members.length < (payload.minTeamSize ?? 2);
-  const isGreen = !isRed && !isYellow;
+  const teamStatus = useTeamStatus(teamDto, payload);
 
   return (
     <div
-      className={clsx(styles.TeamCard, {
-        [styles.green]: isGreen,
-        [styles.yellow]: isYellow,
-        [styles.red]: isRed,
-      })}
+      className={clsx(
+        styles.TeamCard,
+        myTeam && styles.myTeam,
+        (teacherView || myTeam) && styles.clickable,
+        {
+          [styles.green]: teamStatus === 'green',
+          [styles.yellow]: teamStatus === 'yellow',
+          [styles.red]: teamStatus === 'red',
+        },
+      )}
+      onClick={() => {
+        if (!payload.areTeamsFrozen)
+          params.setQueryParams({ teamId: teamDto.id });
+      }}
     >
       <div className={styles.header}>
-        <div className={styles.teamTitle}>{teamDto.name}</div>
+        <div className={styles.teamTitle}>
+          <TruncatingContainer title={teamDto.name} />
+        </div>
+        {myTeam && <span className={styles.myTeam}>[моя команда]</span>}
         <div className={styles.participantsNumber}>
           {teamDto.members.length}
-          {!!payload.maxTeamSize ? `/{payload.maxTeamSize}` : null}
+          {!!payload.maxTeamSize && !payload.areTeamsFrozen
+            ? `/${payload.maxTeamSize}`
+            : null}
         </div>
       </div>
       <div className={styles.separator} />
-      <div className={clsx(styles.studentEntry, styles.captain)} />
-      <div className={styles.otherMembers}>
-        {teamDto.members.map((member) => (
-          <TeamMemberEntry member={member} />
-        ))}
-      </div>
-      <div className={styles.teamStatus}>
-        {isRed && (
-          <>
-            Слишком много участников
-            <RedStatusIcon />
-          </>
-        )}
-        {isYellow && (
-          <>
-            Не хватает участников
-            <YellowStatusIcon />
-          </>
-        )}
-        {isGreen && (
-          <>
-            Укомплектована
-            <GreenStatusIcon />
-          </>
-        )}
-      </div>
+      <TeamMembersList color={teamStatus} teamDto={teamDto} payload={payload} />
+      {(teamStatus === 'green' && payload.areTeamsFrozen) || (
+        <TeamStatus teamDto={teamDto} payload={payload} />
+      )}
+    </div>
+  );
+}
+
+export function TeamMembersList({
+  teamDto,
+  color,
+  payload,
+}: {
+  teamDto: TeamDto;
+  color?: 'red' | 'green' | 'yellow';
+  payload: TeamAssignmentPayload;
+}) {
+  const numberOfMembers = teamDto.members.length;
+  const numberOfSlots = !payload.maxTeamSize
+    ? numberOfMembers > 5
+      ? numberOfMembers
+      : 5
+    : payload.maxTeamSize;
+  const members: (UserDto | null)[] = [
+    ...teamDto.members,
+    ...(!payload.areTeamsFrozen
+      ? Array.from({ length: numberOfSlots - numberOfMembers }, () => null)
+      : []),
+  ].filter((m) => !m || m.id !== teamDto.captain.id);
+
+  return (
+    <>
+      <TeamMemberEntry member={teamDto.captain} color={color} isCaptain />
+      {(members.length === 0 && payload.areTeamsFrozen) || (
+        <div className={styles.otherMembers}>
+          {members.map((member) => (
+            <TeamMemberEntry member={member} color={color} />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+export function TeamStatus({
+  teamDto,
+  payload,
+}: {
+  teamDto: TeamDto;
+  payload: TeamAssignmentPayload;
+}) {
+  const teamStatus = useTeamStatus(teamDto, payload);
+
+  return (
+    <div
+      className={clsx(styles.teamStatus, {
+        [styles.green]: teamStatus === 'green',
+        [styles.yellow]: teamStatus === 'yellow',
+        [styles.red]: teamStatus === 'red',
+      })}
+    >
+      {teamStatus === 'red' && (
+        <>
+          Слишком много участников
+          <RedStatusIcon />
+        </>
+      )}
+      {teamStatus === 'yellow' && (
+        <>
+          Не хватает участников
+          <YellowStatusIcon />
+        </>
+      )}
+      {teamStatus === 'green' && (
+        <>
+          Укомплектована
+          <GreenStatusIcon />
+        </>
+      )}
     </div>
   );
 }

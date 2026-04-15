@@ -8,6 +8,15 @@
   border-radius: 10px;
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 
+  .myTeam {
+    margin-left: 10px;
+    opacity: .6;
+  }
+
+  &.clickable {
+    cursor: pointer;
+  }
+
   .header {
     width: 100%;
     font-size: 14px;
@@ -16,11 +25,17 @@
     align-items: center;
 
     .teamTitle {
+      min-width: 0;
+      max-width: 100%;
       font-weight: 300;
       color: #5A665A;
+      flex: 1 1 auto;
     }
 
     .participantsNumber {
+      text-align: right;
+      width: 20px;
+      flex: 0 0 auto;
       font-weight: 400;
     }
   }
@@ -36,20 +51,28 @@
     width: 100%;
   }
 
-  .teamStatus {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    font-size: 14px;
-    gap: 5px;
-  }
-
   &.green {
+    background-color: #FFFEE0;
 
+    .participantsNumber {
+      color: #B8C500;
+    }
+
+    &.myTeam {
+      border: 2px rgb(184 197 0 / 0.5) solid;
+    }
   }
 
   &.red {
+    background-color: #FFE0E0;
 
+    .participantsNumber {
+      color: #C50000;
+    }
+
+    &.myTeam {
+      border: 2px rgb(197 0 0 / 0.5) solid;
+    }
   }
 
   &.yellow {
@@ -59,8 +82,34 @@
       color: #B8C500;
     }
 
-    .teamStatus {
-     color: #B8C500;
+    &.myTeam {
+      border: 2px rgb(184 197 0 / 0.5) solid;
     }
+  }
+}
+
+.otherMembers {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.teamStatus {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 14px;
+  gap: 5px;
+
+  &.green {
+    color: #B8C500;
+  }
+
+  .red {
+    color: #C50000;
+  }
+
+  .yellow {
+    color: #B8C500;
   }
 }

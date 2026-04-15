@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { useParams } from 'react-router';
 import { Tabs, Tab } from '@mui/material';
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
@@ -13,19 +11,16 @@ import { SubmissionPanel } from '../AssignmentPage/CreateSubmissionPanel/Submiss
 import { PrivateCommentView } from '../AssignmentPage/PrivateCommentView/PrivateCommentView.tsx';
 import { TeamsViewAsTeacher } from './TeamsView/TeamsViewAsTeacher.tsx';
 import { TeamsViewAsStudent } from './TeamsView/TeamsViewAsStudent.tsx';
+import { Links } from '../../../application/constants/links.ts';
 
 type TabValue = 'assignment' | 'submissions' | 'teams';
 
 export const TeamAssignmentPage = () => {
-  const { assignmentId, courseId } = useParams();
-  const id = Number(assignmentId);
-  const cid = Number(courseId);
+  const params = Links.Authorized.TeamAssignmentRoutes.useParams();
 
-  const [activeTab, setActiveTab] = useState<TabValue>('assignment');
-
-  const { data: publication } = useGetPublicationByIdQuery(id);
-  const { data: submission } = useGetMySubmissionQuery(id);
-  const { data: course } = useGetCourseQuery(cid);
+  const { data: publication } = useGetPublicationByIdQuery(params.assignmentId);
+  const { data: submission } = useGetMySubmissionQuery(params.assignmentId);
+  const { data: course } = useGetCourseQuery(params.courseId);
   const role = useCourseRole(course);
   const isTeacher = role === 'teacher';
 
@@ -37,8 +32,8 @@ export const TeamAssignmentPage = () => {
     <div className={styles.page} data-test-id="TeamAssignmentPage">
       <div className={styles.tabsWrapper}>
         <Tabs
-          value={activeTab}
-          onChange={(_, v: TabValue) => setActiveTab(v)}
+          value={params.queryParams.tab}
+          onChange={(_, v: TabValue) => params.setQueryParams({ tab: v })}
           className={styles.tabs}
           data-test-id="AssignmentPage-tabs"
         >
@@ -61,29 +56,32 @@ export const TeamAssignmentPage = () => {
           )}
         </Tabs>
       </div>
-      {activeTab === 'assignment' && (
+      {params.queryParams.tab === 'assignment' && (
         <div className={styles.grid}>
           <div className={styles.left}>
             <TeamAssignmentView
               assignment={publication}
               submission={submission}
             />
-            <PublicCommentView publicationId={id} />
+            <PublicCommentView publicationId={params.assignmentId} />
           </div>
           {!isTeacher && (
             <div className={styles.right}>
-              <SubmissionPanel assignmentId={id} submission={submission} />
+              <SubmissionPanel
+                assignmentId={params.assignmentId}
+                submission={submission}
+              />
               <PrivateCommentView
-                assignmentId={id}
+                assignmentId={params.assignmentId}
                 comments={submission?.comments ?? []}
               />
             </div>
           )}
         </div>
       )}
-      {activeTab === 'teams' &&
+      {params.queryParams.tab === 'teams' &&
         (isTeacher ? <TeamsViewAsTeacher /> : <TeamsViewAsStudent />)}
-      {activeTab === 'submissions' && isTeacher && (
+      {params.queryParams.tab === 'submissions' && isTeacher && (
         <div className={styles.submissionsLayout}></div>
       )}
     </div>

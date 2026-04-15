@@ -1,10 +1,14 @@
-using Team13.HitsClass.App.Features.Assignment.Dto;
 using Team13.HitsClass.Domain;
+using Team13.WebApi.Domain.Helpers;
+using Team13.WebApi.Patching.Models;
 
 namespace Team13.HitsClass.App.Features.TeamAssignment.Dto
 {
-    public class PatchTeamAssignmentPayloadDto : PatchAssignmentPayloadDto
+    public class PatchTeamAssignmentPayloadDto : PatchRequest<PublicationPayload>
     {
+        [RequiredOrMissing]
+        public string Title { get; set; }
+        public DateTime? DeadlineUtc { get; set; }
         public int? MinTeamSize { get; set; }
         public int? MaxTeamSize { get; set; }
         public TeamDistributionType DistributionType { get; set; }

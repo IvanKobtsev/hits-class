@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { Box, IconButton, Menu, MenuItem, TextField, Typography } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryFactory } from 'services/api';
@@ -95,7 +102,7 @@ export const DelAndEditCourseButtons: React.FC<Props> = ({ courseId }) => {
           data-test-id="DelAndEditCourseButtons"
           className={styles.menuButton}
         >
-            ⋮
+          ⋮
         </IconButton>
 
         <Menu
@@ -184,7 +191,8 @@ export const DelAndEditCourseButtons: React.FC<Props> = ({ courseId }) => {
         }}
       >
         <Typography>
-          Вы уверены что хотите удалить курс <strong>{course?.title}</strong>?
+          Вы уверены, что хотите удалить курс <strong>{course?.title}</strong>?
+          <br />
           Это действие необратимо.
         </Typography>
       </CustomModal>

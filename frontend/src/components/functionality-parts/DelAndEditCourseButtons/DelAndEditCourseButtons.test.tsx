@@ -188,7 +188,7 @@ describe('DelAndEditCourseButtons', () => {
     await userEvent.click(screen.getByTestId('DelAndEditCourseButtons-delete'));
 
     expect(
-      screen.getByText(/Вы уверены что хотите удалить курс/),
+      screen.getByText(/Вы уверены, что хотите удалить курс/),
     ).toBeInTheDocument();
     expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
   });

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Team13.HitsClass.App.Features.Teams;
 using Team13.HitsClass.App.Features.Teams.Dto;
+using Team13.HitsClass.App.Views.Emails.TeamDisbanded;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
@@ -206,20 +209,6 @@ public class TeamServiceTests : AppServiceTestBase
 
         await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(() =>
             _teamService.CreateTeam(int.MaxValue, new CreateTeamDto { Name = "Team" })
-        );
-    }
-
-    [Fact]
-    public async Task CreateTeam_CourseOwnerNotEnrolledAsStudent_ThrowsAccessDeniedException()
-    {
-        var course = await CreateCourse();
-        var assignment = await CreateFreeTeamAssignment(course.Id);
-
-        // _defaultUser owns the course but is not enrolled as a student
-        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
-
-        await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            _teamService.CreateTeam(assignment.Id, new CreateTeamDto { Name = "Team" })
         );
     }
 
@@ -577,7 +566,7 @@ public class TeamServiceTests : AppServiceTestBase
         result.Members.Should().Contain(m => m.Id == captain.Id);
         result.Captain.Id.Should().Be(student.Id);
     }
-
+    
     [Fact]
     public async Task PassCaptainRole_AsCourseTeacher_ChangesCaptain()
     {
@@ -665,9 +654,8 @@ public class TeamServiceTests : AppServiceTestBase
 
         var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
             await _teamService.PassCaptainRole(teamId, student.Id)
-        );
     }
-
+    
     [Fact]
     public async Task PassCaptainRole_TeamsAreFrozen_ThrowsValidationException()
     {
@@ -694,7 +682,6 @@ public class TeamServiceTests : AppServiceTestBase
         var assignment = await CreateTeamAssignmentWithDistribution(
             course.Id,
             TeamDistributionType.ByTeacher,
-            true
         );
         var teamId = assignment.Teams.First().Id;
 
@@ -712,6 +699,523 @@ public class TeamServiceTests : AppServiceTestBase
             await _teamService.PassCaptainRole(999, student.Id)
         );
     }
+    
+    #endregion
+        
+    
+    #region CreateTeamAsTeacher Tests
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_ValidRequest_CreatesTeamWithFirstStudentAsCaptain()
+    {
+        var course = await CreateCourse();
+        var student1 = await CreateUser("student1@test.com");
+        var student2 = await CreateUser("student2@test.com");
+        await AddStudentToCourse(course.Id, student1.Id);
+        await AddStudentToCourse(course.Id, student2.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto
+        {
+            Name = "Alpha Team",
+            StudentIds = [student1.Id, student2.Id],
+        };
+
+        var result = await _teamService.CreateTeamAsTeacher(assignment.Id, dto);
+
+        result.Should().NotBeNull();
+        result.Name.Should().Be("Alpha Team");
+        result.Captain.Id.Should().Be(student1.Id);
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_ValidRequest_AllStudentsAreMembers()
+    {
+        var course = await CreateCourse();
+        var student1 = await CreateUser("student1@test.com");
+        var student2 = await CreateUser("student2@test.com");
+        await AddStudentToCourse(course.Id, student1.Id);
+        await AddStudentToCourse(course.Id, student2.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto
+        {
+            Name = "Alpha Team",
+            StudentIds = [student1.Id, student2.Id],
+        };
+
+        var result = await _teamService.CreateTeamAsTeacher(assignment.Id, dto);
+
+        result.Members.Should().Contain(m => m.Id == student1.Id);
+        result.Members.Should().Contain(m => m.Id == student2.Id);
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_ValidRequest_PersistedInDatabase()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Persisted Team", StudentIds = [student.Id] };
+
+        var result = await _teamService.CreateTeamAsTeacher(assignment.Id, dto);
+
+        await WithDbContext(async db =>
+        {
+            var team = await db
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .FirstOrDefaultAsync(t => t.Id == result.Id);
+
+            team.Should().NotBeNull();
+            team!.Name.Should().Be("Persisted Team");
+            team.CaptainId.Should().Be(student.Id);
+            team.PublicationId.Should().Be(assignment.Id);
+        });
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_Over100Teams_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        await WithDbContext(async db =>
+        {
+            var captain = await CreateUser("cap100@test.com");
+            for (var i = 1; i <= 99; i++)
+            {
+                db.Teams.Add(
+                    new Domain.Team
+                    {
+                        Name = $"Team {i}",
+                        CaptainId = captain.Id,
+                        PublicationId = assignment.Id,
+                        Members = [],
+                    }
+                );
+            }
+            await db.SaveChangesAsync();
+        });
+
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Team 101", StudentIds = [student.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("Maximum number of teams (100) has been reached.");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_DuplicateTeamName_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto { Name = "team 1", StudentIds = [student.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Contain("already exists");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_EmptyStudentList_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Empty Team", StudentIds = [] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("At least one student must be added to the team.");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_NotATeamAssignment_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateRegularAssignment(course.Id);
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Some Team", StudentIds = [student.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("Only team assignments can have teams.");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_StudentNotInCourse_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var outsider = await CreateUser("outsider@test.com");
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Some Team", StudentIds = [outsider.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Contain("is not a member of this course");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_UserIsNotTeacher_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        var anotherStudent = await CreateUser("another@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        await AddStudentToCourse(course.Id, anotherStudent.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        var dto = new CreateTeamAsTeacherDto
+        {
+            Name = "Some Team",
+            StudentIds = [anotherStudent.Id],
+        };
+
+        await Assert.ThrowsAsync<AccessDeniedException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_TeamsFrozen_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher,
+            frozen: true
+        );
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Some Team", StudentIds = [student.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("Teams are frozen.");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_StudentAlreadyInAnotherTeam_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("cap@test.com");
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        var existingTeam = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(existingTeam.Id, student.Id);
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Beta Team", StudentIds = [student.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Contain("already in another team");
+    }
+
+    [Fact]
+    public async Task CreateTeamAsTeacher_StudentAlreadyACaptain_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("cap@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateTeamAssignmentWithDistribution(
+            course.Id,
+            TeamDistributionType.ByTeacher
+        );
+        await AddTeam(assignment.Id, captain.Id);
+
+        var dto = new CreateTeamAsTeacherDto { Name = "Beta Team", StudentIds = [captain.Id] };
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.CreateTeamAsTeacher(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Contain("already a captain of another team");
+    }
+
+    #endregion
+
+    #region DisbandTeam Tests
+
+    [Fact]
+    public async Task DisbandTeam_CaptainDisbands_TeamDeleted()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        await _teamService.DisbandTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var disbanded = await db.Teams.FirstOrDefaultAsync(t => t.Id == team.Id);
+            disbanded.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DisbandTeam_TeacherDisbands_TeamDeleted()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        // _defaultUser is the course owner, acts as teacher
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        await _teamService.DisbandTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var disbanded = await db.Teams.FirstOrDefaultAsync(t => t.Id == team.Id);
+            disbanded.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DisbandTeam_SubmissionsAreDeleted()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var member = await CreateUser("member@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, member.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(team.Id, member.Id);
+
+        var captainSubmissionId = await AddSubmission(assignment.Id, captain.Id);
+        var memberSubmissionId = await AddSubmission(assignment.Id, member.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        await _teamService.DisbandTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var captainSub = await db.Submissions.FirstOrDefaultAsync(s =>
+                s.Id == captainSubmissionId
+            );
+            var memberSub = await db.Submissions.FirstOrDefaultAsync(s =>
+                s.Id == memberSubmissionId
+            );
+            captainSub.Should().BeNull();
+            memberSub.Should().BeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DisbandTeam_UnrelatedSubmissionsNotDeleted()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var unrelated = await CreateUser("unrelated@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, unrelated.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var otherAssignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        // Submission on a different assignment — must survive
+        var unrelatedSubmissionId = await AddSubmission(otherAssignment.Id, unrelated.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        await _teamService.DisbandTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var sub = await db.Submissions.FirstOrDefaultAsync(s => s.Id == unrelatedSubmissionId);
+            sub.Should().NotBeNull();
+        });
+    }
+
+    [Fact]
+    public async Task DisbandTeam_CaptainDisbands_OtherMembersNotified()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var member = await CreateUser("member@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, member.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(team.Id, member.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+        _mailSenderMock.Invocations.Clear();
+
+        await _teamService.DisbandTeam(team.Id);
+
+        // Member notified, captain is not
+        _mailSenderMock.Verify(
+            x =>
+                x.Send(member.Email, It.IsAny<TeamDisbandedEmailModel>(), It.IsAny<List<string>>()),
+            Times.Once
+        );
+        _mailSenderMock.Verify(
+            x =>
+                x.Send(
+                    captain.Email,
+                    It.IsAny<TeamDisbandedEmailModel>(),
+                    It.IsAny<List<string>>()
+                ),
+            Times.Never
+        );
+    }
+
+    [Fact]
+    public async Task DisbandTeam_TeacherDisbands_AllMembersNotified()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var member = await CreateUser("member@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, member.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(team.Id, member.Id);
+
+        // _defaultUser is the course owner, acts as teacher
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+        _mailSenderMock.Invocations.Clear();
+
+        await _teamService.DisbandTeam(team.Id);
+
+        // Both captain and member are notified
+        _mailSenderMock.Verify(
+            x =>
+                x.Send(
+                    captain.Email,
+                    It.IsAny<TeamDisbandedEmailModel>(),
+                    It.IsAny<List<string>>()
+                ),
+            Times.Once
+        );
+        _mailSenderMock.Verify(
+            x =>
+                x.Send(member.Email, It.IsAny<TeamDisbandedEmailModel>(), It.IsAny<List<string>>()),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task DisbandTeam_RegularStudent_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var outsider = await CreateUser("outsider@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, outsider.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(outsider.Id);
+
+        await Assert.ThrowsAsync<AccessDeniedException>(() => _teamService.DisbandTeam(team.Id));
+    }
+
+    [Fact]
+    public async Task DisbandTeam_TeamsFrozen_CaptainThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id, frozen: true);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.DisbandTeam(team.Id)
+        );
+        exception.Message.Should().Be("Teams are frozen.");
+    }
+
+    [Fact]
+    public async Task DisbandTeam_TeamsFrozen_TeacherCanDisband()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id, frozen: true);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        // _defaultUser is the course owner — teacher can always disband
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        await _teamService.DisbandTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var disbanded = await db.Teams.FirstOrDefaultAsync(t => t.Id == team.Id);
+            disbanded.Should().BeNull();
+        });
+    }
+
     #endregion
 
     #region Helpers
@@ -883,6 +1387,26 @@ public class TeamServiceTests : AppServiceTestBase
         });
     }
 
+    private async Task<int> AddSubmission(int publicationId, string authorId)
+    {
+        return await WithDbContext(async db =>
+        {
+            var author = await db.Users.FirstAsync(u => u.Id == authorId);
+            var submission = new Submission
+            {
+                PublicationId = publicationId,
+                AuthorId = authorId,
+                Author = author,
+                State = SubmissionState.Draft,
+                Attachments = [],
+                Comments = [],
+            };
+            db.Submissions.Add(submission);
+            await db.SaveChangesAsync();
+            return submission.Id;
+        });
+    }
+
     private async Task<Team> AddTeam(int assignmentId, string captainId)
     {
         return await WithDbContext(async db =>
@@ -896,7 +1420,7 @@ public class TeamServiceTests : AppServiceTestBase
                 Name = "new team",
                 CaptainId = captain.Id,
                 Captain = captain,
-                Members = [],
+                Members = [captain],
             };
             assignment.Teams.Add(team);
             await db.SaveChangesAsync();

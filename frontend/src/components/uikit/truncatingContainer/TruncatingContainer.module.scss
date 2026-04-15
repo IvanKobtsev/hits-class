@@ -1,0 +1,10 @@
+.truncatingContainer {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+
+  &.horizontal {
+    white-space: nowrap;
+  }
+}

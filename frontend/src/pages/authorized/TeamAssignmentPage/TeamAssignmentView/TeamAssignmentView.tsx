@@ -8,22 +8,6 @@ import {
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './TeamAssignmentView.module.scss';
 
-function isLexicalState(value: string): boolean {
-  try {
-    const parsed = JSON.parse(value);
-    return (
-      typeof parsed === 'object' &&
-      parsed !== null &&
-      'root' in parsed &&
-      typeof parsed.root === 'object' &&
-      parsed.root !== null &&
-      Array.isArray(parsed.root.children)
-    );
-  } catch {
-    return false;
-  }
-}
-
 function formatDateUTC(date: Date): string {
   const d = String(date.getUTCDate()).padStart(2, '0');
   const m = String(date.getUTCMonth() + 1).padStart(2, '0');
