@@ -33,6 +33,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { queryClient } from 'services/api/query-client-helper.ts';
 import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
 import { useCreateAssignmentMutation } from '../../../../../services/api/api-client/TeamAssignmentQuery.ts';
+import { useDistributeRandomlyMutationWithParameters } from '../../../../../services/api/api-client/TeamQuery.ts';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -71,6 +72,8 @@ export const CreateTeamAssignmentModal = ({
   const { courseId } = useParams<{ courseId: string }>();
   const courseIdNum = Number(courseId);
   const { mutateAsync, isPending } = useCreateAssignmentMutation(courseIdNum);
+  const { mutateAsync: distributeRandomlyAsync } =
+    useDistributeRandomlyMutationWithParameters();
   const { data: course } = useGetCourseQuery(courseIdNum);
   const modal = useModal();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +106,7 @@ export const CreateTeamAssignmentModal = ({
           selectedIds.size === 0 || selectedIds.size === students.length
             ? null
             : [...selectedIds];
-        await mutateAsync({
+        const createdAssignment = await mutateAsync({
           content: data.content,
           targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
@@ -118,6 +121,11 @@ export const CreateTeamAssignmentModal = ({
             areTeamsFrozen: false,
           },
         });
+        if (data.distributionType === TeamDistributionType.Random) {
+          await distributeRandomlyAsync({
+            assignmentId: createdAssignment.id,
+          });
+        }
         await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
       } catch {
@@ -229,7 +237,6 @@ export const CreateTeamAssignmentModal = ({
                 <RadioButton
                   {...form.register('distributionType')}
                   value={TeamDistributionType.Random}
-                  disabled={true}
                   title={'Случайное'}
                 />
               </Field>

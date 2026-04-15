@@ -6,6 +6,7 @@ import styles from './EditTeamModal.module.scss';
 import {
   getTeamForAssignmentQueryKey,
   getTeamsForAssignmentQueryKey,
+  useLeaveTeamMutation,
   usePassCaptainRoleMutation,
   useRemoveTeamMemberMutation,
   useGetTeamForAssignmentQuery,
@@ -27,6 +28,8 @@ import { ButtonColor } from '../../../../../components/uikit/buttons/Button.tsx'
 import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
 import { useRerender } from '../../../../../helpers/useRerender.ts';
+import { useGetCourseQuery } from '../../../../../services/api/api-client/CourseQuery.ts';
+import { AddTeamMemberModal } from './AddTeamMemberModal.tsx';
 import { useGetCurrentUserInfoQuery } from '../../../../../services/api/api-client/UserQuery.ts';
 
 type EditTeamModalProps = {
@@ -48,14 +51,18 @@ export const EditTeamModal = ({
 }: EditTeamModalProps) => {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const [disbandOpen, setDisbandOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const [leaveTeamOpen, setLeaveTeamOpen] = useState(false);
   const [passCaptainRoleErrorOpen, setPassCaptainRoleErrorOpen] =
     useState(false);
   const [removeTeamMemberErrorOpen, setRemoveTeamMemberErrorOpen] =
     useState(false);
+  const [leaveTeamErrorOpen, setLeaveTeamErrorOpen] = useState(false);
   const [disbandDraftErrorOpen, setDisbandDraftErrorOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<UserDto | null>(null);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
+  const { data: course } = useGetCourseQuery(params.courseId);
   const { data: me } = useGetCurrentUserInfoQuery();
 
   // const form = useAdvancedForm<EditTeamForm>(
@@ -71,11 +78,17 @@ export const EditTeamModal = ({
   // );
 
   const teamQuery = useGetTeamForAssignmentQuery(assignmentId, teamId);
+  const leaveTeamMutation = useLeaveTeamMutation(teamId);
   const passCaptainRoleMutation = usePassCaptainRoleMutation(teamId);
   const removeTeamMemberMutation = useRemoveTeamMemberMutation(teamId);
   const canAssignCaptainRole =
     !!teamQuery.data && (teacherView || teamQuery.data.captain.id === me?.id);
   const canRemoveTeamMember = canAssignCaptainRole;
+  const canLeaveTeam =
+    !!teamQuery.data &&
+    !assignmentPayload.areTeamsFrozen &&
+    teamQuery.data.members.some((m) => m.id === me?.id) &&
+    teamQuery.data.captain.id !== me?.id;
 
   const handleAssignCaptainRole = async (member: UserDto) => {
     try {
@@ -119,6 +132,20 @@ export const EditTeamModal = ({
     } catch {
       setMemberToRemove(null);
       setRemoveTeamMemberErrorOpen(true);
+    }
+  };
+
+  const confirmLeaveTeam = async () => {
+    try {
+      await leaveTeamMutation.mutateAsync();
+      setLeaveTeamOpen(false);
+      onClose();
+      await queryClient.invalidateQueries({
+        queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+      });
+    } catch {
+      setLeaveTeamOpen(false);
+      setLeaveTeamErrorOpen(true);
     }
   };
 
@@ -184,13 +211,20 @@ export const EditTeamModal = ({
               <div className={styles.members}>
                 <Button
                   variant="contained"
-                  data-test-id="CourseFeedTab-create-team"
+                  data-test-id="EditTeam-add-member"
                   startIcon={<AddMemberIcon className={styles.icon} />}
                   className={clsx(styles.btnPrimary, styles.addToTeam)}
                   disabled={
+                    !teacherView ||
                     teamQuery.data.members.length >=
-                    (assignmentPayload.maxTeamSize ?? 100)
+                      (assignmentPayload.maxTeamSize ?? 100)
                   }
+                  onClick={() => {
+                    if (teacherView) {
+                      setAddMemberOpen(true);
+                      console.log("set");
+                    }
+                  }}
                 >
                   {teacherView ? 'Добавить в команду' : 'Пригласить в команду'}
                 </Button>
@@ -219,6 +253,16 @@ export const EditTeamModal = ({
               />
             </div>
             <div className={styles.footer}>
+              {canLeaveTeam && (
+                <Button
+                  variant="contained"
+                  data-test-id="EditTeam-leave-team"
+                  className={clsx(styles.btnPrimary, styles.leaveTeam)}
+                  onClick={() => setLeaveTeamOpen(true)}
+                >
+                  {'Покинуть команду'}
+                </Button>
+              )}
               <Button
                 variant="contained"
                 data-test-id="CourseFeedTab-create-team"
@@ -228,6 +272,37 @@ export const EditTeamModal = ({
                 {'Расформировать команду'}
               </Button>
             </div>
+            {teacherView && (
+              <AddTeamMemberModal
+                assignmentId={assignmentId}
+                teamId={teamId}
+                isOpen={addMemberOpen}
+                onClose={() => setAddMemberOpen(false)}
+                students={(course?.students ?? []).filter(
+                  (s) => !teamQuery.data!.members.some((m) => m.id === s.id),
+                )}
+              />
+            )}
+            <CustomModal
+              isOpen={leaveTeamOpen}
+              isBlocking={false}
+              title="Покинуть команду"
+              onClose={() => setLeaveTeamOpen(false)}
+              buttons="ok-cancel"
+              okButtonColor={ButtonColor.Danger}
+              okButtonText="Покинуть"
+              onButtonClick={async (btn: 'ok' | 'cancel') => {
+                if (btn === 'ok') {
+                  await confirmLeaveTeam();
+                } else {
+                  setLeaveTeamOpen(false);
+                }
+              }}
+            >
+              <Typography>
+                Вы уверены, что хотите покинуть команду?
+              </Typography>
+            </CustomModal>
             <CustomModal
               isOpen={disbandOpen}
               isBlocking={false}
@@ -298,6 +373,19 @@ export const EditTeamModal = ({
             >
               <Typography>
                 Вы не можете передавать роль капитана в режиме драфта
+              </Typography>
+            </CustomModal>
+            <CustomModal
+              isOpen={leaveTeamErrorOpen}
+              isBlocking={false}
+              title="Ошибка"
+              onClose={() => setLeaveTeamErrorOpen(false)}
+              buttons="ok"
+              okButtonText="Понятно"
+              onButtonClick={() => setLeaveTeamErrorOpen(false)}
+            >
+              <Typography>
+                Не удалось покинуть команду
               </Typography>
             </CustomModal>
             <CustomModal

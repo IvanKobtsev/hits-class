@@ -96,6 +96,13 @@ namespace Team13.HitsClass.App.Features.Teams
         ) => await teamService.CreateTeamAsTeacher(assignmentId, dto);
 
         /// <summary>
+        /// Randomly distribute students into teams for a team assignment
+        /// </summary>
+        [HttpPost("team-assignments/{assignmentId:int}/distribute-randomly")]
+        public async Task<List<TeamDto>> DistributeRandomly([FromRoute] int assignmentId) =>
+            await teamService.DistributeRandomly(assignmentId);
+
+        /// <summary>
         /// Update team name (captain or teacher only)
         /// </summary>
         [HttpPatch("teams/{id:int}/name")]
