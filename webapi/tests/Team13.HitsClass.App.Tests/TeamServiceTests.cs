@@ -1311,6 +1311,236 @@ public class TeamServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region DistributeRandomly Tests
+
+    [Fact]
+    public async Task DistributeRandomly_EvenSplit_CreatesCorrectTeams()
+    {
+        // 6 students, min=2, max=4 → mean=3 → numTeams=2, each team gets 3 members
+        var course = await CreateCourse();
+        var students = new List<User>();
+        for (var i = 0; i < 6; i++)
+        {
+            var s = await CreateUser($"student{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+            students.Add(s);
+        }
+
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.Should().HaveCount(2);
+        result
+            .Should()
+            .AllSatisfy(t =>
+            {
+                t.Members.Should().HaveCount(3);
+                t.Captain.Should().NotBeNull();
+                t.Members.Should().Contain(m => m.Id == t.Captain.Id);
+            });
+        var allMemberIds = result.SelectMany(t => t.Members.Select(m => m.Id)).ToList();
+        allMemberIds.Should().HaveCount(6);
+        allMemberIds.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_UnevenSplit_DistributesCorrectly()
+    {
+        // 7 students, no size limits → numTeams = floor(7/5) = 1 → 1 team of 7
+        var course = await CreateCourse();
+        for (var i = 0; i < 7; i++)
+        {
+            var s = await CreateUser($"s{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+        }
+
+        var assignment = await CreateRandomTeamAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.Should().HaveCount(1);
+        result[0].Members.Should().HaveCount(7);
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_OnlyMaxTeamSize_CalculatesMeanWithZeroMin()
+    {
+        // 8 students, max=4, no min → mean=(0+4)/2=2 → numTeams=floor(8/2)=4, teams of 2
+        var course = await CreateCourse();
+        for (var i = 0; i < 8; i++)
+        {
+            var s = await CreateUser($"s{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+        }
+
+        var assignment = await CreateRandomTeamAssignment(course.Id, maxTeamSize: 4);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.Should().HaveCount(4);
+        result.Should().AllSatisfy(t => t.Members.Should().HaveCount(2));
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_UnEvenWithLargeTeams_FirstTeamsGetExtraMember()
+    {
+        // 7 students, min=2, max=4 → mean=3 → numTeams=floor(7/3)=2
+        // largeTeamCount = 7%2 = 1 → 1 team of 4, 1 team of 3
+        var course = await CreateCourse();
+        for (var i = 0; i < 7; i++)
+        {
+            var s = await CreateUser($"s{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+        }
+
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.Should().HaveCount(2);
+        var sizes = result.Select(t => t.Members.Count).OrderByDescending(x => x).ToList();
+        sizes.Should().Equal(4, 3);
+        var allMemberIds = result.SelectMany(t => t.Members.Select(m => m.Id)).ToList();
+        allMemberIds.Should().HaveCount(7);
+        allMemberIds.Should().OnlyHaveUniqueItems();
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_NoStudents_ReturnsEmptyList()
+    {
+        var course = await CreateCourse();
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_NotTeacher_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(student.Id);
+
+        await Assert.ThrowsAsync<AccessDeniedException>(() =>
+            _teamService.DistributeRandomly(assignment.Id)
+        );
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_DistributionTypeNotRandom_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.DistributeRandomly(assignment.Id)
+        );
+
+        exception.Message.Should().Be("Distribution type must be Random.");
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_TeamsAlreadyExist_ThrowsConflictException()
+    {
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        await AddTeam(assignment.Id, student.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            _teamService.DistributeRandomly(assignment.Id)
+        );
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_NotTeamAssignment_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var assignment = await CreateRegularAssignment(course.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.DistributeRandomly(assignment.Id)
+        );
+
+        exception.Message.Should().Be("Only team assignments can have teams.");
+    }
+
+    [Fact]
+    public async Task DistributeRandomly_TeamsPersistedInDatabase()
+    {
+        var course = await CreateCourse();
+        for (var i = 0; i < 4; i++)
+        {
+            var s = await CreateUser($"s{i}@test.com");
+            await AddStudentToCourse(course.Id, s.Id);
+        }
+
+        var assignment = await CreateRandomTeamAssignment(
+            course.Id,
+            minTeamSize: 2,
+            maxTeamSize: 4
+        );
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
+
+        var result = await _teamService.DistributeRandomly(assignment.Id);
+
+        await WithDbContext(async db =>
+        {
+            var teamIds = result.Select(t => t.Id).ToList();
+            var teams = await db
+                .Teams.Include(t => t.Members)
+                .Where(t => teamIds.Contains(t.Id))
+                .ToListAsync();
+
+            teams.Should().HaveCount(result.Count);
+            teams
+                .Should()
+                .AllSatisfy(t =>
+                {
+                    t.Members.Should().NotBeEmpty();
+                    t.CaptainId.Should().Be(t.Members.First().Id);
+                });
+        });
+    }
+
+    #endregion
+
     #region Helpers
 
     private async Task<Course> CreateCourse(
@@ -1348,6 +1578,42 @@ public class TeamServiceTests : AppServiceTestBase
             TeamDistributionType.Free,
             frozen
         );
+    }
+
+    private async Task<Publication> CreateRandomTeamAssignment(
+        int courseId,
+        int? minTeamSize = null,
+        int? maxTeamSize = null
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            var author = await db.Users.FirstAsync(u => u.Id == _defaultUser.Id);
+
+            var assignment = new Publication(_defaultContent)
+            {
+                CourseId = courseId,
+                Type = PublicationType.TeamAssignment,
+                Author = author,
+                TargetUsers = [],
+                IsForEveryone = true,
+                PublicationPayload = new TeamAssignmentPayload
+                {
+                    Title = "Random Team Assignment",
+                    DeadlineUtc = DateTime.UtcNow.AddDays(7),
+                    DistributionType = TeamDistributionType.Random,
+                    SubmissionType = SubmissionType.All,
+                    MinTeamSize = minTeamSize,
+                    MaxTeamSize = maxTeamSize,
+                },
+                Attachments = [],
+                Teams = [],
+            };
+
+            db.Publications.Add(assignment);
+            await db.SaveChangesAsync();
+            return assignment;
+        });
     }
 
     private async Task<Publication> CreateTeamAssignmentWithDistribution(
