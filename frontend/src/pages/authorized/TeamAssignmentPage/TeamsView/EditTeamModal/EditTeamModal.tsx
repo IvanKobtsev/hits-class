@@ -205,16 +205,13 @@ export const EditTeamModal = ({
                   data-test-id="EditTeam-add-member"
                   startIcon={<AddMemberIcon className={styles.icon} />}
                   className={clsx(styles.btnPrimary, styles.addToTeam)}
-                  disabled={
-                    !teacherView ||
-                    teamQuery.data.members.length >=
-                      (assignmentPayload.maxTeamSize ?? 100)
-                  }
+                  // disabled={
+                  //   !teacherView ||
+                  //   teamQuery.data.members.length >=
+                  //     (assignmentPayload.maxTeamSize ?? 100)
+                  // }
                   onClick={() => {
-                    if (teacherView) {
-                      setAddMemberOpen(true);
-                      console.log("set");
-                    }
+                    if (teacherView) setAddMemberOpen(true)
                   }}
                 >
                   {teacherView ? 'Добавить в команду' : 'Пригласить в команду'}
