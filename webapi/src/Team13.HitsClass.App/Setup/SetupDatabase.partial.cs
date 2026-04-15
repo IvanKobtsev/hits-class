@@ -19,6 +19,9 @@ public static partial class SetupDatabase
     {
         DefaultUserSeeder seeder = serviceProvider.GetRequiredService<DefaultUserSeeder>();
         await seeder.SeedUser();
+
+        DevDataSeeder devDataSeeder = serviceProvider.GetRequiredService<DevDataSeeder>();
+        await devDataSeeder.SeedDevData();
     }
 
     static partial void AddProjectSpecifics(WebApplicationBuilder builder) { }
@@ -26,6 +29,8 @@ public static partial class SetupDatabase
     static partial void AddSeeders(IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<DefaultUserOptions>(configuration.GetSection("DefaultUser"));
+        services.Configure<DevDataOptions>(configuration.GetSection("DevData"));
+        services.AddScoped<DevDataSeeder>();
     }
 
     public static partial HitsClassDbContext CreateDbContext(IServiceProvider provider)
