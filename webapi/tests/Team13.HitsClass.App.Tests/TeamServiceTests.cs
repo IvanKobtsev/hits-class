@@ -1219,6 +1219,98 @@ public class TeamServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region LeaveTeam Tests
+
+    [Fact]
+    public async Task LeaveTeam_ValidMember_RemovesFromTeam()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var member = await CreateUser("member@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, member.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(team.Id, member.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(member.Id);
+
+        await _teamService.LeaveTeam(team.Id);
+
+        await WithDbContext(async db =>
+        {
+            var updated = await db.Teams.Include(t => t.Members).FirstAsync(t => t.Id == team.Id);
+            updated.Members.Should().NotContain(m => m.Id == member.Id);
+        });
+    }
+
+    [Fact]
+    public async Task LeaveTeam_NotAMember_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var outsider = await CreateUser("outsider@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(outsider.Id);
+
+        await Assert.ThrowsAsync<AccessDeniedException>(() => _teamService.LeaveTeam(team.Id));
+    }
+
+    [Fact]
+    public async Task LeaveTeam_CallerIsCaptain_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id);
+        var team = await AddTeam(assignment.Id, captain.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(captain.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.LeaveTeam(team.Id)
+        );
+        exception
+            .Message.Should()
+            .Be("Captain cannot leave the team. Pass the captain role first.");
+    }
+
+    [Fact]
+    public async Task LeaveTeam_TeamsFrozen_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var captain = await CreateUser("captain@test.com");
+        var member = await CreateUser("member@test.com");
+        await AddStudentToCourse(course.Id, captain.Id);
+        await AddStudentToCourse(course.Id, member.Id);
+        var assignment = await CreateFreeTeamAssignment(course.Id, frozen: true);
+        var team = await AddTeam(assignment.Id, captain.Id);
+        await AddStudentToTeam(team.Id, member.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(member.Id);
+
+        var exception = await Assert.ThrowsAsync<ValidationException>(() =>
+            _teamService.LeaveTeam(team.Id)
+        );
+        exception.Message.Should().Be("Teams are frozen.");
+    }
+
+    [Fact]
+    public async Task LeaveTeam_TeamNotFound_ThrowsResourceNotFoundException()
+    {
+        var member = await CreateUser("member@test.com");
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(member.Id);
+
+        await Assert.ThrowsAsync<PersistenceResourceNotFoundException>(() =>
+            _teamService.LeaveTeam(999)
+        );
+    }
+
+    #endregion
+
     #region Helpers
 
     private async Task<Course> CreateCourse(
