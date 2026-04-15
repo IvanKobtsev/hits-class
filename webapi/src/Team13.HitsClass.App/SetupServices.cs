@@ -4,6 +4,7 @@ using Team13.HitsClass.App.Features.Assignment;
 using Team13.HitsClass.App.Features.Comments;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
+using Team13.HitsClass.App.Features.Invitations;
 using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Submission;
@@ -34,6 +35,7 @@ public static class SetupServices
             .AddScoped<AssignmentService>()
             .AddScoped<TeamAssignmentService>()
             .AddScoped<TeamService>()
+            .AddScoped<InvitationService>()
             .AddScoped<FileService>()
             .AddScoped<CourseService>()
             .AddScoped<AnnouncementService>()
