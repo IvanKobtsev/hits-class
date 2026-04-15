@@ -22,7 +22,7 @@ import {
   disbandTeam,
   updateTeamName,
 } from '../../../../../services/api/api-client/TeamClient.ts';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ButtonColor } from '../../../../../components/uikit/buttons/Button.tsx';
 import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
@@ -52,6 +52,7 @@ export const EditTeamModal = ({
     useState(false);
   const [removeTeamMemberErrorOpen, setRemoveTeamMemberErrorOpen] =
     useState(false);
+  const [disbandDraftErrorOpen, setDisbandDraftErrorOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState<UserDto | null>(null);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
@@ -120,6 +121,14 @@ export const EditTeamModal = ({
       setRemoveTeamMemberErrorOpen(true);
     }
   };
+
+  useEffect(() => {
+    if (!disbandDraftErrorOpen) return;
+    const timeoutId = setTimeout(() => {
+      setDisbandDraftErrorOpen(false);
+    }, 2200);
+    return () => clearTimeout(timeoutId);
+  }, [disbandDraftErrorOpen]);
 
   return (
     <CustomModal
@@ -229,11 +238,16 @@ export const EditTeamModal = ({
               okButtonText={'Расформировать'}
               onButtonClick={async (btn: 'ok' | 'cancel') => {
                 if (btn === 'ok') {
-                  await disbandTeam(teamId);
-                  params.setQueryParams({ teamId: undefined });
-                  await queryClient.invalidateQueries({
-                    queryKey: getTeamsForAssignmentQueryKey(assignmentId),
-                  });
+                  try {
+                    await disbandTeam(teamId);
+                    params.setQueryParams({ teamId: undefined });
+                    await queryClient.invalidateQueries({
+                      queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+                    });
+                  } catch {
+                    setDisbandOpen(false);
+                    setDisbandDraftErrorOpen(true);
+                  }
                 } else setDisbandOpen(false);
               }}
             >
@@ -261,6 +275,16 @@ export const EditTeamModal = ({
               <Typography>
                 Вы уверены, что хотите исключить{' '}
                 <b>{memberToRemove?.legalName ?? 'участника'}</b> из команды?
+              </Typography>
+            </CustomModal>
+            <CustomModal
+              isOpen={disbandDraftErrorOpen}
+              isBlocking={false}
+              title="Ошибка"
+              onClose={() => setDisbandDraftErrorOpen(false)}
+            >
+              <Typography>
+                Вы не можете расформировать команду в режиме драфта
               </Typography>
             </CustomModal>
             <CustomModal
