@@ -410,7 +410,7 @@ namespace Team13.HitsClass.App.Tests
                 await _teamAssignmentService.PatchTeamAssignment(assignment.Id, dto)
             );
 
-            exception.Message.Should().Be("Deadline must be in the future.");
+            exception.Message.Should().Be("Срок сдачи не может быть в прошлом.");
         }
 
         [Fact]
@@ -432,7 +432,7 @@ namespace Team13.HitsClass.App.Tests
 
             exception
                 .Message.Should()
-                .Be("Deadline cannot be 00:00. Always choose 23:59 over midnight.");
+                .Be("Срок сдачи не может быть равен 00:00. Выберите лучше 23:59.");
         }
 
         [Fact]

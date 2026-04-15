@@ -23,10 +23,6 @@ import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
 import { useRerender } from '../../../../../helpers/useRerender.ts';
 
-type EditTeamForm = {
-  name: string;
-};
-
 type EditTeamModalProps = {
   assignmentId: number;
   teamId: number;
@@ -94,7 +90,8 @@ export const EditTeamModal = ({
                   disabled={
                     nameInputRef.current?.value.trim() ===
                       teamQuery.data.name.trim() ||
-                    nameInputRef.current?.value.trim() === ''
+                    nameInputRef.current?.value.trim() === '' ||
+                    !nameInputRef.current
                   }
                   onClick={async () => {
                     await updateTeamName(
