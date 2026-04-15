@@ -248,8 +248,7 @@ namespace Team13.HitsClass.App.Features.Teams
 
             return saved.ToTeamDto();
         }
-            
-            
+
         public async Task<TeamDto> CreateTeamAsTeacher(int assignmentId, CreateTeamAsTeacherDto dto)
         {
             var userId = userAccessor.GetUserId();
@@ -329,13 +328,10 @@ namespace Team13.HitsClass.App.Features.Teams
             var saved = await dbContext
                 .Teams.Include(t => t.Captain)
                 .Include(t => t.Members)
-                .GetOne(Team.HasId(teamId));
+                .GetOne(Domain.Team.HasId(team.Id));
 
             return saved.ToTeamDto();
         }
-        
-        
-               
 
         public async Task DisbandTeam(int teamId)
         {

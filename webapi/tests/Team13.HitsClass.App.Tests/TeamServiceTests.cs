@@ -566,7 +566,7 @@ public class TeamServiceTests : AppServiceTestBase
         result.Members.Should().Contain(m => m.Id == captain.Id);
         result.Captain.Id.Should().Be(student.Id);
     }
-    
+
     [Fact]
     public async Task PassCaptainRole_AsCourseTeacher_ChangesCaptain()
     {
@@ -654,8 +654,9 @@ public class TeamServiceTests : AppServiceTestBase
 
         var exception = await Assert.ThrowsAsync<AccessDeniedException>(async () =>
             await _teamService.PassCaptainRole(teamId, student.Id)
+        );
     }
-    
+
     [Fact]
     public async Task PassCaptainRole_TeamsAreFrozen_ThrowsValidationException()
     {
@@ -681,7 +682,7 @@ public class TeamServiceTests : AppServiceTestBase
         var student = await CreateUser("student@gmail.com");
         var assignment = await CreateTeamAssignmentWithDistribution(
             course.Id,
-            TeamDistributionType.ByTeacher,
+            TeamDistributionType.ByTeacher
         );
         var teamId = assignment.Teams.First().Id;
 
@@ -699,10 +700,10 @@ public class TeamServiceTests : AppServiceTestBase
             await _teamService.PassCaptainRole(999, student.Id)
         );
     }
-    
+
     #endregion
-        
-    
+
+
     #region CreateTeamAsTeacher Tests
 
     [Fact]
