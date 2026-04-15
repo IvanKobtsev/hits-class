@@ -573,7 +573,7 @@ public class TeamServiceTests : AppServiceTestBase
         var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
 
         result.Should().NotBeNull();
-        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == student.Id);
         result.Members.Should().Contain(m => m.Id == captain.Id);
         result.Captain.Id.Should().Be(student.Id);
     }
@@ -599,7 +599,7 @@ public class TeamServiceTests : AppServiceTestBase
         var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
 
         result.Should().NotBeNull();
-        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == student.Id);
         result.Members.Should().Contain(m => m.Id == captain.Id);
         result.Captain.Id.Should().Be(student.Id);
     }
@@ -623,7 +623,7 @@ public class TeamServiceTests : AppServiceTestBase
         var result = await _teamService.PassCaptainRole(newTeam.Id, student.Id);
 
         result.Should().NotBeNull();
-        result.Members.Should().NotContain(m => m.Id == student.Id);
+        result.Members.Should().Contain(m => m.Id == student.Id);
         result.Members.Should().Contain(m => m.Id == captain.Id);
         result.Captain.Id.Should().Be(student.Id);
     }

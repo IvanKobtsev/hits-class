@@ -239,9 +239,6 @@ namespace Team13.HitsClass.App.Features.Teams
                 );
 
             var newCaptain = await dbContext.Users.GetOne(User.HasId(newCaptainId));
-            var oldCaptain = await dbContext.Users.GetOne(User.HasId(team.CaptainId));
-            team.Members.Remove(newCaptain);
-            team.Members.Add(oldCaptain);
             team.CaptainId = newCaptainId;
             await dbContext.SaveChangesAsync();
 
