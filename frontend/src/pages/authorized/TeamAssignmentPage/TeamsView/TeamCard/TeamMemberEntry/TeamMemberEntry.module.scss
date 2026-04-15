@@ -55,6 +55,14 @@
     }
   }
 
+  &.blue {
+    background-color: #59afff;
+
+    &.captain {
+      background-color: #e1f2ff;
+    }
+  }
+
   .groupNumber {
     width: 42px;
     flex: 0 0 auto;

@@ -80,5 +80,11 @@ namespace Team13.HitsClass.App.Features.Submission
         {
             return await submissionService.MarkSubmission(id, dto);
         }
+
+        [HttpGet("teams/{teamId:int}/submission")]
+        public async Task<TeamSubmissionDto> GetTeamSubmission([FromRoute] int teamId)
+        {
+            return await submissionService.GetTeamSubmission(teamId);
+        }
     }
 }

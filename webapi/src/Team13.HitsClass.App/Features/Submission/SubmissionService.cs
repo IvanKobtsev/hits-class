@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Submission.Dto;
 using Team13.HitsClass.App.Features.Submission.Extensions;
+using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.App.Utils;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
@@ -281,5 +282,45 @@ public class SubmissionService(
         await dbContext.SaveChangesAsync();
 
         return submission.ToSubmissionDto();
+    }
+
+    public async Task<TeamSubmissionDto> GetTeamSubmission(int teamId)
+    {
+        var team = await dbContext
+            .Teams.Include(t => t.Members)
+            .Include(t => t.Captain)
+            .GetOne(Team.HasId(teamId));
+        var teamAssignment = await dbContext.Publications.FirstOrDefaultAsync(p =>
+            p.Id == team.PublicationId
+        );
+
+        var attachments = new List<Attachment>();
+        var members = new List<UserWithMarkDto>();
+
+        foreach (var member in team.Members)
+        {
+            attachments.AddRange(
+                await dbContext
+                    .Submissions.Include(s => s.Attachments)
+                    .Where(s => s.AuthorId == member.Id)
+                    .SelectMany(s => s.Attachments)
+                    .ToListAsync()
+            );
+
+            var submission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
+                s.AuthorId == member.Id && s.PublicationId == teamAssignment.Id
+            );
+
+            members.Add(new UserWithMarkDto { User = member.ToUserDto(), Mark = submission?.Mark });
+        }
+
+        return new TeamSubmissionDto
+        {
+            TeamId = team.Id,
+            TeamName = team.Name,
+            Attachments = attachments,
+            Members = members,
+            Captain = team.Captain.ToUserDto(),
+        };
     }
 }

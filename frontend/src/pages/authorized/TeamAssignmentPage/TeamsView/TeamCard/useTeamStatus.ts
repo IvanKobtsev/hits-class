@@ -10,7 +10,6 @@ export function useTeamStatus(
   const isRed =
     !!payload.maxTeamSize && teamDto.members.length > payload.maxTeamSize;
   const isYellow = teamDto.members.length < (payload.minTeamSize ?? 1);
-  const isGreen = !isRed && !isYellow;
 
   return isRed ? 'red' : isYellow ? 'yellow' : 'green';
 }

@@ -12,6 +12,7 @@ import { PrivateCommentView } from '../AssignmentPage/PrivateCommentView/Private
 import { TeamsViewAsTeacher } from './TeamsView/TeamsViewAsTeacher.tsx';
 import { TeamsViewAsStudent } from './TeamsView/TeamsViewAsStudent.tsx';
 import { Links } from '../../../application/constants/links.ts';
+import { TeamSubmissionsView } from './TeamSubmissionsView/TeamSubmissionsView.tsx';
 
 type TabValue = 'assignment' | 'submissions' | 'teams';
 
@@ -32,7 +33,7 @@ export const TeamAssignmentPage = () => {
     <div className={styles.page} data-test-id="TeamAssignmentPage">
       <div className={styles.tabsWrapper}>
         <Tabs
-          value={params.queryParams.tab}
+          value={params.queryParams.tab ?? 'assignment'}
           onChange={(_, v: TabValue) => params.setQueryParams({ tab: v })}
           className={styles.tabs}
           data-test-id="AssignmentPage-tabs"
@@ -56,7 +57,7 @@ export const TeamAssignmentPage = () => {
           )}
         </Tabs>
       </div>
-      {params.queryParams.tab === 'assignment' && (
+      {(params.queryParams.tab ?? 'assignment') === 'assignment' && (
         <div className={styles.grid}>
           <div className={styles.left}>
             <TeamAssignmentView
@@ -82,7 +83,7 @@ export const TeamAssignmentPage = () => {
       {params.queryParams.tab === 'teams' &&
         (isTeacher ? <TeamsViewAsTeacher /> : <TeamsViewAsStudent />)}
       {params.queryParams.tab === 'submissions' && isTeacher && (
-        <div className={styles.submissionsLayout}></div>
+        <TeamSubmissionsView />
       )}
     </div>
   );

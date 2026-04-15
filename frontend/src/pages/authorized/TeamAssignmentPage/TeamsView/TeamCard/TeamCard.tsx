@@ -11,23 +11,23 @@ import YellowStatusIcon from 'assets/icons/yellow-status.svg?react';
 import GreenStatusIcon from 'assets/icons/green-status.svg?react';
 import { TeamMemberEntry } from './TeamMemberEntry/TeamMemberEntry.tsx';
 import TruncatingContainer from '../../../../../components/uikit/truncatingContainer/TruncatingContainer.tsx';
-import { Links } from 'application/constants/links.ts';
 import { useTeamStatus } from './useTeamStatus.ts';
 
 interface TeamCardProps {
   teamDto: TeamDto;
   assignment: PublicationDto;
   myTeam?: boolean;
-  teacherView?: boolean;
+  onClick?: () => void;
+  forceHideDetails?: boolean;
 }
 
 export function TeamCard({
   teamDto,
   assignment,
   myTeam,
-  teacherView,
+  onClick,
+  forceHideDetails,
 }: TeamCardProps) {
-  const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const payload = assignment.publicationPayload as TeamAssignmentPayload;
   const teamStatus = useTeamStatus(teamDto, payload);
 
@@ -36,17 +36,17 @@ export function TeamCard({
       className={clsx(
         styles.TeamCard,
         myTeam && styles.myTeam,
-        (teacherView || myTeam) && styles.clickable,
+        !!onClick && styles.clickable,
         {
+          [styles.blue]:
+            forceHideDetails ||
+            (teamStatus === 'green' && payload.areTeamsFrozen),
           [styles.green]: teamStatus === 'green',
           [styles.yellow]: teamStatus === 'yellow',
           [styles.red]: teamStatus === 'red',
         },
       )}
-      onClick={() => {
-        if (!payload.areTeamsFrozen)
-          params.setQueryParams({ teamId: teamDto.id });
-      }}
+      onClick={onClick}
     >
       <div className={styles.header}>
         <div className={styles.teamTitle}>
@@ -55,16 +55,24 @@ export function TeamCard({
         {myTeam && <span className={styles.myTeam}>[моя команда]</span>}
         <div className={styles.participantsNumber}>
           {teamDto.members.length}
-          {!!payload.maxTeamSize && !payload.areTeamsFrozen
+          {!!payload.maxTeamSize && !payload.areTeamsFrozen && !forceHideDetails
             ? `/${payload.maxTeamSize}`
             : null}
         </div>
       </div>
       <div className={styles.separator} />
-      <TeamMembersList color={teamStatus} teamDto={teamDto} payload={payload} />
-      {(teamStatus === 'green' && payload.areTeamsFrozen) || (
-        <TeamStatus teamDto={teamDto} payload={payload} />
-      )}
+      <TeamMembersList
+        color={
+          forceHideDetails || (teamStatus === 'green' && payload.areTeamsFrozen)
+            ? 'blue'
+            : teamStatus
+        }
+        teamDto={teamDto}
+        payload={payload}
+        hideExtraSlots={forceHideDetails}
+      />
+      {(teamStatus === 'green' && payload.areTeamsFrozen) ||
+        forceHideDetails || <TeamStatus teamDto={teamDto} payload={payload} />}
     </div>
   );
 }
@@ -73,10 +81,12 @@ export function TeamMembersList({
   teamDto,
   color,
   payload,
+  hideExtraSlots,
 }: {
   teamDto: TeamDto;
-  color?: 'red' | 'green' | 'yellow';
+  color?: 'red' | 'green' | 'yellow' | 'blue';
   payload: TeamAssignmentPayload;
+  hideExtraSlots?: boolean;
 }) {
   const numberOfMembers = teamDto.members.length;
   const numberOfSlots = !payload.maxTeamSize
@@ -86,7 +96,7 @@ export function TeamMembersList({
     : payload.maxTeamSize;
   const members: (UserDto | null)[] = [
     ...teamDto.members,
-    ...(!payload.areTeamsFrozen
+    ...(!payload.areTeamsFrozen && !hideExtraSlots
       ? Array.from({ length: numberOfSlots - numberOfMembers }, () => null)
       : []),
   ].filter((m) => !m || m.id !== teamDto.captain.id);
@@ -94,7 +104,7 @@ export function TeamMembersList({
   return (
     <>
       <TeamMemberEntry member={teamDto.captain} color={color} isCaptain />
-      {(members.length === 0 && payload.areTeamsFrozen) || (
+      {(members.length === 0 && (payload.areTeamsFrozen || hideExtraSlots)) || (
         <div className={styles.otherMembers}>
           {members.map((member) => (
             <TeamMemberEntry member={member} color={color} />

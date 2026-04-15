@@ -67,7 +67,11 @@ export function TeamsViewAsTeacher() {
               key={t.id}
               teamDto={t}
               assignment={publication}
-              teacherView={!payload.areTeamsFrozen}
+              onClick={
+                !payload.areTeamsFrozen
+                  ? () => params.setQueryParams({ teamId: t.id })
+                  : undefined
+              }
             />
           ))}
         </div>

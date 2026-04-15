@@ -86,6 +86,22 @@
       border: 2px rgb(184 197 0 / 0.5) solid;
     }
   }
+
+  &.blue {
+    background-color: #597fff;
+
+    .participantsNumber {
+      color: #fff;
+    }
+
+    .header .teamTitle {
+      color: #fff;
+    }
+
+    .separator {
+      background-color: rgb(255 255 255 / 0.50);
+    }
+  }
 }
 
 .otherMembers {

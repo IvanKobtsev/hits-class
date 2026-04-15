@@ -1,0 +1,13 @@
+@use "src/styles/variables" as *;
+@use "src/styles/mixins" as *;
+
+.TeamSubmissionsView {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+

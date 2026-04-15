@@ -58,6 +58,10 @@ export function TeamsViewAsStudent() {
               key={myTeamId}
               teamDto={teamsQuery.data.find((t) => t.id === myTeamId)!}
               assignment={publication}
+              onClick={() => {
+                if (!payload.areTeamsFrozen)
+                  params.setQueryParams({ teamId: myTeamId });
+              }}
               myTeam
             />
           )}

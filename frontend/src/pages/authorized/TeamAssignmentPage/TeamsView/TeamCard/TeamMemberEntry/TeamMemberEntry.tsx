@@ -6,7 +6,7 @@ import TruncatingContainer from '../../../../../../components/uikit/truncatingCo
 interface TeamMemberEntryProps {
   member?: UserDto | null;
   isCaptain?: boolean;
-  color?: 'green' | 'yellow' | 'red';
+  color?: 'green' | 'yellow' | 'red' | 'blue';
 }
 
 export function TeamMemberEntry({
@@ -24,6 +24,7 @@ export function TeamMemberEntry({
           [styles.green]: color === 'green',
           [styles.yellow]: color === 'yellow',
           [styles.red]: color === 'red',
+          [styles.blue]: color === 'blue',
         },
       )}
     >
