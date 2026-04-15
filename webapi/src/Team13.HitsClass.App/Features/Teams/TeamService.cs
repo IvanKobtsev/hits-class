@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Notifications;
@@ -472,6 +473,154 @@ namespace Team13.HitsClass.App.Features.Teams
             return team == null
                 ? throw new PersistenceResourceNotFoundException("Team not found.")
                 : team.ToTeamDto();
+        }
+
+        public async Task<List<TeamDto>> DistributeRandomly(int assignmentId)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var publication = await dbContext
+                .Publications.Include(p => p.Course)
+                    .ThenInclude(c => c.Students)
+                .Include(p => p.Course)
+                    .ThenInclude(c => c.Teachers)
+                .Include(p => p.Teams!)
+                    .ThenInclude(t => t.Members)
+                .GetOne(Publication.HasId(assignmentId));
+
+            if (publication.Type != PublicationType.TeamAssignment)
+                throw new ValidationException("Only team assignments can have teams.");
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var hasAccess =
+                publication.Course.OwnerId == userId
+                || publication.Course.Teachers.Any(t => t.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher]);
+
+            if (!hasAccess)
+                throw new AccessDeniedException("Only teachers can distribute teams.");
+
+            var payload = (TeamAssignmentPayload)publication.PublicationPayload;
+
+            if (payload.DistributionType != TeamDistributionType.Random)
+                throw new ValidationException("Distribution type must be Random.");
+
+            if (publication.Teams!.Count > 0)
+                throw new ConflictException("Teams have already been distributed.");
+
+            var privilegedRoleIds = await dbContext
+                .Roles.Where(r => r.Name == UserRoles.Admin || r.Name == UserRoles.Teacher)
+                .Select(r => r.Id)
+                .ToListAsync();
+
+            var privilegedUserIds = await dbContext
+                .UserRoles.Where(ur => privilegedRoleIds.Contains(ur.RoleId))
+                .Select(ur => ur.UserId)
+                .Distinct()
+                .ToListAsync();
+
+            var teacherIds = publication.Course.Teachers.Select(t => t.Id).ToHashSet();
+            var students = publication
+                .Course.Students.Where(s =>
+                    !privilegedUserIds.Contains(s.Id)
+                    && !teacherIds.Contains(s.Id)
+                    && s.Id != publication.Course.OwnerId
+                )
+                .ToList();
+            if (students.Count == 0)
+                return [];
+
+            var n = students.Count;
+
+            int numTeams;
+            if (payload.MaxTeamSize.HasValue)
+            {
+                var mean = ((payload.MinTeamSize ?? 0) + payload.MaxTeamSize.Value) / 2.0;
+                numTeams = (int)Math.Floor(n / mean);
+            }
+            else
+            {
+                numTeams = (int)Math.Floor(n / 5.0);
+            }
+
+            numTeams = Math.Max(numTeams, 1);
+
+            Random.Shared.Shuffle(
+                System.Runtime.InteropServices.CollectionsMarshal.AsSpan(students)
+            );
+
+            var largeTeamSize = (int)Math.Ceiling((double)n / numTeams);
+            var smallTeamSize = (int)Math.Floor((double)n / numTeams);
+            var largeTeamCount = n % numTeams;
+
+            string[] animalNames =
+            [
+                "Ежи",
+                "Коалы",
+                "Жирафы",
+                "Тигры",
+                "Панды",
+                "Лисы",
+                "Волки",
+                "Медведи",
+                "Зебры",
+                "Совы",
+                "Пингвины",
+                "Кенгуру",
+                "Обезьяны",
+                "Слоны",
+                "Орлы",
+                "Дельфины",
+                "Акулы",
+                "Черепахи",
+                "Попугаи",
+                "Лемуры",
+                "Леопарды",
+                "Гепарды",
+                "Носороги",
+                "Бегемоты",
+                "Крокодилы",
+                "Фламинго",
+                "Павлины",
+                "Рыси",
+                "Ягуары",
+                "Бобры",
+            ];
+
+            var createdTeams = new List<Domain.Team>();
+            var offset = 0;
+
+            for (var i = 0; i < numTeams; i++)
+            {
+                var teamSize = i < largeTeamCount ? largeTeamSize : smallTeamSize;
+                var members = students.Skip(offset).Take(teamSize).ToList();
+                offset += teamSize;
+
+                var name = i < animalNames.Length ? animalNames[i] : $"Команда {i + 1}";
+                var captainId = members[0].Id;
+
+                var team = new Domain.Team
+                {
+                    Name = name,
+                    CaptainId = captainId,
+                    PublicationId = assignmentId,
+                    Members = members,
+                };
+
+                createdTeams.Add(team);
+                dbContext.Teams.Add(team);
+            }
+
+            await dbContext.SaveChangesAsync();
+
+            var teamIds = createdTeams.Select(t => t.Id).ToList();
+            var saved = await dbContext
+                .Teams.Include(t => t.Captain)
+                .Include(t => t.Members)
+                .Where(t => teamIds.Contains(t.Id))
+                .ToListAsync();
+
+            return saved.Select(t => t.ToTeamDto()).ToList();
         }
 
         public async Task<TeamDto> PatchTeamName(int teamId, string teamName)

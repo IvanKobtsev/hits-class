@@ -373,8 +373,6 @@ public abstract class TestBase<TDbContext>
          */
     }
 
-    private static Assembly[] _assemblies = AppDomain.CurrentDomain.GetAssemblies();
-
     protected virtual void RegisterDbContext(
         IServiceCollection serviceCollection,
         string connectionString
@@ -382,7 +380,7 @@ public abstract class TestBase<TDbContext>
     {
         serviceCollection.AddDomainEventsWithMediatR(config =>
         {
-            config.RegisterServicesFromAssemblies(_assemblies);
+            config.RegisterServicesFromAssemblies(GetMediatRAssemblies());
         });
         serviceCollection
             .AddDbContext<TDbContext>(
@@ -395,6 +393,23 @@ public abstract class TestBase<TDbContext>
             )
             .AddScoped<Func<TDbContext>>((provider) => () => CreateDbContext(provider))
             .RegisterRetryHelper();
+    }
+
+    private static Assembly[] GetMediatRAssemblies()
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var result = new List<Assembly>(assemblies.Length);
+
+        foreach (var assembly in assemblies)
+        {
+            if (assembly.IsDynamic)
+                continue;
+            if (assembly.GetName().Name == "DynamicProxyGenAssembly2")
+                continue;
+            result.Add(assembly);
+        }
+
+        return result.ToArray();
     }
 
     private Action<ILoggingBuilder> ConfigureXunitLogger()
