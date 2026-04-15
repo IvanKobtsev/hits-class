@@ -4,6 +4,7 @@ using Team13.HitsClass.App.Views.Emails.AccountVerification;
 using Team13.HitsClass.App.Views.Emails.NewAnnouncementNotification;
 using Team13.HitsClass.App.Views.Emails.NewAssignmentNotification;
 using Team13.HitsClass.App.Views.Emails.TeamDisbanded;
+using Team13.HitsClass.App.Views.Emails.TeamMemberRemoved;
 using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
@@ -108,5 +109,28 @@ public class NotificationService(
                 }
             );
         }
+    }
+
+    public async Task TeamMemberRemovedNotification(TeamMemberRemovedNotificationDto dto)
+    {
+        var teamsUrl =
+            configuration["General:SiteUrl"]
+            + "/courses/"
+            + dto.CourseId
+            + "/team-assignments/"
+            + dto.AssignmentId
+            + "?tab=teams";
+
+        await mailSender.Send(
+            dto.RecipientEmail,
+            new TeamMemberRemovedEmailModel
+            {
+                RecipientLegalName = dto.RecipientLegalName,
+                TeamName = dto.TeamName,
+                AssignmentTitle = dto.AssignmentTitle,
+                CourseTitle = dto.CourseTitle,
+                TeamsUrl = teamsUrl,
+            }
+        );
     }
 }

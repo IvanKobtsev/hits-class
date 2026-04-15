@@ -186,10 +186,23 @@ namespace Team13.HitsClass.App.Features.Teams
             team.Members.Remove(student);
             await dbContext.SaveChangesAsync();
 
+            var notificationDto = new TeamMemberRemovedNotificationDto
+            {
+                RecipientEmail = student.Email,
+                RecipientLegalName = student.LegalName,
+                TeamName = team.Name,
+                AssignmentTitle = payload.Title,
+                CourseTitle = team.Publication.Course.Title,
+                CourseId = team.Publication.CourseId,
+                AssignmentId = team.PublicationId,
+            };
+
             var saved = await dbContext
                 .Teams.Include(t => t.Captain)
                 .Include(t => t.Members)
                 .GetOne(Team.HasId(teamId));
+
+            await notificationService.TeamMemberRemovedNotification(notificationDto);
 
             return saved.ToTeamDto();
         }

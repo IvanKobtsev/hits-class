@@ -14,6 +14,8 @@ interface TeamMemberEntryProps {
   color?: 'green' | 'yellow' | 'red' | 'blue';
   canAssignCaptain?: boolean;
   onAssignCaptain?: (member: UserDto) => void | Promise<void>;
+  canRemoveMember?: boolean;
+  onRemoveMember?: (member: UserDto) => void | Promise<void>;
   mark?: string | null;
   form?: AdvancedFormReturnType<Record<string, string>>;
 }
@@ -26,6 +28,8 @@ export function TeamMemberEntry({
   form,
   canAssignCaptain,
   onAssignCaptain,
+  canRemoveMember,
+  onRemoveMember,
 }: TeamMemberEntryProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
@@ -44,6 +48,17 @@ export function TeamMemberEntry({
     handleMenuClose();
     await onAssignCaptain(member);
   };
+
+  const handleRemoveMember = async () => {
+    if (!member || !onRemoveMember) return;
+    handleMenuClose();
+    await onRemoveMember(member);
+  };
+
+  const canShowAssignCaptainAction = !!member && !isCaptain && !!canAssignCaptain
+    && !!onAssignCaptain;
+  const canShowRemoveMemberAction = !!member && !!canRemoveMember && !!onRemoveMember;
+  const canShowActions = canShowAssignCaptainAction || canShowRemoveMemberAction;
 
   return (
     <div
@@ -77,7 +92,7 @@ export function TeamMemberEntry({
               />
             </>
           )}
-          {canAssignCaptain && !isCaptain && onAssignCaptain && (
+          {canShowActions && (
             <>
               <div className={styles.memberActions}>
                 <IconButton
@@ -93,9 +108,16 @@ export function TeamMemberEntry({
                 open={Boolean(menuAnchor)}
                 onClose={handleMenuClose}
               >
-                <MenuItem onClick={() => void handleAssignCaptain()}>
-                  Назначить капитаном
-                </MenuItem>
+                {canShowAssignCaptainAction && (
+                  <MenuItem onClick={() => void handleAssignCaptain()}>
+                    Назначить капитаном
+                  </MenuItem>
+                )}
+                {canShowRemoveMemberAction && (
+                  <MenuItem onClick={() => void handleRemoveMember()}>
+                    Исключить из команды
+                  </MenuItem>
+                )}
               </Menu>
             </>
           )}
