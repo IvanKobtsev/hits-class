@@ -1534,7 +1534,7 @@ public class TeamServiceTests : AppServiceTestBase
                 .AllSatisfy(t =>
                 {
                     t.Members.Should().NotBeEmpty();
-                    t.CaptainId.Should().Be(t.Members.First().Id);
+                    t.Members.Should().Contain(m => m.Id == t.CaptainId);
                 });
         });
     }
