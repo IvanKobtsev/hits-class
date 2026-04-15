@@ -60,6 +60,10 @@ export type CreateTeamAsTeacherTeamQueryParameters = {
   assignmentId: number ;
 }
 
+export type DistributeRandomlyTeamQueryParameters = {
+  assignmentId: number ;
+}
+
 export type UpdateTeamNameTeamQueryParameters = {
   id: number ;
 }
@@ -713,6 +717,57 @@ export function useCreateTeamAsTeacherMutationWithParameters<TContext>(options?:
 return useMutation({
   ...options, 
   mutationFn: (data: CreateTeamAsTeacher__MutationParameters) => Client.createTeamAsTeacher(data.assignmentId ?? options?.parameters?.assignmentId!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function distributeRandomlyUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/distribute-randomly";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function distributeRandomlyMutationKey(assignmentId: number): MutationKey {
+  return trimArrayEnd([
+      'TeamClient',
+      'distributeRandomly',
+      assignmentId as any,
+    ]);
+}
+
+/**
+ * Randomly distribute students into teams for a team assignment
+ */
+export function useDistributeRandomlyMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.TeamDto[], unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.TeamDto[], unknown, void, TContext> {
+  const key = distributeRandomlyMutationKey(assignmentId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: () => Client.distributeRandomly(assignmentId),
+    mutationKey: key,
+  });
+}
+  
+type DistributeRandomly__MutationParameters = DistributeRandomlyTeamQueryParameters
+
+/**
+ * Randomly distribute students into teams for a team assignment
+ */
+export function useDistributeRandomlyMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.TeamDto[], unknown, DistributeRandomly__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: DistributeRandomlyTeamQueryParameters}): UseMutationResult<Types.TeamDto[], unknown, DistributeRandomly__MutationParameters, TContext> {
+  const key = distributeRandomlyMutationKey(options?.parameters?.assignmentId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: DistributeRandomly__MutationParameters) => Client.distributeRandomly(data.assignmentId ?? options?.parameters?.assignmentId!),
   mutationKey: key,
 });
 }
