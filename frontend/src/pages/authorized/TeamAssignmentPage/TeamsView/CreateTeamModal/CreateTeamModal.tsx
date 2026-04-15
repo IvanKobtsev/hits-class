@@ -38,9 +38,8 @@ export const CreateTeamModal = ({
       await mutateAsync({ name: data.name.trim() });
       onClose();
       await queryClient.invalidateQueries({
-        queryKey: QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(
-          assignmentId,
-        ),
+        queryKey:
+          QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(assignmentId),
       });
     },
     { shouldResetOnSuccess: true },

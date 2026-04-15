@@ -49,7 +49,7 @@ vi.mock('./EditAnnouncementModal/EditAnnouncementModal', () => ({
 }));
 
 const mockEditAssignmentModal = vi.fn();
-vi.mock('./EditAssignmentModal/EditAssignmentModal', () => ({
+vi.mock('./EditTeamAssignmentModal/EditTeamAssignmentModal', () => ({
   EditAssignmentModal: (props: { isOpen: boolean }) => {
     mockEditAssignmentModal(props);
     return props.isOpen ? <div data-test-id="EditAssignmentModal" /> : null;
@@ -246,7 +246,9 @@ describe('PublicationListItem', () => {
 
   test('renders deadline time alongside date', () => {
     renderPublicationListItem(mockAssignment);
-    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    const chip = screen.getByTestId(
+      `PublicationItem-deadline-chip-${mockAssignment.id}`,
+    );
     expect(chip).toHaveTextContent(/\d{2}:\d{2}/);
   });
 
@@ -258,7 +260,9 @@ describe('PublicationListItem', () => {
         deadlineUtc: '2020-01-01T00:00:00Z',
       } as any),
     });
-    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    const chip = screen.getByTestId(
+      `PublicationItem-deadline-chip-${mockAssignment.id}`,
+    );
     expect(chip.className).toMatch(/deadlineChipOverdue/);
   });
 
@@ -270,7 +274,9 @@ describe('PublicationListItem', () => {
         deadlineUtc: '2099-12-31T23:59:00Z',
       } as any),
     });
-    const chip = screen.getByTestId(`PublicationItem-deadline-chip-${mockAssignment.id}`);
+    const chip = screen.getByTestId(
+      `PublicationItem-deadline-chip-${mockAssignment.id}`,
+    );
     expect(chip.className).not.toMatch(/deadlineChipOverdue/);
   });
 
@@ -428,7 +434,7 @@ describe('PublicationListItem', () => {
     });
   });
 
-  test('clicking Редактировать on assignment opens EditAssignmentModal', async () => {
+  test('clicking Редактировать on assignment opens EditTeamAssignmentModal', async () => {
     const user = userEvent.setup();
     renderPublicationListItem(mockAssignment);
 
@@ -461,7 +467,7 @@ describe('PublicationListItem', () => {
     });
   });
 
-  test('EditAssignmentModal receives pre-filled props from publication', async () => {
+  test('EditTeamAssignmentModal receives pre-filled props from publication', async () => {
     const user = userEvent.setup();
     renderPublicationListItem(mockAssignment);
 

@@ -9,6 +9,11 @@
   justify-content: center;
   align-items: center;
   border-radius: 4px;
+  background-color: #F5F5F5;
+
+  &.captain {
+    border: 1px solid #E9E9E9;
+  }
 
   &.member {
     display: flex;

@@ -61,21 +61,28 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
             if (patchAssignmentDto.Payload is { DeadlineUtc: not null })
             {
                 if (patchAssignmentDto.Payload.DeadlineUtc <= DateTime.UtcNow)
-                    throw new ValidationException("Deadline must be in the future.");
+                    throw new ValidationException("Срок сдачи не может быть в прошлом.");
                 if (patchAssignmentDto.Payload.DeadlineUtc.Value is { Hour: 0, Minute: 0 })
                     throw new ValidationException(
-                        "Deadline cannot be 00:00. Always choose 23:59 over midnight."
+                        "Срок сдачи не может быть равен 00:00. Выберите лучше 23:59."
                     );
             }
 
             var minSize = patchAssignmentDto.Payload.MinTeamSize;
             var maxSize = patchAssignmentDto.Payload.MaxTeamSize;
-            if (minSize != null && maxSize != null)
+
+            if (maxSize is > 100 or < 2)
             {
-                if (minSize > maxSize)
-                    throw new ValidationException(
-                        "MaxTeamSize must be bigger or equal to MinTeamSize."
-                    );
+                throw new ValidationException(
+                    "Максимальный размер команды не может быть больше 100 или меньше 2."
+                );
+            }
+
+            if (minSize > maxSize || minSize is > 100)
+            {
+                throw new ValidationException(
+                    "Максимальный размер команды должен быть больше или равен минимальному и не может быть больше 100."
+                );
             }
 
             return await publicationService.PatchPublication(

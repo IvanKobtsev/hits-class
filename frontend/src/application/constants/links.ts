@@ -1,7 +1,9 @@
 import {
   createRoute,
+  NumberParam,
   RequiredNumberParam,
   RequiredStringParam,
+  StringParam,
 } from 'react-router-url-params';
 
 export const Links = {
@@ -29,6 +31,7 @@ export const Links = {
     TeamAssignmentRoutes: createRoute(
       '/courses/:courseId/team-assignments/:assignmentId',
       { courseId: RequiredNumberParam, assignmentId: RequiredNumberParam },
+      { teamId: NumberParam, tab: StringParam },
     ),
     AnnouncementRoutes: createRoute(
       '/courses/:courseId/announcements/:announcementId',

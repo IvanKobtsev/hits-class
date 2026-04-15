@@ -188,6 +188,7 @@ export function initPersister() {
 
 
   addResultTypeFactory('TeamClient___getTeamsForAssignment', (data: any) => Types.initTeamDto(data));
+  addResultTypeFactory('TeamClient___getTeamForAssignment', (data: any) => Types.initTeamDto(data));
 
 
 

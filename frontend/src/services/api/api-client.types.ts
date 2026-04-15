@@ -651,6 +651,8 @@ export function prepareSerializePatchTeamAssignmentDto(_data: PatchTeamAssignmen
   return data as PatchTeamAssignmentDto;
 }
 export interface PatchTeamAssignmentPayloadDto  {
+  title?: string;
+  deadlineUtc?: Date | null;
   minTeamSize?: number | null;
   maxTeamSize?: number | null;
   distributionType?: TeamDistributionType;
@@ -664,6 +666,7 @@ export function deserializePatchTeamAssignmentPayloadDto(json: string): PatchTea
 }
 export function initPatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayloadDto) {
   if (_data) {
+    _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
     _data.distributionType = _data["distributionType"];
     _data.submissionType = _data["submissionType"];
   }
@@ -677,6 +680,7 @@ export function serializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmen
 }
 export function prepareSerializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayloadDto): PatchTeamAssignmentPayloadDto {
   const data: Record<string, any> = { ..._data };
+  data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
   return data as PatchTeamAssignmentPayloadDto;
 }
 export interface SubmissionDto  {

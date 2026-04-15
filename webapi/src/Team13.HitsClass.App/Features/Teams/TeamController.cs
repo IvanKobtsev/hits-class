@@ -15,6 +15,15 @@ namespace Team13.HitsClass.App.Features.Teams
             await teamService.GetTeamsForAssignment(assignmentId);
 
         /// <summary>
+        /// Get a team for specific team assignment
+        /// </summary>
+        [HttpGet("team-assignments/{assignmentId:int}/teams/{teamId:int}")]
+        public async Task<TeamDto> GetTeamForAssignment(
+            [FromRoute] int assignmentId,
+            [FromRoute] int teamId
+        ) => await teamService.GetTeamForAssignment(assignmentId, teamId);
+
+        /// <summary>
         /// Create a team for a team assignment
         /// </summary>
         [HttpPost("team-assignments/{assignmentId:int}/teams")]
@@ -64,5 +73,12 @@ namespace Team13.HitsClass.App.Features.Teams
             [FromRoute] int assignmentId,
             [FromBody] CreateTeamAsTeacherDto dto
         ) => await teamService.CreateTeamAsTeacher(assignmentId, dto);
+
+        /// <summary>
+        /// Update team name (captain or teacher only)
+        /// </summary>
+        [HttpPatch("teams/{id:int}/name")]
+        public async Task<TeamDto> UpdateTeamName([FromRoute] int id, [FromBody] string newName) =>
+            await teamService.PatchTeamName(id, newName);
     }
 }

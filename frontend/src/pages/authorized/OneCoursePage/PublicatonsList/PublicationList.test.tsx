@@ -9,7 +9,7 @@ vi.mock(
 );
 
 vi.mock(
-  './PublicationListItem/EditAssignmentModal/EditAssignmentModal',
+  './PublicationListItem/EditTeamAssignmentModal/EditTeamAssignmentModal',
   () => ({ EditAssignmentModal: () => null }),
 );
 
@@ -29,16 +29,31 @@ vi.mock('application/constants/links', () => ({
         useParams: () => ({ courseId: 1 }),
       },
       AssignmentRoutes: {
-        link: ({ courseId, assignmentId }: { courseId: number; assignmentId: number }) =>
-          `/courses/${courseId}/personal-assignments/${assignmentId}`,
+        link: ({
+          courseId,
+          assignmentId,
+        }: {
+          courseId: number;
+          assignmentId: number;
+        }) => `/courses/${courseId}/personal-assignments/${assignmentId}`,
       },
       TeamAssignmentRoutes: {
-        link: ({ courseId, assignmentId }: { courseId: number; assignmentId: number }) =>
-          `/courses/${courseId}/team-assignments/${assignmentId}`,
+        link: ({
+          courseId,
+          assignmentId,
+        }: {
+          courseId: number;
+          assignmentId: number;
+        }) => `/courses/${courseId}/team-assignments/${assignmentId}`,
       },
       AnnouncementRoutes: {
-        link: ({ courseId, announcementId }: { courseId: number; announcementId: number }) =>
-          `/courses/${courseId}/announcements/${announcementId}`,
+        link: ({
+          courseId,
+          announcementId,
+        }: {
+          courseId: number;
+          announcementId: number;
+        }) => `/courses/${courseId}/announcements/${announcementId}`,
       },
     },
   },

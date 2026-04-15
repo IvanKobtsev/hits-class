@@ -12,17 +12,18 @@ import { useParams } from 'react-router';
 import { useState } from 'react';
 import { CreateTeamAsTeacherModal } from './CreateTeamModal/CreateTeamAsTeacherModal.tsx';
 import { TeamCard } from './TeamCard/TeamCard.tsx';
+import { Loading } from '../../../../components/uikit/suspense/Loading.tsx';
+import { EditTeamModal } from './EditTeamModal/EditTeamModal.tsx';
+import { Links } from '../../../../application/constants/links.ts';
 
 export function TeamsViewAsTeacher() {
-  const { assignmentId, courseId } = useParams();
-  const id = Number(assignmentId);
-  const cid = Number(courseId);
+  const params = Links.Authorized.TeamAssignmentRoutes.useParams();
 
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
-  const { mutateAsync } = useSetFrozenStatusMutation(id);
-  const teamsQuery = useGetTeamsForAssignmentQuery(id);
-  const { data: publication } = useGetPublicationByIdQuery(id);
-  const { data: course } = useGetCourseQuery(cid);
+  const { mutateAsync } = useSetFrozenStatusMutation(params.assignmentId);
+  const teamsQuery = useGetTeamsForAssignmentQuery(params.assignmentId);
+  const { data: publication } = useGetPublicationByIdQuery(params.assignmentId);
+  const { data: course } = useGetCourseQuery(params.courseId);
 
   if (!publication) return null;
 
@@ -47,7 +48,9 @@ export function TeamsViewAsTeacher() {
             await mutateAsync(!payload.areTeamsFrozen);
             await queryClient.invalidateQueries({
               queryKey:
-                QueryFactory.PublicationsQuery.getPublicationByIdQueryKey(id),
+                QueryFactory.PublicationsQuery.getPublicationByIdQueryKey(
+                  params.assignmentId,
+                ),
             });
           }}
         >
@@ -56,22 +59,35 @@ export function TeamsViewAsTeacher() {
         </div>
       </div>
       <h2 className={styles.header}>Команды</h2>
-      <div className={styles.teamsContainer}>
-        {teamsQuery.data?.map((t) => (
-          <TeamCard
-            key={t.id}
-            teamDto={t}
-            assignment={publication}
-            teacherView={!payload.areTeamsFrozen}
-          />
-        ))}
-      </div>
+      <Loading loading={teamsQuery.isLoading} doNotWrapChildren>
+        {teamsQuery.data?.length === 0 && 'Нет команд'}
+        <div className={styles.teamsContainer}>
+          {teamsQuery.data?.map((t) => (
+            <TeamCard
+              key={t.id}
+              teamDto={t}
+              assignment={publication}
+              teacherView={!payload.areTeamsFrozen}
+            />
+          ))}
+        </div>
+      </Loading>
       <CreateTeamAsTeacherModal
-        assignmentId={id}
+        assignmentId={params.assignmentId}
         isOpen={showCreateTeamModal}
         onClose={() => setShowCreateTeamModal(false)}
         students={course?.students ?? []}
       />
+      {params.queryParams.teamId && (
+        <EditTeamModal
+          assignmentId={params.assignmentId}
+          teamId={params.queryParams.teamId}
+          isOpen={!!params.queryParams.teamId}
+          onClose={() => params.setQueryParams({ teamId: undefined })}
+          assignmentPayload={payload}
+          teacherView
+        />
+      )}
     </div>
   );
 }

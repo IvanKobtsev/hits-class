@@ -13,15 +13,16 @@ import { useState } from 'react';
 import { CreateTeamModal } from './CreateTeamModal/CreateTeamModal.tsx';
 import { useGetCurrentUserInfoQuery } from '../../../../services/api/api-client/UserQuery.ts';
 import { Loading } from '../../../../components/uikit/suspense/Loading.tsx';
+import { Links } from 'application/constants/links.ts';
+import { EditTeamModal } from './EditTeamModal/EditTeamModal.tsx';
 
 export function TeamsViewAsStudent() {
-  const { assignmentId } = useParams();
-  const id = Number(assignmentId);
+  const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
-  const teamsQuery = useGetTeamsForAssignmentQuery(id);
+  const teamsQuery = useGetTeamsForAssignmentQuery(params.assignmentId);
   const { data: me } = useGetCurrentUserInfoQuery();
 
-  const { data: publication } = useGetPublicationByIdQuery(id);
+  const { data: publication } = useGetPublicationByIdQuery(params.assignmentId);
 
   if (!publication || !teamsQuery.data) return <Loading loading={true} />;
 
@@ -49,26 +50,38 @@ export function TeamsViewAsStudent() {
         </Button>
       ) : null}
       <h2 className={styles.header}>Команды</h2>
-      <div className={styles.teamsContainer}>
-        {myTeamId && (
-          <TeamCard
-            key={myTeamId}
-            teamDto={teamsQuery.data.find((t) => t.id === myTeamId)!}
-            assignment={publication}
-            myTeam
-          />
-        )}
-        {teamsQuery.data
-          ?.filter((t) => t.id !== myTeamId)
-          .map((t) => (
-            <TeamCard key={t.id} teamDto={t} assignment={publication} />
-          ))}
-      </div>
+      <Loading loading={teamsQuery.isLoading} doNotWrapChildren>
+        {teamsQuery.data?.length === 0 && 'Нет команд'}
+        <div className={styles.teamsContainer}>
+          {myTeamId && (
+            <TeamCard
+              key={myTeamId}
+              teamDto={teamsQuery.data.find((t) => t.id === myTeamId)!}
+              assignment={publication}
+              myTeam
+            />
+          )}
+          {teamsQuery.data
+            ?.filter((t) => t.id !== myTeamId)
+            .map((t) => (
+              <TeamCard key={t.id} teamDto={t} assignment={publication} />
+            ))}
+        </div>
+      </Loading>
       <CreateTeamModal
-        assignmentId={id}
+        assignmentId={params.assignmentId}
         isOpen={showCreateTeamModal}
         onClose={() => setShowCreateTeamModal(false)}
       />
+      {params.queryParams.teamId && (
+        <EditTeamModal
+          assignmentId={params.assignmentId}
+          teamId={params.queryParams.teamId}
+          isOpen={!!params.queryParams.teamId}
+          onClose={() => params.setQueryParams({ teamId: undefined })}
+          assignmentPayload={payload}
+        />
+      )}
     </div>
   );
 }

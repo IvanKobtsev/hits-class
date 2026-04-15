@@ -219,6 +219,7 @@ export const CreateTeamAssignmentModal = ({
                 <RadioButton
                   {...form.register('distributionType')}
                   value={TeamDistributionType.Draft}
+                  disabled={true}
                   title={'Драфт'}
                 />
                 <RadioButton
@@ -229,6 +230,7 @@ export const CreateTeamAssignmentModal = ({
                 <RadioButton
                   {...form.register('distributionType')}
                   value={TeamDistributionType.Random}
+                  disabled={true}
                   title={'Случайное'}
                 />
               </Field>
@@ -253,13 +255,21 @@ export const CreateTeamAssignmentModal = ({
                   title="Минимальный размер команды"
                   fieldClassName={styles.submissionType}
                 >
-                  <Input type={'number'} placeholder={'0'} />
+                  <Input
+                    {...form.register('minTeamSize')}
+                    type={'number'}
+                    placeholder={'0'}
+                  />
                 </Field>
                 <Field
                   title="Максимальный размер команды"
                   fieldClassName={styles.submissionType}
                 >
-                  <Input type={'number'} placeholder={'100'} />
+                  <Input
+                    {...form.register('maxTeamSize')}
+                    type={'number'}
+                    placeholder={'100'}
+                  />
                 </Field>
               </div>
               <Field

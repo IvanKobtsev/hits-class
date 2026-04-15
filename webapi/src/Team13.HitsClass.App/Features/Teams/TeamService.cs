@@ -349,5 +349,64 @@ namespace Team13.HitsClass.App.Features.Teams
 
             return publication.Teams!.Select(t => t.ToTeamDto()).ToList();
         }
+
+        public async Task<TeamDto> GetTeamForAssignment(int assignmentId, int teamId)
+        {
+            var publication = await dbContext
+                .Publications.Include(p => p.Teams!)
+                    .ThenInclude(t => t.Members)
+                .Include(p => p.Teams!)
+                    .ThenInclude(t => t.Captain)
+                .GetOne(Publication.HasId(assignmentId));
+
+            if (publication.Type != PublicationType.TeamAssignment)
+                throw new ValidationException("Only team assignments can have teams.");
+
+            var team = publication.Teams!.FirstOrDefault(t => t.Id == teamId);
+
+            return team == null
+                ? throw new PersistenceResourceNotFoundException("Team not found.")
+                : team.ToTeamDto();
+        }
+
+        public async Task<TeamDto> PatchTeamName(int teamId, string teamName)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var team = await dbContext
+                .Teams.Include(t => t.Members)
+                .Include(t => t.Publication)
+                    .ThenInclude(p => p.Course)
+                        .ThenInclude(c => c.Teachers)
+                .GetOne(Team.HasId(teamId));
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            var isTeacher =
+                team.Publication.Course.OwnerId == userId
+                || team.Publication.Course.Teachers.Any(t => t.Id == userId)
+                || await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher]);
+            var isCaptain = team.CaptainId == userId;
+
+            if (!isTeacher && !isCaptain)
+                throw new AccessDeniedException(
+                    "Only teachers or the team captain can change team's name."
+                );
+
+            var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (!isTeacher && payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            if (
+                dbContext.Teams.Any(t =>
+                    t.Name == teamName && t.PublicationId == team.PublicationId && t.Id != teamId
+                )
+            )
+                throw new ValidationException($"Команда с названием '{teamName}' уже существует.");
+
+            team.Name = teamName;
+            await dbContext.SaveChangesAsync();
+
+            return team.ToTeamDto();
+        }
     }
 }

@@ -94,14 +94,10 @@
 }
 
 .danger-button {
-  color: $danger;
-  background-color: white;
+  color: #fff;
+  background-color: $danger;
   border-color: $danger;
   line-height: 13px;
-}
-
-.danger-button:hover {
-  background-color: $danger-background;
 }
 
 .danger-button:active {

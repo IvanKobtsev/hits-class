@@ -22,6 +22,7 @@ import {
   PublicationDto,
   PublicationType,
   AssignmentPayload,
+  TeamAssignmentPayload,
 } from 'services/api/api-client.types';
 import { clsx } from 'clsx';
 import { useModal } from 'components/uikit/modal/useModal';
@@ -31,6 +32,7 @@ import { useGetCurrentUserInfoQuery } from 'services/api/api-client/UserQuery';
 import { AttachmentsList } from './AttachmentsList/AttachmentsList';
 import { EditAnnouncementModal } from './EditAnnouncementModal/EditAnnouncementModal';
 import { EditAssignmentModal } from './EditAssignmentModal/EditAssignmentModal';
+import { EditTeamAssignmentModal } from './EditTeamAssignmentModal/EditTeamAssignmentModal.tsx';
 import { EditTargetUsersModal } from './EditTargetUsersModal/EditTargetUsersModal';
 import { Link } from 'react-router';
 import { LexicalViewer } from 'components/lexical/LexicalViewer.tsx';
@@ -76,7 +78,9 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   const isAssignment = type === PublicationType.Assignment || isTeamAssignment;
 
   const assignmentData = isAssignment
-    ? (publicationPayload as AssignmentPayload)
+    ? isTeamAssignment
+      ? (publicationPayload as TeamAssignmentPayload)
+      : (publicationPayload as AssignmentPayload)
     : null;
 
   const hasUpdates =
@@ -335,7 +339,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialAttachments={attachments ?? []}
         />
       )}
-      {isEditModalOpen && isAssignment && (
+      {isEditModalOpen && isAssignment && !isTeamAssignment && (
         <EditAssignmentModal
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
@@ -349,6 +353,34 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               : null
           }
           initialAttachments={attachments ?? []}
+        />
+      )}
+      {isEditModalOpen && isTeamAssignment && (
+        <EditTeamAssignmentModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSuccess={() => showSnackbar('Задание обновлено')}
+          publicationId={id}
+          initialTitle={assignmentData?.title ?? ''}
+          initialContent={content}
+          initialDeadlineUtc={
+            assignmentData?.deadlineUtc
+              ? new Date(assignmentData.deadlineUtc)
+              : null
+          }
+          initialAttachments={attachments ?? []}
+          initialSubmissionType={
+            (publicationPayload as TeamAssignmentPayload).submissionType
+          }
+          initialDistributionType={
+            (publicationPayload as TeamAssignmentPayload).distributionType
+          }
+          initialMinSize={
+            (assignmentData as TeamAssignmentPayload).minTeamSize ?? undefined
+          }
+          initialMaxSize={
+            (assignmentData as TeamAssignmentPayload).maxTeamSize ?? undefined
+          }
         />
       )}
       {isTargetUsersModalOpen && (
