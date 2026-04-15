@@ -14,6 +14,11 @@ import { useGetCurrentUserInfoQuery } from '../../../../services/api/api-client/
 import { Loading } from '../../../../components/uikit/suspense/Loading.tsx';
 import { Links } from 'application/constants/links.ts';
 import { EditTeamModal } from './EditTeamModal/EditTeamModal.tsx';
+import {useGetAllInvitationsQuery} from "../../../../services/api/api-client/InvitationQuery.ts";
+import {acceptInvitation, declineInvitation} from "../../../../services/api/api-client/InvitationClient.ts";
+import {queryClient} from "../../../../services/api/query-client-helper.ts";
+import {QueryFactory} from "../../../../services/api";
+import clsx from "clsx";
 
 export function TeamsViewAsStudent() {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
@@ -22,8 +27,9 @@ export function TeamsViewAsStudent() {
   const { data: me } = useGetCurrentUserInfoQuery();
 
   const { data: publication } = useGetPublicationByIdQuery(params.assignmentId);
+  const { data: myInvites, isLoading: invitesLoading } = useGetAllInvitationsQuery({ assignmentId: params.assignmentId });
 
-  if (!publication || !teamsQuery.data) return <Loading loading={true} />;
+  if (!publication || !teamsQuery.data || !myInvites) return <Loading loading={true} />;
 
   const payload = publication.publicationPayload as TeamAssignmentPayload;
   const isAdmin = !!me?.isAdmin;
@@ -35,7 +41,41 @@ export function TeamsViewAsStudent() {
   return (
     <div className={styles.layout}>
       <h2 className={styles.header}>Приглашения</h2>
-      <div className={styles.invites}></div>
+      <div className={styles.invites}>
+        {myInvites.length === 0 && 'Нет приглашений'}
+        {myInvites.map((invite) => (
+          <div key={invite.id} className={styles.invite}>
+            <span>Приглашение в команду {invite.teamName}</span>
+            <div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                  await acceptInvitation(invite.id);
+                  queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
+                  queryClient.invalidateQueries({ queryKey: QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(params.assignmentId) });
+                }}
+                data-test-id="CourseFeedTab-accept-invite-btn"
+                className={clsx(styles.btnPrimary, styles.accept)}
+              >
+                Принять
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={async () => {
+                  await declineInvitation(invite.id);
+                  queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
+                }}
+                data-test-id="CourseFeedTab-decline-invite-btn"
+                className={clsx(styles.btnPrimary, styles.decline)}
+              >
+                Отклонить
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
       {payload.distributionType === TeamDistributionType.Free &&
       !payload.areTeamsFrozen &&
       !myTeamId ? (

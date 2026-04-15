@@ -92,3 +92,33 @@
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
 }
+
+.invite {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  background-color: rgba(26, 115, 232, 0.55);
+  color: #fff;
+  padding: 10px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.accept,
+.decline {
+  height: 26px;
+  width: 100px;
+}
+
+.accept {
+  background-color: rgba(0, 128, 0, 0.7) !important;
+  margin-right: 10px !important;
+}
+
+.decline {
+  background-color: rgba(255, 0, 0, 0.7) !important;
+}

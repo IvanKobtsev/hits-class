@@ -32,6 +32,7 @@ import { useRerender } from '../../../../../helpers/useRerender.ts';
 import { useGetCourseQuery } from '../../../../../services/api/api-client/CourseQuery.ts';
 import { AddTeamMemberModal } from './AddTeamMemberModal.tsx';
 import { useGetCurrentUserInfoQuery } from '../../../../../services/api/api-client/UserQuery.ts';
+import {InviteTeamMemberModal} from "./InviteTeamMemberModal.tsx";
 
 type EditTeamModalProps = {
   assignmentId: number;
@@ -158,6 +159,9 @@ export const EditTeamModal = ({
     return () => clearTimeout(timeoutId);
   }, [disbandDraftErrorOpen]);
 
+  const isCaptain = teamQuery.data?.captain.id === me?.id;
+  const canInvite = teacherView || isCaptain;
+
   return (
     <CustomModal
       isOpen={isOpen}
@@ -210,25 +214,19 @@ export const EditTeamModal = ({
             </Field>
             <div className={styles.container}>
               <div className={styles.members}>
-                <Button
+                {canInvite && <Button
                   variant="contained"
                   data-test-id="EditTeam-add-member"
                   startIcon={<AddMemberIcon className={styles.icon} />}
                   className={clsx(styles.btnPrimary, styles.addToTeam)}
-                  // disabled={
-                  //   !teacherView ||
-                  //   teamQuery.data.members.length >=
-                  //     (assignmentPayload.maxTeamSize ?? 100)
-                  // }
-                  onClick={() => {
-                    if (teacherView) {
-                      setAddMemberOpen(true);
-                      console.log("set");
-                    }
-                  }}
+                  disabled={
+                    teamQuery.data.members.length >=
+                      (assignmentPayload.maxTeamSize ?? 100)
+                  }
+                  onClick={() => setAddMemberOpen(true)}
                 >
                   {teacherView ? 'Добавить в команду' : 'Пригласить в команду'}
-                </Button>
+                </Button>}
                 <div className={styles.membersCount}>
                   Участников: {teamQuery.data.members.length}
                   {!!assignmentPayload.maxTeamSize &&
@@ -275,6 +273,17 @@ export const EditTeamModal = ({
             </div>
             {teacherView && (
               <AddTeamMemberModal
+                assignmentId={assignmentId}
+                teamId={teamId}
+                isOpen={addMemberOpen}
+                onClose={() => setAddMemberOpen(false)}
+                students={(course?.students ?? []).filter(
+                  (s) => !teamQuery.data!.members.some((m) => m.id === s.id),
+                )}
+              />
+            )}
+            {isCaptain && (
+              <InviteTeamMemberModal
                 assignmentId={assignmentId}
                 teamId={teamId}
                 isOpen={addMemberOpen}

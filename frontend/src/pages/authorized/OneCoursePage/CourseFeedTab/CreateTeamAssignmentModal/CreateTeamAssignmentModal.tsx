@@ -90,7 +90,6 @@ export const CreateTeamAssignmentModal = ({
 
   const form = useAdvancedForm<CreateTeamAssignmentForm>(
     async (data) => {
-      try {
         const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
           const item = files.find((f) => f.id === id);
           return item && item.status !== 'too_large';
@@ -116,8 +115,8 @@ export const CreateTeamAssignmentModal = ({
             submissionType: data.submissionType,
             title: data.title,
             deadlineUtc: data.deadlineUtc ?? null,
-            minTeamSize: data.minTeamSize,
-            maxTeamSize: data.maxTeamSize,
+            minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
+            maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
             areTeamsFrozen: false,
           },
         });
@@ -128,11 +127,6 @@ export const CreateTeamAssignmentModal = ({
         }
         await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
-      } catch {
-        void modal.showError({
-          text: 'Создание командного задания не удалось',
-        });
-      }
     },
     {
       shouldResetOnSuccess: true,

@@ -1066,6 +1066,29 @@ export function prepareSerializePagedResultOfPublicationDto(_data: PagedResultOf
   }
   return data as PagedResultOfPublicationDto;
 }
+export interface InvitationDto  {
+  id: number;
+  teamId: number;
+  teamName: string;
+}
+export function deserializeInvitationDto(json: string): InvitationDto {
+  const data = JSON.parse(json) as InvitationDto;
+  initInvitationDto(data);
+  return data;
+}
+export function initInvitationDto(_data: InvitationDto) {
+    return _data;
+}
+export function serializeInvitationDto(_data: InvitationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeInvitationDto(_data as InvitationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeInvitationDto(_data: InvitationDto): InvitationDto {
+  const data: Record<string, any> = { ..._data };
+  return data as InvitationDto;
+}
 export interface PagedResultOfCourseListItemDto  {
   data: CourseListItemDto[];
   totalCount: number;

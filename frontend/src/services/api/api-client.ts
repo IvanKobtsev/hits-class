@@ -44,6 +44,12 @@ export * as PublicationsQuery from './api-client/PublicationsQuery';
 
 
 
+export * as InvitationClient from './api-client/InvitationClient';
+
+export * as InvitationQuery from './api-client/InvitationQuery';
+
+
+
 export * as FilesClient from './api-client/FilesClient';
 
 export * as FilesQuery from './api-client/FilesQuery';
@@ -201,6 +207,9 @@ export function initPersister() {
 
   addResultTypeFactory('PublicationsClient___getPublications', (data: any) => Types.initPagedResultOfPublicationDto(data));
   addResultTypeFactory('PublicationsClient___getPublicationById', (data: any) => Types.initPublicationDto(data));
+
+
+  addResultTypeFactory('InvitationClient___getAllInvitations', (data: any) => Types.initInvitationDto(data));
 
 
 
