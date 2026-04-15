@@ -194,6 +194,32 @@ namespace Team13.HitsClass.App.Features.Teams
             return saved.ToTeamDto();
         }
 
+        public async Task LeaveTeam(int teamId)
+        {
+            var userId = userAccessor.GetUserId();
+
+            var team = await dbContext
+                .Teams.Include(t => t.Members)
+                .Include(t => t.Publication)
+                .GetOne(Team.HasId(teamId));
+
+            if (!team.Members.Any(m => m.Id == userId))
+                throw new AccessDeniedException("You are not a member of this team.");
+
+            if (team.CaptainId == userId)
+                throw new ValidationException(
+                    "Captain cannot leave the team. Pass the captain role first."
+                );
+
+            var payload = (TeamAssignmentPayload)team.Publication.PublicationPayload;
+            if (payload.AreTeamsFrozen)
+                throw new ValidationException("Teams are frozen.");
+
+            var user = await dbContext.Users.GetOne(User.HasId(userId));
+            team.Members.Remove(user);
+            await dbContext.SaveChangesAsync();
+        }
+
         public async Task<TeamDto> PassCaptainRole(int teamId, string newCaptainId)
         {
             var userId = userAccessor.GetUserId();

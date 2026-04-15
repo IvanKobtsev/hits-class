@@ -60,6 +60,16 @@ namespace Team13.HitsClass.App.Features.Teams
         }
 
         /// <summary>
+        /// Leave a team (non-captain member only)
+        /// </summary>
+        [HttpDelete("teams/{teamId:int}/members/me")]
+        public async Task<IActionResult> LeaveTeam([FromRoute] int teamId)
+        {
+            await teamService.LeaveTeam(teamId);
+            return new NoContentResult();
+        }
+
+        /// <summary>
         /// Pass the role of the captain
         /// </summary>
         [HttpPut("teams/{id:int}")]
@@ -70,7 +80,7 @@ namespace Team13.HitsClass.App.Features.Teams
         {
             return await teamService.PassCaptainRole(id, newCaptainId);
         }
-      
+
         /// Disband a team (captain or teacher only)
         /// </summary>
         [HttpDelete("teams/{id:int}/disband")]
