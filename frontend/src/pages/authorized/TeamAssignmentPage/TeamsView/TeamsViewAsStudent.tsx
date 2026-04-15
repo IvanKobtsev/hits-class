@@ -11,25 +11,33 @@ import { useParams } from 'react-router';
 import { TeamCard } from './TeamCard/TeamCard.tsx';
 import { useState } from 'react';
 import { CreateTeamModal } from './CreateTeamModal/CreateTeamModal.tsx';
+import { useGetCurrentUserInfoQuery } from '../../../../services/api/api-client/UserQuery.ts';
+import { Loading } from '../../../../components/uikit/suspense/Loading.tsx';
 
 export function TeamsViewAsStudent() {
   const { assignmentId } = useParams();
   const id = Number(assignmentId);
   const [showCreateTeamModal, setShowCreateTeamModal] = useState(false);
   const teamsQuery = useGetTeamsForAssignmentQuery(id);
+  const { data: me } = useGetCurrentUserInfoQuery();
 
   const { data: publication } = useGetPublicationByIdQuery(id);
 
-  if (!publication) return null;
+  if (!publication || !teamsQuery.data) return <Loading loading={true} />;
 
   const payload = publication.publicationPayload as TeamAssignmentPayload;
+
+  const myTeamId = teamsQuery.data?.find((t) =>
+    t.members.some((m) => m.id === me?.id),
+  )?.id;
 
   return (
     <div className={styles.layout}>
       <h2 className={styles.header}>Приглашения</h2>
       <div className={styles.invites}></div>
       {payload.distributionType === TeamDistributionType.Free &&
-      !payload.areTeamsFrozen ? (
+      !payload.areTeamsFrozen &&
+      !myTeamId ? (
         <Button
           variant="contained"
           onClick={() => setShowCreateTeamModal(true)}
@@ -42,9 +50,19 @@ export function TeamsViewAsStudent() {
       ) : null}
       <h2 className={styles.header}>Команды</h2>
       <div className={styles.teamsContainer}>
-        {teamsQuery.data?.map((t) => (
-          <TeamCard key={t.id} teamDto={t} assignment={publication} />
-        ))}
+        {myTeamId && (
+          <TeamCard
+            key={myTeamId}
+            teamDto={teamsQuery.data.find((t) => t.id === myTeamId)!}
+            assignment={publication}
+            myTeam
+          />
+        )}
+        {teamsQuery.data
+          ?.filter((t) => t.id !== myTeamId)
+          .map((t) => (
+            <TeamCard key={t.id} teamDto={t} assignment={publication} />
+          ))}
       </div>
       <CreateTeamModal
         assignmentId={id}

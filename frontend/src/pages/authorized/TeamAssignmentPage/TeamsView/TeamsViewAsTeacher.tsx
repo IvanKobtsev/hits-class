@@ -37,6 +37,7 @@ export function TeamsViewAsTeacher() {
           data-test-id="CourseFeedTab-create-team"
           startIcon={<TeamAssignmentIcon className={styles.icon} />}
           className={styles.btnPrimary}
+          disabled={payload.areTeamsFrozen}
         >
           Создать команду
         </Button>
@@ -57,7 +58,12 @@ export function TeamsViewAsTeacher() {
       <h2 className={styles.header}>Команды</h2>
       <div className={styles.teamsContainer}>
         {teamsQuery.data?.map((t) => (
-          <TeamCard key={t.id} teamDto={t} assignment={publication} />
+          <TeamCard
+            key={t.id}
+            teamDto={t}
+            assignment={publication}
+            teacherView={!payload.areTeamsFrozen}
+          />
         ))}
       </div>
       <CreateTeamAsTeacherModal

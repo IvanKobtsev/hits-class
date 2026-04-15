@@ -243,19 +243,15 @@ namespace Team13.HitsClass.App.Features.Teams
             foreach (var studentId in dto.StudentIds)
             {
                 if (!publication.Course.Students.Any(s => s.Id == studentId))
-                    throw new ValidationException(
-                        $"User with id={studentId} is not a member of this course."
-                    );
+                    throw new ValidationException($"This student is not a member of this course.");
 
                 if (publication.Teams!.Any(t => t.CaptainId == studentId))
                     throw new ValidationException(
-                        $"Student {studentId} is already a captain of another team."
+                        $"This student is already a captain of another team."
                     );
 
                 if (publication.Teams!.Any(t => t.Members.Any(m => m.Id == studentId)))
-                    throw new ValidationException(
-                        $"Student {studentId} is already in another team."
-                    );
+                    throw new ValidationException($"This student is already in another team.");
 
                 var student = await dbContext.Users.GetOne(User.HasId(studentId));
                 students.Add(student);

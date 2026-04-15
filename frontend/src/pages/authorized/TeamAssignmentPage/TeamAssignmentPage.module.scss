@@ -4,6 +4,7 @@
   min-height: 100%;
   background: $classroom-surface-alt;
   padding: 24px;
+  box-sizing: border-box;
 }
 
 .tabsWrapper {
@@ -83,4 +84,11 @@
   justify-content: flex-start;
   align-items: center;
   gap: 25px;
+}
+
+.teamsContainer {
+  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
 }
