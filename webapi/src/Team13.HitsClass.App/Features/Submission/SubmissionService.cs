@@ -34,7 +34,10 @@ public class SubmissionService(
         if (!publication.Course.Students.Any(s => s.Id == userId))
             throw new AccessDeniedException("You are not a student of this course.");
 
-        if (publication.Type != PublicationType.Assignment)
+        if (
+            publication.Type != PublicationType.Assignment
+            && publication.Type != PublicationType.TeamAssignment
+        )
             throw new ValidationException("Only assignments can have submissions.");
 
         if (!publication.IsForEveryone && !publication.TargetUsers.Any(u => u.Id == userId))
@@ -287,12 +290,13 @@ public class SubmissionService(
     public async Task<TeamSubmissionDto> GetTeamSubmission(int teamId)
     {
         var team = await dbContext
-            .Teams.Include(t => t.Members)
+            .Teams.AsNoTracking()
+            .Include(t => t.Members)
             .Include(t => t.Captain)
             .GetOne(Team.HasId(teamId));
-        var teamAssignment = await dbContext.Publications.FirstOrDefaultAsync(p =>
-            p.Id == team.PublicationId
-        );
+        var teamAssignment = await dbContext
+            .Publications.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == team.PublicationId);
 
         var attachments = new List<Attachment>();
         var members = new List<UserWithMarkDto>();
@@ -301,15 +305,18 @@ public class SubmissionService(
         {
             attachments.AddRange(
                 await dbContext
-                    .Submissions.Include(s => s.Attachments)
+                    .Submissions.AsNoTracking()
+                    .Include(s => s.Attachments)
                     .Where(s => s.AuthorId == member.Id)
                     .SelectMany(s => s.Attachments)
                     .ToListAsync()
             );
 
-            var submission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
-                s.AuthorId == member.Id && s.PublicationId == teamAssignment.Id
-            );
+            var submission = await dbContext
+                .Submissions.AsNoTracking()
+                .FirstOrDefaultAsync(s =>
+                    s.AuthorId == member.Id && s.PublicationId == teamAssignment.Id
+                );
 
             members.Add(new UserWithMarkDto { User = member.ToUserDto(), Mark = submission?.Mark });
         }
@@ -322,5 +329,64 @@ public class SubmissionService(
             Members = members,
             Captain = team.Captain.ToUserDto(),
         };
+    }
+
+    public async Task MarkTeamMember(int teamId, string memberId, MarkDto dto)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var team = await dbContext
+            .Teams.Include(t => t.Members)
+            .Include(t => t.Captain)
+            .GetOne(Team.HasId(teamId));
+
+        var publication = await dbContext
+            .Publications.Include(p => p.Course)
+                .ThenInclude(c => c.Teachers)
+            .GetOne(Publication.HasId(team.PublicationId));
+
+        var canMark =
+            await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
+            || publication.Course.Teachers.Any(t => t.Id == userId);
+
+        if (!canMark)
+            throw new AccessDeniedException("You do not have permission to mark this team member.");
+
+        if (!team.Members.Any(m => m.Id == memberId))
+            throw new ValidationException("This user is not a member of the team.");
+
+        var submission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
+            s.AuthorId == memberId && s.PublicationId == team.PublicationId
+        );
+
+        if (submission == null)
+        {
+            submission = new DomainSubmission
+            {
+                PublicationId = publication.Id,
+                AuthorId = memberId,
+                State = SubmissionState.Submitted,
+                LastSubmittedAtUTC = DateTime.UtcNow,
+                Attachments = [],
+                Comments = [],
+            };
+
+            dbContext.Submissions.Add(submission);
+        }
+
+        submission.Mark = dto.Mark;
+        submission.LastMarkedAtUTC = DateTime.UtcNow;
+
+        if (!string.IsNullOrEmpty(dto.MarkComment?.Json))
+        {
+            var comment = new SubmissionComment(submission.Id, userId, dto.MarkComment)
+            {
+                Author = user,
+            };
+            submission.Comments.Add(comment);
+        }
+
+        await dbContext.SaveChangesAsync();
     }
 }

@@ -2,6 +2,8 @@ import styles from './TeamMemberEntry.module.scss';
 import { UserDto } from '../../../../../../services/api/api-client.types.ts';
 import clsx from 'clsx';
 import TruncatingContainer from '../../../../../../components/uikit/truncatingContainer/TruncatingContainer.tsx';
+import { Input } from '../../../../../../components/uikit/inputs/Input.tsx';
+import { AdvancedFormReturnType } from 'helpers/form/useAdvancedForm.ts';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import DotsIcon from 'assets/icons/dots.svg?react';
 import { MouseEvent, useState } from 'react';
@@ -12,12 +14,16 @@ interface TeamMemberEntryProps {
   color?: 'green' | 'yellow' | 'red' | 'blue';
   canAssignCaptain?: boolean;
   onAssignCaptain?: (member: UserDto) => void | Promise<void>;
+  mark?: string | null;
+  form?: AdvancedFormReturnType<Record<string, string>>;
 }
 
 export function TeamMemberEntry({
   member,
   isCaptain,
   color,
+  mark,
+  form,
   canAssignCaptain,
   onAssignCaptain,
 }: TeamMemberEntryProps) {
@@ -59,7 +65,18 @@ export function TeamMemberEntry({
             <TruncatingContainer title={member.legalName} />
             {isCaptain && <span className={styles.captain}>капитан</span>}
           </div>
+          <div className={styles.rightContainer}>
           <span className={styles.groupNumber}>{member.groupNumber}</span>
+          {mark !== undefined && form && (
+            <>
+              <span className={styles.markLabel}>Оценка:</span>
+              <Input
+                {...form.register(member.id)}
+                className={styles.markInput}
+                defaultValue={mark ?? undefined}
+              />
+            </>
+          )}
           {canAssignCaptain && !isCaptain && onAssignCaptain && (
             <>
               <div className={styles.memberActions}>
@@ -82,6 +99,7 @@ export function TeamMemberEntry({
               </Menu>
             </>
           )}
+          </div>
         </>
       ) : (
         'свободный слот'
