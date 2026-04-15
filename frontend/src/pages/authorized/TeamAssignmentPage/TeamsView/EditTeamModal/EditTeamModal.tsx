@@ -28,6 +28,8 @@ import { ButtonColor } from '../../../../../components/uikit/buttons/Button.tsx'
 import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
 import { useRerender } from '../../../../../helpers/useRerender.ts';
+import { useGetCourseQuery } from '../../../../../services/api/api-client/CourseQuery.ts';
+import { AddTeamMemberModal } from './AddTeamMemberModal.tsx';
 import { useGetCurrentUserInfoQuery } from '../../../../../services/api/api-client/UserQuery.ts';
 
 type EditTeamModalProps = {
@@ -49,6 +51,7 @@ export const EditTeamModal = ({
 }: EditTeamModalProps) => {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const [disbandOpen, setDisbandOpen] = useState(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
   const [leaveTeamOpen, setLeaveTeamOpen] = useState(false);
   const [passCaptainRoleErrorOpen, setPassCaptainRoleErrorOpen] =
     useState(false);
@@ -58,6 +61,7 @@ export const EditTeamModal = ({
   const [memberToRemove, setMemberToRemove] = useState<UserDto | null>(null);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
+  const { data: course } = useGetCourseQuery(params.courseId);
   const { data: me } = useGetCurrentUserInfoQuery();
 
   // const form = useAdvancedForm<EditTeamForm>(
@@ -198,13 +202,20 @@ export const EditTeamModal = ({
               <div className={styles.members}>
                 <Button
                   variant="contained"
-                  data-test-id="CourseFeedTab-create-team"
+                  data-test-id="EditTeam-add-member"
                   startIcon={<AddMemberIcon className={styles.icon} />}
                   className={clsx(styles.btnPrimary, styles.addToTeam)}
                   disabled={
+                    !teacherView ||
                     teamQuery.data.members.length >=
-                    (assignmentPayload.maxTeamSize ?? 100)
+                      (assignmentPayload.maxTeamSize ?? 100)
                   }
+                  onClick={() => {
+                    if (teacherView) {
+                      setAddMemberOpen(true);
+                      console.log("set");
+                    }
+                  }}
                 >
                   {teacherView ? 'Добавить в команду' : 'Пригласить в команду'}
                 </Button>
@@ -252,6 +263,17 @@ export const EditTeamModal = ({
                 {'Расформировать команду'}
               </Button>
             </div>
+            {teacherView && (
+              <AddTeamMemberModal
+                assignmentId={assignmentId}
+                teamId={teamId}
+                isOpen={addMemberOpen}
+                onClose={() => setAddMemberOpen(false)}
+                students={(course?.students ?? []).filter(
+                  (s) => !teamQuery.data!.members.some((m) => m.id === s.id),
+                )}
+              />
+            )}
             <CustomModal
               isOpen={leaveTeamOpen}
               isBlocking={false}
