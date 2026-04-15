@@ -479,6 +479,66 @@ function processMarkSubmission(response: AxiosResponse): Promise<Types.Submissio
     }
     return Promise.resolve<Types.SubmissionDto>(null as any);
 }
+
+export function getTeamSubmission(teamId: number, config?: AxiosRequestConfig | undefined): Promise<Types.TeamSubmissionDto> {
+    let url_ = getBaseUrl() + "/api/teams/{teamId}/submission";
+    if (teamId === undefined || teamId === null)
+      throw new Error("The parameter 'teamId' must be defined.");
+    url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetTeamSubmission,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetTeamSubmission?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetTeamSubmission(_response);
+    });
+}
+
+function processGetTeamSubmission(response: AxiosResponse): Promise<Types.TeamSubmissionDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initTeamSubmissionDto(resultData200);
+        return Promise.resolve<Types.TeamSubmissionDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.TeamSubmissionDto>(null as any);
+}
 let _requestConfigCreateSubmission: Partial<AxiosRequestConfig> | null;
 export function getCreateSubmissionRequestConfig() {
   return _requestConfigCreateSubmission;
@@ -554,4 +614,15 @@ export function setMarkSubmissionRequestConfig(value: Partial<AxiosRequestConfig
 }
 export function patchMarkSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigMarkSubmission = patch(_requestConfigMarkSubmission ?? {});
+}
+
+let _requestConfigGetTeamSubmission: Partial<AxiosRequestConfig> | null;
+export function getGetTeamSubmissionRequestConfig() {
+  return _requestConfigGetTeamSubmission;
+}
+export function setGetTeamSubmissionRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetTeamSubmission = value;
+}
+export function patchGetTeamSubmissionRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetTeamSubmission = patch(_requestConfigGetTeamSubmission ?? {});
 }

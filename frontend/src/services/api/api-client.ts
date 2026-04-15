@@ -196,6 +196,7 @@ export function initPersister() {
   addResultTypeFactory('SubmissionClient___getSubmissions', (data: any) => Types.initPagedResultOfSubmissionListItem(data));
   addResultTypeFactory('SubmissionClient___getMySubmission', (data: any) => Types.initSubmissionDto(data));
   addResultTypeFactory('SubmissionClient___getSubmission', (data: any) => Types.initSubmissionDto(data));
+  addResultTypeFactory('SubmissionClient___getTeamSubmission', (data: any) => Types.initTeamSubmissionDto(data));
 
 
   addResultTypeFactory('PublicationsClient___getPublications', (data: any) => Types.initPagedResultOfPublicationDto(data));

@@ -6,10 +6,14 @@ import styles from './EditTeamModal.module.scss';
 import {
   getTeamForAssignmentQueryKey,
   getTeamsForAssignmentQueryKey,
+  usePassCaptainRoleMutation,
   useGetTeamForAssignmentQuery,
 } from '../../../../../services/api/api-client/TeamQuery.ts';
 import AddMemberIcon from 'assets/icons/add-member.svg?react';
-import { TeamAssignmentPayload } from '../../../../../services/api/api-client.types.ts';
+import {
+  TeamAssignmentPayload,
+  UserDto,
+} from '../../../../../services/api/api-client.types.ts';
 import { Button, Typography } from '@mui/material';
 import { TeamMembersList, TeamStatus } from '../TeamCard/TeamCard.tsx';
 import clsx from 'clsx';
@@ -22,6 +26,7 @@ import { ButtonColor } from '../../../../../components/uikit/buttons/Button.tsx'
 import { Links } from 'application/constants/links.ts';
 import { queryClient } from '../../../../../services/api/query-client-helper.ts';
 import { useRerender } from '../../../../../helpers/useRerender.ts';
+import { useGetCurrentUserInfoQuery } from '../../../../../services/api/api-client/UserQuery.ts';
 
 type EditTeamModalProps = {
   assignmentId: number;
@@ -42,8 +47,11 @@ export const EditTeamModal = ({
 }: EditTeamModalProps) => {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
   const [disbandOpen, setDisbandOpen] = useState(false);
+  const [passCaptainRoleErrorOpen, setPassCaptainRoleErrorOpen] =
+    useState(false);
   const { rerender } = useRerender();
   const nameInputRef = useRef<HTMLInputElement>(null!);
+  const { data: me } = useGetCurrentUserInfoQuery();
 
   // const form = useAdvancedForm<EditTeamForm>(
   //   async (data) => {
@@ -58,6 +66,26 @@ export const EditTeamModal = ({
   // );
 
   const teamQuery = useGetTeamForAssignmentQuery(assignmentId, teamId);
+  const passCaptainRoleMutation = usePassCaptainRoleMutation(teamId);
+  const canAssignCaptainRole =
+    !!teamQuery.data && (teacherView || teamQuery.data.captain.id === me?.id);
+
+  const handleAssignCaptainRole = async (member: UserDto) => {
+    try {
+      await passCaptainRoleMutation.mutateAsync(member.id);
+      await queryClient.invalidateQueries({
+        queryKey: getTeamsForAssignmentQueryKey(assignmentId),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: getTeamForAssignmentQueryKey({
+          teamId,
+          assignmentId,
+        }),
+      });
+    } catch {
+      setPassCaptainRoleErrorOpen(true);
+    }
+  };
 
   const handleClose = () => {
     onClose();
@@ -145,6 +173,8 @@ export const EditTeamModal = ({
               <TeamMembersList
                 teamDto={teamQuery.data}
                 payload={assignmentPayload}
+                canAssignCaptainRole={canAssignCaptainRole}
+                onAssignCaptainRole={handleAssignCaptainRole}
               />
             </div>
             <div className={styles.footer}>
@@ -182,6 +212,19 @@ export const EditTeamModal = ({
               <Typography>
                 Вы уверены, что хотите расформировать команду?
                 <br /> Это действие необратимо.
+              </Typography>
+            </CustomModal>
+            <CustomModal
+              isOpen={passCaptainRoleErrorOpen}
+              isBlocking={false}
+              title="Ошибка"
+              onClose={() => setPassCaptainRoleErrorOpen(false)}
+              buttons="ok"
+              okButtonText="Понятно"
+              onButtonClick={() => setPassCaptainRoleErrorOpen(false)}
+            >
+              <Typography>
+                Вы не можете передавать роль капитана в режиме драфта
               </Typography>
             </CustomModal>
           </>
