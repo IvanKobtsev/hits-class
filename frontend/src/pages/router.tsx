@@ -13,6 +13,7 @@ import { OneCoursePage } from './authorized/OneCoursePage/OneCoursePage';
 import { EmailConfirmPage } from './unauthorized/EmailConfirmPage/EmailConfirmPage';
 import { PageNotFound } from './authorized/PageNotFound/PageNotFound';
 import { AdminPage } from './authorized/AdminPage/AdminPage';
+import { TeamAssignmentPage } from './authorized/TeamAssignmentPage/TeamAssignmentPage';
 
 export const authorizedRoutes = () =>
   createBrowserRouter([
@@ -55,6 +56,10 @@ export const authorizedRoutes = () =>
             {
               path: Links.Authorized.AssignmentRoutes.route,
               element: <AssignmentPage />,
+            },
+            {
+              path: Links.Authorized.TeamAssignmentRoutes.route,
+              element: <TeamAssignmentPage />,
             },
             {
               path: Links.Authorized.AnnouncementRoutes.route,

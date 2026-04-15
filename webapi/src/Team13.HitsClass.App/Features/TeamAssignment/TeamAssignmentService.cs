@@ -3,6 +3,7 @@ using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.TeamAssignment.Dto;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.WebApi.Patching;
 
 namespace Team13.HitsClass.App.Features.TeamAssignment
 {
@@ -87,6 +88,18 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
         public async Task DeleteTeamAssignment(int assignmentId)
         {
             await publicationService.DeletePublication(assignmentId);
+        }
+
+        public async Task<PublicationDto> SetFrozenStatus(int assignmentId, bool isFrozen)
+        {
+            var patch = new PatchTeamAssignmentDto
+            {
+                Payload = new PatchTeamAssignmentPayloadDto { AreTeamsFrozen = isFrozen },
+            }.MarkAllNonDefaultPropertiesAsDefined();
+
+            patch.Payload!.SetHasProperty(nameof(patch.Payload.AreTeamsFrozen));
+
+            return await publicationService.PatchPublication(assignmentId, patch, patch.Payload);
         }
     }
 }

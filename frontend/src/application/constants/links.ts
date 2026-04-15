@@ -23,7 +23,11 @@ export const Links = {
       courseId: RequiredNumberParam,
     }),
     AssignmentRoutes: createRoute(
-      '/courses/:courseId/assignments/:assignmentId',
+      '/courses/:courseId/personal-assignments/:assignmentId',
+      { courseId: RequiredNumberParam, assignmentId: RequiredNumberParam },
+    ),
+    TeamAssignmentRoutes: createRoute(
+      '/courses/:courseId/team-assignments/:assignmentId',
       { courseId: RequiredNumberParam, assignmentId: RequiredNumberParam },
     ),
     AnnouncementRoutes: createRoute(

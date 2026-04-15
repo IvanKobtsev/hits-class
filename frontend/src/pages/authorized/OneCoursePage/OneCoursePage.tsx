@@ -6,7 +6,7 @@ import { Loading } from 'components/uikit/suspense/Loading';
 import { useCourseRole } from './useCourseRole';
 import { CourseFeedTab } from './CourseFeedTab/CourseFeedTab';
 import { CreateAnnouncementModal } from './CourseFeedTab/CreateAnnouncementModal/CreateAnnouncementModal';
-import { CreateAssignmentModal } from './CourseFeedTab/CreateAssignmentModal/CreateAssignmentModal';
+import { CreatePersonalAssignmentModal } from './CourseFeedTab/CreateAssignmentModal/CreatePersonalAssignmentModal.tsx';
 import { CourseMembersTab } from './CourseMembersTab/CourseMembersTab';
 import styles from './OneCoursePage.module.scss';
 import { CourseHeader } from './CourseHeader/Courseheader';
@@ -15,6 +15,7 @@ import { isAxiosError } from 'axios';
 import { exportMarks } from 'services/api/api-client/CourseClient';
 import { Links } from 'application/constants/links';
 import { GradeList } from './GradeList/GradeList';
+import { CreateTeamAssignmentModal } from './CourseFeedTab/CreateTeamAssignmentModal/CreateTeamAssignmentModal.tsx';
 
 type TabValue = 'feed' | 'grades' | 'members';
 
@@ -24,14 +25,17 @@ export const OneCoursePage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<TabValue>('feed');
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false);
-  const [isAssignmentModalOpen, setIsAssignmentModalOpen] = useState(false);
+  const [isPersonalAssignmentModalOpen, setIsPersonalAssignmentModalOpen] =
+    useState(false);
+  const [isTeamAssignmentModalOpen, setIsTeamAssignmentModalOpen] =
+    useState(false);
 
   const {
     data: course,
     isLoading: courseLoading,
     error: courseError,
   } = QueryFactory.CourseQuery.useGetCourseQuery(id, { throwOnError: false });
-  
+
   const { data: publicationsData, isLoading: pubLoading } =
     QueryFactory.PublicationsQuery.useGetPublicationsQuery({ courseId: id });
 
@@ -106,7 +110,12 @@ export const OneCoursePage: React.FC = () => {
                 publications={publicationsData?.data ?? []}
                 role={role}
                 onCreateAnnouncement={() => setIsAnnouncementModalOpen(true)}
-                onCreateAssignment={() => setIsAssignmentModalOpen(true)}
+                onCreatePersonalAssignment={() =>
+                  setIsPersonalAssignmentModalOpen(true)
+                }
+                onCreateTeamAssignment={() =>
+                  setIsTeamAssignmentModalOpen(true)
+                }
               />
             )}
             {activeTab === 'grades' && (
@@ -116,11 +125,9 @@ export const OneCoursePage: React.FC = () => {
                     Экспорт оценок
                   </Button>
                 )}
-                {
-                  role === 'student' && (
-                    <GradeList publications={publicationsData?.data ?? []} />
-                  )
-                }
+                {role === 'student' && (
+                  <GradeList publications={publicationsData?.data ?? []} />
+                )}
               </div>
             )}
             {activeTab === 'members' && (
@@ -135,9 +142,13 @@ export const OneCoursePage: React.FC = () => {
         isOpen={isAnnouncementModalOpen}
         onClose={() => setIsAnnouncementModalOpen(false)}
       />
-      <CreateAssignmentModal
-        isOpen={isAssignmentModalOpen}
-        onClose={() => setIsAssignmentModalOpen(false)}
+      <CreatePersonalAssignmentModal
+        isOpen={isPersonalAssignmentModalOpen}
+        onClose={() => setIsPersonalAssignmentModalOpen(false)}
+      />
+      <CreateTeamAssignmentModal
+        isOpen={isTeamAssignmentModalOpen}
+        onClose={() => setIsTeamAssignmentModalOpen(false)}
       />
     </Loading>
   );

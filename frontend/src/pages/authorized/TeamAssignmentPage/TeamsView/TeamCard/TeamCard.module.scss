@@ -1,0 +1,66 @@
+.TeamCard {
+  width: 250px;
+  height: fit-content;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+
+  .header {
+    width: 100%;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .teamTitle {
+      font-weight: 300;
+      color: #5A665A;
+    }
+
+    .participantsNumber {
+      font-weight: 400;
+    }
+  }
+
+  .separator {
+    height: 1px;
+    width: calc(100% + 20px);
+    translate: -10px 0;
+    background-color: #DBE2DC;
+  }
+
+  .studentEntry {
+    width: 100%;
+  }
+
+  .teamStatus {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  &.green {
+
+  }
+
+  &.red {
+
+  }
+
+  &.yellow {
+    background-color: #FFFEE0;
+
+    .participantsNumber {
+      color: #B8C500;
+    }
+
+    .teamStatus {
+     color: #B8C500;
+    }
+  }
+}

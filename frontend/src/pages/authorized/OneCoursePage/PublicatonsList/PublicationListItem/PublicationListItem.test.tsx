@@ -11,10 +11,33 @@ import {
 import { PublicationListItem } from './PublicationListItem';
 import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 
-// Мокаем только то, что нужно для рендера
-vi.mock('react-router', async () => {
-  const actual = await vi.importActual('react-router');
-  return { ...actual };
+// Mock Links before importing PublicationListItem
+vi.mock('application/constants/links', () => ({
+  Links: {
+    Authorized: {
+      CourseRoutes: {
+        useParams: () => ({ courseId: '1' }),
+      },
+      AssignmentRoutes: {
+        link: ({ assignmentId }: any) => `/assignments/${assignmentId}`,
+      },
+      TeamAssignmentRoutes: {
+        link: ({ assignmentId }: any) => `/team-assignments/${assignmentId}`,
+      },
+      AnnouncementRoutes: {
+        link: ({ announcementId }: any) => `/announcements/${announcementId}`,
+      },
+    },
+  },
+}));
+
+// Mock react-router-dom hooks
+vi.mock('react-router-dom', async (importActual) => {
+  const actual = await importActual<typeof import('react-router-dom')>();
+  return {
+    ...actual,
+    useNavigate: () => vi.fn(),
+  };
 });
 
 const mockEditAnnouncementModal = vi.fn();
