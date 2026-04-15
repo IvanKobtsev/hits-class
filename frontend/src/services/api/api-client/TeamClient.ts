@@ -484,6 +484,65 @@ function processIsStudentInATeam(response: AxiosResponse): Promise<boolean> {
     return Promise.resolve<boolean>(null as any);
 }
 
+/**
+ * Leave a team (non-captain member only)
+ */
+export function leaveTeam(teamId: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/teams/{teamId}/members/me";
+    if (teamId === undefined || teamId === null)
+      throw new Error("The parameter 'teamId' must be defined.");
+    url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigLeaveTeam,
+        ...config,
+        method: "DELETE",
+        url: url_,
+        headers: {
+            ..._requestConfigLeaveTeam?.headers,
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processLeaveTeam(_response);
+    });
+}
+
+function processLeaveTeam(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
 export function disbandTeam(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
     let url_ = getBaseUrl() + "/api/teams/{id}/disband";
     if (id === undefined || id === null)
@@ -605,6 +664,73 @@ function processCreateTeamAsTeacher(response: AxiosResponse): Promise<Types.Team
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
     return Promise.resolve<Types.TeamDto>(null as any);
+}
+
+/**
+ * Randomly distribute students into teams for a team assignment
+ */
+export function distributeRandomly(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto[]> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/distribute-randomly";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigDistributeRandomly,
+        ...config,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigDistributeRandomly?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processDistributeRandomly(_response);
+    });
+}
+
+function processDistributeRandomly(response: AxiosResponse): Promise<Types.TeamDto[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initTeamDto(item)
+              );
+            }
+        return Promise.resolve<Types.TeamDto[]>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.TeamDto[]>(null as any);
 }
 
 /**
@@ -750,6 +876,17 @@ export function patchIsStudentInATeamRequestConfig(patch: (value: Partial<AxiosR
   _requestConfigIsStudentInATeam = patch(_requestConfigIsStudentInATeam ?? {});
 }
 
+let _requestConfigLeaveTeam: Partial<AxiosRequestConfig> | null;
+export function getLeaveTeamRequestConfig() {
+  return _requestConfigLeaveTeam;
+}
+export function setLeaveTeamRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigLeaveTeam = value;
+}
+export function patchLeaveTeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigLeaveTeam = patch(_requestConfigLeaveTeam ?? {});
+}
+
 let _requestConfigDisbandTeam: Partial<AxiosRequestConfig> | null;
 export function getDisbandTeamRequestConfig() {
   return _requestConfigDisbandTeam;
@@ -770,6 +907,17 @@ export function setCreateTeamAsTeacherRequestConfig(value: Partial<AxiosRequestC
 }
 export function patchCreateTeamAsTeacherRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigCreateTeamAsTeacher = patch(_requestConfigCreateTeamAsTeacher ?? {});
+}
+
+let _requestConfigDistributeRandomly: Partial<AxiosRequestConfig> | null;
+export function getDistributeRandomlyRequestConfig() {
+  return _requestConfigDistributeRandomly;
+}
+export function setDistributeRandomlyRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigDistributeRandomly = value;
+}
+export function patchDistributeRandomlyRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigDistributeRandomly = patch(_requestConfigDistributeRandomly ?? {});
 }
 
 let _requestConfigUpdateTeamName: Partial<AxiosRequestConfig> | null;
