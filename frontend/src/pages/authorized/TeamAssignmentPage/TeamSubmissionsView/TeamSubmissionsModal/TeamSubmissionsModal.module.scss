@@ -10,3 +10,14 @@
   display: flex;
   justify-content: flex-end;
 }
+
+.teamMembers {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+
+.markAll {
+  margin-right: 20px !important;
+}

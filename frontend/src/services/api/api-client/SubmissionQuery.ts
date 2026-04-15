@@ -50,6 +50,15 @@ export type MarkSubmissionSubmissionQueryParameters = {
   id: number ;
 }
 
+export type GetTeamSubmissionSubmissionQueryParameters = {
+  teamId: number ;
+}
+
+export type MarkTeamMemberSubmissionQueryParameters = {
+  teamId: number ;
+  memberId: string ;
+}
+
 export function createSubmissionUrl(id: number): string {
   let url_ = getBaseUrl() + "/api/assignments/{id}/submission";
 if (id === undefined || id === null)
@@ -563,6 +572,148 @@ export function useMarkSubmissionMutationWithParameters<TContext>(options?: Omit
 return useMutation({
   ...options, 
   mutationFn: (data: MarkSubmission__MutationParameters) => Client.markSubmission(data.id ?? options?.parameters?.id!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function getTeamSubmissionUrl(teamId: number): string {
+  let url_ = getBaseUrl() + "/api/teams/{teamId}/submission";
+if (teamId === undefined || teamId === null)
+  throw new Error("The parameter 'teamId' must be defined.");
+url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getTeamSubmissionDefaultOptions: Omit<UseQueryOptions<Types.TeamSubmissionDto, unknown, Types.TeamSubmissionDto>, 'queryKey'> = {
+  queryFn: __getTeamSubmission,
+};
+export function getGetTeamSubmissionDefaultOptions() {
+  return getTeamSubmissionDefaultOptions;
+};
+export function setGetTeamSubmissionDefaultOptions(options: typeof getTeamSubmissionDefaultOptions) {
+  getTeamSubmissionDefaultOptions = options;
+}
+
+export function getTeamSubmissionQueryKey(teamId: number): QueryKey;
+export function getTeamSubmissionQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { teamId,  } = params[0] as GetTeamSubmissionSubmissionQueryParameters;
+
+    return trimArrayEnd([
+        'SubmissionClient',
+        'getTeamSubmission',
+        teamId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'SubmissionClient',
+        'getTeamSubmission',
+        ...params
+      ]);
+  }
+}
+function __getTeamSubmission(context: QueryFunctionContext) {
+  return Client.getTeamSubmission(
+      context.queryKey[2] as number    );
+}
+
+export function useGetTeamSubmissionQuery<TSelectData = Types.TeamSubmissionDto, TError = unknown>(dto: GetTeamSubmissionSubmissionQueryParameters, options?: Omit<UseQueryOptions<Types.TeamSubmissionDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+
+export function useGetTeamSubmissionQuery<TSelectData = Types.TeamSubmissionDto, TError = unknown>(teamId: number, options?: Omit<UseQueryOptions<Types.TeamSubmissionDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetTeamSubmissionQuery<TSelectData = Types.TeamSubmissionDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.TeamSubmissionDto, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let teamId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ teamId,  } = params[0] as GetTeamSubmissionSubmissionQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [teamId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.TeamSubmissionDto, TError, TSelectData>({
+    queryFn: __getTeamSubmission,
+    queryKey: getTeamSubmissionQueryKey(teamId),
+    ...getTeamSubmissionDefaultOptions as unknown as Omit<UseQueryOptions<Types.TeamSubmissionDto, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+
+export function setGetTeamSubmissionData(queryClient: QueryClient, updater: (data: Types.TeamSubmissionDto | undefined) => Types.TeamSubmissionDto, teamId: number) {
+  queryClient.setQueryData(getTeamSubmissionQueryKey(teamId),
+    updater
+  );
+}
+
+export function setGetTeamSubmissionDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.TeamSubmissionDto | undefined) => Types.TeamSubmissionDto) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function markTeamMemberUrl(teamId: number, memberId: string): string {
+  let url_ = getBaseUrl() + "/api/teams/{teamId}/members/{memberId}/mark";
+if (teamId === undefined || teamId === null)
+  throw new Error("The parameter 'teamId' must be defined.");
+url_ = url_.replace("{teamId}", encodeURIComponent("" + teamId));
+if (memberId === undefined || memberId === null)
+  throw new Error("The parameter 'memberId' must be defined.");
+url_ = url_.replace("{memberId}", encodeURIComponent("" + memberId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function markTeamMemberMutationKey(teamId: number, memberId: string): MutationKey {
+  return trimArrayEnd([
+      'SubmissionClient',
+      'markTeamMember',
+      teamId as any,
+      memberId as any,
+    ]);
+}
+
+/**
+ * Mark a team member.
+ */
+export function useMarkTeamMemberMutation<TContext>(teamId: number, memberId: string, options?: Omit<UseMutationOptions<void, unknown, Types.MarkDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, Types.MarkDto, TContext> {
+  const key = markTeamMemberMutationKey(teamId, memberId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.MarkDto) => Client.markTeamMember(teamId, memberId, dto),
+    mutationKey: key,
+  });
+}
+  
+type MarkTeamMember__MutationParameters = MarkTeamMemberSubmissionQueryParameters & {
+  dto: Types.MarkDto;
+}
+
+/**
+ * Mark a team member.
+ */
+export function useMarkTeamMemberMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, MarkTeamMember__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: MarkTeamMemberSubmissionQueryParameters}): UseMutationResult<void, unknown, MarkTeamMember__MutationParameters, TContext> {
+  const key = markTeamMemberMutationKey(options?.parameters?.teamId!, options?.parameters?.memberId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: MarkTeamMember__MutationParameters) => Client.markTeamMember(data.teamId ?? options?.parameters?.teamId!, data.memberId ?? options?.parameters?.memberId!, data.dto),
   mutationKey: key,
 });
 }

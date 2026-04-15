@@ -56,10 +56,11 @@
   }
 
   &.blue {
-    background-color: #59afff;
+    background-color: #e1f2ff;
+    border: none !important;
 
     &.captain {
-      background-color: #e1f2ff;
+      background-color: #cde6ff;
     }
   }
 
@@ -69,9 +70,34 @@
     margin-left: 10px;
   }
 
+  .memberActions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+
   .captain {
     margin-left: 5px;
     opacity: .6;
     font-size: 10px;
   }
+}
+
+.markInput {
+  width: 30px;
+  height: 26px;
+  padding: 2px;
+  text-align: center;
+}
+
+.rightContainer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.markLabel {
+  margin: 0 5px 0 10px;
+  font-size: 14px;
+  font-weight: 500;
 }

@@ -86,5 +86,18 @@ namespace Team13.HitsClass.App.Features.Submission
         {
             return await submissionService.GetTeamSubmission(teamId);
         }
+
+        /// <summary>
+        /// Mark a team member.
+        /// </summary>
+        [HttpPut("teams/{teamId:int}/members/{memberId}/mark")]
+        public async Task MarkTeamMember(
+            [FromRoute] int teamId,
+            [FromRoute] string memberId,
+            [FromBody] MarkDto dto
+        )
+        {
+            await submissionService.MarkTeamMember(teamId, memberId, dto);
+        }
     }
 }

@@ -957,6 +957,81 @@ export function prepareSerializeMarkDto(_data: MarkDto): MarkDto {
   data["markComment"] = _data.markComment && prepareSerializeLexicalState(_data.markComment);
   return data as MarkDto;
 }
+export interface TeamSubmissionDto  {
+  teamId: number;
+  teamName: string;
+  captain: UserDto;
+  members: UserWithMarkDto[];
+  attachments: Attachment[];
+}
+export function deserializeTeamSubmissionDto(json: string): TeamSubmissionDto {
+  const data = JSON.parse(json) as TeamSubmissionDto;
+  initTeamSubmissionDto(data);
+  return data;
+}
+export function initTeamSubmissionDto(_data: TeamSubmissionDto) {
+  if (_data) {
+    _data.captain = _data["captain"] && initUserDto(_data["captain"]);
+    if (Array.isArray(_data["members"])) {
+      _data.members = _data["members"].map(item => 
+        initUserWithMarkDto(item)
+      );
+    }
+    if (Array.isArray(_data["attachments"])) {
+      _data.attachments = _data["attachments"].map(item => 
+        initAttachment(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeTeamSubmissionDto(_data: TeamSubmissionDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeTeamSubmissionDto(_data as TeamSubmissionDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeTeamSubmissionDto(_data: TeamSubmissionDto): TeamSubmissionDto {
+  const data: Record<string, any> = { ..._data };
+  data["captain"] = _data.captain && prepareSerializeUserDto(_data.captain);
+  if (Array.isArray(_data.members)) {
+    data["members"] = _data.members.map(item => 
+        prepareSerializeUserWithMarkDto(item)
+    );
+  }
+  if (Array.isArray(_data.attachments)) {
+    data["attachments"] = _data.attachments.map(item => 
+        prepareSerializeAttachment(item)
+    );
+  }
+  return data as TeamSubmissionDto;
+}
+export interface UserWithMarkDto  {
+  user: UserDto;
+  mark: string | null;
+}
+export function deserializeUserWithMarkDto(json: string): UserWithMarkDto {
+  const data = JSON.parse(json) as UserWithMarkDto;
+  initUserWithMarkDto(data);
+  return data;
+}
+export function initUserWithMarkDto(_data: UserWithMarkDto) {
+  if (_data) {
+    _data.user = _data["user"] && initUserDto(_data["user"]);
+  }
+  return _data;
+}
+export function serializeUserWithMarkDto(_data: UserWithMarkDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeUserWithMarkDto(_data as UserWithMarkDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeUserWithMarkDto(_data: UserWithMarkDto): UserWithMarkDto {
+  const data: Record<string, any> = { ..._data };
+  data["user"] = _data.user && prepareSerializeUserDto(_data.user);
+  return data as UserWithMarkDto;
+}
 export interface PagedResultOfPublicationDto  {
   data: PublicationDto[];
   totalCount: number;
