@@ -10,7 +10,7 @@ import { queryClient } from 'services/api/query-client-helper.ts';
 import { QueryFactory } from '../../../../services/api';
 import { useParams } from 'react-router';
 import { useState } from 'react';
-import { CreateTeamModal } from './CreateTeamModal/CreateTeamModal.tsx';
+import { CreateTeamAsTeacherModal } from './CreateTeamModal/CreateTeamAsTeacherModal.tsx';
 import { TeamCard } from './TeamCard/TeamCard.tsx';
 
 export function TeamsViewAsTeacher() {
@@ -60,12 +60,11 @@ export function TeamsViewAsTeacher() {
           <TeamCard key={t.id} teamDto={t} assignment={publication} />
         ))}
       </div>
-      <CreateTeamModal
+      <CreateTeamAsTeacherModal
         assignmentId={id}
         isOpen={showCreateTeamModal}
         onClose={() => setShowCreateTeamModal(false)}
         students={course?.students ?? []}
-        allowCaptainSelection
       />
     </div>
   );

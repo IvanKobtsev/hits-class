@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { MenuItem, TextField } from '@mui/material';
 import { Field } from 'components/uikit/Field';
 import { FormError } from 'components/uikit/FormError';
 import {
@@ -12,30 +13,37 @@ import { Loading } from 'components/uikit/suspense/Loading';
 import { useAdvancedForm } from 'helpers/form/useAdvancedForm';
 import { requiredRule } from 'helpers/form/react-hook-form-helper';
 import { QueryFactory } from 'services/api';
-import { useCreateTeamMutation } from 'services/api/api-client/TeamQuery';
+import type { UserDto } from 'services/api/api-client.types';
+import { useCreateTeamAsTeacherMutation } from 'services/api/api-client/TeamQuery';
 import styles from './CreateTeamModal.module.scss';
 
-type CreateTeamForm = {
+type CreateTeamAsTeacherForm = {
   name: string;
+  captainId: string | null;
 };
 
-type CreateTeamModalProps = {
+type CreateTeamAsTeacherModalProps = {
   assignmentId: number;
   isOpen: boolean;
   onClose: () => void;
+  students: UserDto[];
 };
 
-export const CreateTeamModal = ({
+export const CreateTeamAsTeacherModal = ({
   assignmentId,
   isOpen,
   onClose,
-}: CreateTeamModalProps) => {
+  students,
+}: CreateTeamAsTeacherModalProps) => {
   const queryClient = useQueryClient();
-  const { mutateAsync, isPending } = useCreateTeamMutation(assignmentId);
+  const { mutateAsync, isPending } = useCreateTeamAsTeacherMutation(assignmentId);
 
-  const form = useAdvancedForm<CreateTeamForm>(
+  const form = useAdvancedForm<CreateTeamAsTeacherForm>(
     async (data) => {
-      await mutateAsync({ name: data.name.trim() });
+      await mutateAsync({
+        name: data.name.trim(),
+        studentIds: [data.captainId!],
+      });
       onClose();
       await queryClient.invalidateQueries({
         queryKey: QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(
@@ -43,7 +51,15 @@ export const CreateTeamModal = ({
         ),
       });
     },
-    { shouldResetOnSuccess: true },
+    {
+      shouldResetOnSuccess: true,
+      initialize: (f) => {
+        f.register('captainId', { ...requiredRule() });
+      },
+      defaultValues: {
+        captainId: null,
+      },
+    },
   );
 
   const handleClose = () => {
@@ -66,6 +82,28 @@ export const CreateTeamModal = ({
               errorText={form.formState.errors.name?.message}
               testId="CreateTeam-name"
             />
+          </Field>
+          <Field title="Капитан">
+            <TextField
+              select
+              fullWidth
+              size="small"
+              value={form.watch('captainId') ?? ''}
+              error={!!form.formState.errors.captainId}
+              helperText={form.formState.errors.captainId?.message}
+              onChange={(e) =>
+                form.setValue('captainId', e.target.value || null, {
+                  shouldValidate: true,
+                })
+              }
+              data-test-id="CreateTeam-captain"
+            >
+              {students.map((student) => (
+                <MenuItem key={student.id} value={student.id}>
+                  {student.legalName || student.email}
+                </MenuItem>
+              ))}
+            </TextField>
           </Field>
           <FormError>{form.overallError || null}</FormError>
           <div className={styles.footer}>
