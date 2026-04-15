@@ -241,6 +241,7 @@ namespace Team13.HitsClass.App.Features.Teams
 
             var newCaptain = await dbContext.Users.GetOne(User.HasId(newCaptainId));
             team.CaptainId = newCaptainId;
+            await dbContext.SaveChangesAsync();
             var saved = await dbContext
                 .Teams.Include(t => t.Captain)
                 .Include(t => t.Members)
