@@ -13,6 +13,7 @@ import {
 } from '../../../../../services/api/api-client/TeamQuery.ts';
 import AddMemberIcon from 'assets/icons/add-member.svg?react';
 import {
+  TeamDistributionType,
   TeamAssignmentPayload,
   UserDto,
 } from '../../../../../services/api/api-client.types.ts';
@@ -372,7 +373,9 @@ export const EditTeamModal = ({
               onButtonClick={() => setPassCaptainRoleErrorOpen(false)}
             >
               <Typography>
-                Вы не можете передавать роль капитана в режиме драфта
+                {assignmentPayload.distributionType === TeamDistributionType.ByTeacher
+                  ? 'Вы не можете передать роль капитана в режиме ручного распределения'
+                  : 'Вы не можете передавать роль капитана в режиме драфта'}
               </Typography>
             </CustomModal>
             <CustomModal
