@@ -84,6 +84,8 @@ export function TeamMembersList({
   hideExtraSlots,
   canAssignCaptainRole,
   onAssignCaptainRole,
+  canRemoveTeamMember,
+  onRemoveTeamMember,
 }: {
   teamDto: TeamDto;
   color?: 'red' | 'green' | 'yellow' | 'blue';
@@ -91,6 +93,8 @@ export function TeamMembersList({
   hideExtraSlots?: boolean;
   canAssignCaptainRole?: boolean;
   onAssignCaptainRole?: (member: UserDto) => Promise<void> | void;
+  canRemoveTeamMember?: boolean;
+  onRemoveTeamMember?: (member: UserDto) => Promise<void> | void;
 }) {
   const numberOfMembers = teamDto.members.length;
   const numberOfSlots = !payload.maxTeamSize
@@ -107,7 +111,13 @@ export function TeamMembersList({
 
   return (
     <>
-      <TeamMemberEntry member={teamDto.captain} color={color} isCaptain />
+      <TeamMemberEntry
+        member={teamDto.captain}
+        color={color}
+        isCaptain
+        canRemoveMember={canRemoveTeamMember}
+        onRemoveMember={onRemoveTeamMember}
+      />
       {(members.length === 0 && (payload.areTeamsFrozen || hideExtraSlots)) || (
         <div className={styles.otherMembers}>
           {members.map((member, index) => (
@@ -117,6 +127,8 @@ export function TeamMembersList({
               color={color}
               canAssignCaptain={canAssignCaptainRole && !!member}
               onAssignCaptain={onAssignCaptainRole}
+              canRemoveMember={canRemoveTeamMember && !!member}
+              onRemoveMember={onRemoveTeamMember}
             />
           ))}
         </div>
