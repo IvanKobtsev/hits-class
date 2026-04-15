@@ -81,7 +81,7 @@ function processGetTeamsForAssignment(response: AxiosResponse): Promise<Types.Te
 }
 
 /**
- * Create a team for a team assignment (Free distribution mode only)
+ * Create a team for a team assignment
  */
 export function createTeam(assignmentId: number, dto: Types.CreateTeamDto, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
     let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams";
@@ -283,25 +283,26 @@ function processRemoveTeamMember(response: AxiosResponse): Promise<Types.TeamDto
 
 /**
  * Check if student already has a team for this assignment
+ * @param studentId (optional) 
  */
-export function isStudentInATeam(id: number, studentId: string, config?: AxiosRequestConfig | undefined): Promise<boolean> {
-    let url_ = getBaseUrl() + "/api/team-assignments/{id}/team";
+export function isStudentInATeam(id: number, studentId?: string | undefined, config?: AxiosRequestConfig | undefined): Promise<boolean> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{id}/team?";
     if (id === undefined || id === null)
       throw new Error("The parameter 'id' must be defined.");
     url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    if (studentId === null)
+        throw new Error("The parameter 'studentId' cannot be null.");
+    else if (studentId !== undefined)
+        url_ += "studentId=" + encodeURIComponent("" + studentId) + "&";
       url_ = url_.replace(/[?&]$/, "");
-
-    const content_ = JSON.stringify(studentId);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigIsStudentInATeam,
         ...config,
-        data: content_,
         method: "GET",
         url: url_,
         headers: {
             ..._requestConfigIsStudentInATeam?.headers,
-            "Content-Type": "application/json",
             "Accept": "application/json"
         }
     };
@@ -348,6 +349,73 @@ function processIsStudentInATeam(response: AxiosResponse): Promise<boolean> {
         return throwException("An unexpected server error occurred.", status, _responseText, _headers);
     }
     return Promise.resolve<boolean>(null as any);
+}
+
+/**
+ * Create a team for a team assignment (as teacher)
+ */
+export function createTeamAsTeacher(assignmentId: number, dto: Types.CreateTeamAsTeacherDto, config?: AxiosRequestConfig | undefined): Promise<Types.TeamDto> {
+    let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams/teacher";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeCreateTeamAsTeacherDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigCreateTeamAsTeacher,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigCreateTeamAsTeacher?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processCreateTeamAsTeacher(_response);
+    });
+}
+
+function processCreateTeamAsTeacher(response: AxiosResponse): Promise<Types.TeamDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initTeamDto(resultData200);
+        return Promise.resolve<Types.TeamDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.TeamDto>(null as any);
 }
 let _requestConfigGetTeamsForAssignment: Partial<AxiosRequestConfig> | null;
 export function getGetTeamsForAssignmentRequestConfig() {
@@ -402,4 +470,15 @@ export function setIsStudentInATeamRequestConfig(value: Partial<AxiosRequestConf
 }
 export function patchIsStudentInATeamRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigIsStudentInATeam = patch(_requestConfigIsStudentInATeam ?? {});
+}
+
+let _requestConfigCreateTeamAsTeacher: Partial<AxiosRequestConfig> | null;
+export function getCreateTeamAsTeacherRequestConfig() {
+  return _requestConfigCreateTeamAsTeacher;
+}
+export function setCreateTeamAsTeacherRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreateTeamAsTeacher = value;
+}
+export function patchCreateTeamAsTeacherRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreateTeamAsTeacher = patch(_requestConfigCreateTeamAsTeacher ?? {});
 }

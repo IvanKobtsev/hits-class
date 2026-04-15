@@ -36,6 +36,11 @@ export type RemoveTeamMemberTeamQueryParameters = {
 
 export type IsStudentInATeamTeamQueryParameters = {
   id: number ;
+  studentId?: string | undefined ;
+}
+
+export type CreateTeamAsTeacherTeamQueryParameters = {
+  assignmentId: number ;
 }
 
 export function getTeamsForAssignmentUrl(assignmentId: number): string {
@@ -148,7 +153,7 @@ export function createTeamMutationKey(assignmentId: number): MutationKey {
 }
 
 /**
- * Create a team for a team assignment (Free distribution mode only)
+ * Create a team for a team assignment
  */
 export function useCreateTeamMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.TeamDto, unknown, Types.CreateTeamDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.TeamDto, unknown, Types.CreateTeamDto, TContext> {
   const key = createTeamMutationKey(assignmentId);
@@ -168,7 +173,7 @@ type CreateTeam__MutationParameters = CreateTeamTeamQueryParameters & {
 }
 
 /**
- * Create a team for a team assignment (Free distribution mode only)
+ * Create a team for a team assignment
  */
 export function useCreateTeamMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.TeamDto, unknown, CreateTeam__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreateTeamTeamQueryParameters}): UseMutationResult<Types.TeamDto, unknown, CreateTeam__MutationParameters, TContext> {
   const key = createTeamMutationKey(options?.parameters?.assignmentId!);
@@ -289,11 +294,15 @@ return useMutation({
 });
 }
   
-export function isStudentInATeamUrl(id: number): string {
-  let url_ = getBaseUrl() + "/api/team-assignments/{id}/team";
+export function isStudentInATeamUrl(id: number, studentId?: string | undefined): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{id}/team?";
 if (id === undefined || id === null)
   throw new Error("The parameter 'id' must be defined.");
 url_ = url_.replace("{id}", encodeURIComponent("" + id));
+if (studentId === null)
+    throw new Error("The parameter 'studentId' cannot be null.");
+else if (studentId !== undefined)
+    url_ += "studentId=" + encodeURIComponent("" + studentId) + "&";
   url_ = url_.replace(/[?&]$/, "");
   return url_;
 }
@@ -309,7 +318,7 @@ export function setIsStudentInATeamDefaultOptions(options: typeof isStudentInATe
 }
 
 export function isStudentInATeamQueryKey(dto: IsStudentInATeamTeamQueryParameters): QueryKey;
-export function isStudentInATeamQueryKey(id: number, studentId: string): QueryKey;
+export function isStudentInATeamQueryKey(id: number, studentId?: string | undefined): QueryKey;
 export function isStudentInATeamQueryKey(...params: any[]): QueryKey {
   if (params.length === 1 && isParameterObject(params[0])) {
     const { id, studentId,  } = params[0] as IsStudentInATeamTeamQueryParameters;
@@ -330,14 +339,15 @@ export function isStudentInATeamQueryKey(...params: any[]): QueryKey {
 }
 function __isStudentInATeam(context: QueryFunctionContext) {
   return Client.isStudentInATeam(
-      context.queryKey[2] as number,       context.queryKey[3] as string    );
+      context.queryKey[2] as number,       context.queryKey[3] as string | undefined    );
 }
 
 export function useIsStudentInATeamQuery<TSelectData = boolean, TError = unknown>(dto: IsStudentInATeamTeamQueryParameters, options?: Omit<UseQueryOptions<boolean, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
  * Check if student already has a team for this assignment
+ * @param studentId (optional) 
  */
-export function useIsStudentInATeamQuery<TSelectData = boolean, TError = unknown>(id: number, studentId: string, options?: Omit<UseQueryOptions<boolean, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useIsStudentInATeamQuery<TSelectData = boolean, TError = unknown>(id: number, studentId?: string | undefined, options?: Omit<UseQueryOptions<boolean, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 export function useIsStudentInATeamQuery<TSelectData = boolean, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
   let options: UseQueryOptions<boolean, TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
@@ -370,8 +380,9 @@ export function useIsStudentInATeamQuery<TSelectData = boolean, TError = unknown
 }
 /**
  * Check if student already has a team for this assignment
+ * @param studentId (optional) 
  */
-export function setIsStudentInATeamData(queryClient: QueryClient, updater: (data: boolean | undefined) => boolean, id: number, studentId: string) {
+export function setIsStudentInATeamData(queryClient: QueryClient, updater: (data: boolean | undefined) => boolean, id: number, studentId?: string | undefined) {
   queryClient.setQueryData(isStudentInATeamQueryKey(id, studentId),
     updater
   );
@@ -379,7 +390,61 @@ export function setIsStudentInATeamData(queryClient: QueryClient, updater: (data
 
 /**
  * Check if student already has a team for this assignment
+ * @param studentId (optional) 
  */
 export function setIsStudentInATeamDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: boolean | undefined) => boolean) {
   queryClient.setQueryData(queryKey, updater);
+}
+    
+export function createTeamAsTeacherUrl(assignmentId: number): string {
+  let url_ = getBaseUrl() + "/api/team-assignments/{assignmentId}/teams/teacher";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function createTeamAsTeacherMutationKey(assignmentId: number): MutationKey {
+  return trimArrayEnd([
+      'TeamClient',
+      'createTeamAsTeacher',
+      assignmentId as any,
+    ]);
+}
+
+/**
+ * Create a team for a team assignment (as teacher)
+ */
+export function useCreateTeamAsTeacherMutation<TContext>(assignmentId: number, options?: Omit<UseMutationOptions<Types.TeamDto, unknown, Types.CreateTeamAsTeacherDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.TeamDto, unknown, Types.CreateTeamAsTeacherDto, TContext> {
+  const key = createTeamAsTeacherMutationKey(assignmentId);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.CreateTeamAsTeacherDto) => Client.createTeamAsTeacher(assignmentId, dto),
+    mutationKey: key,
+  });
+}
+  
+type CreateTeamAsTeacher__MutationParameters = CreateTeamAsTeacherTeamQueryParameters & {
+  dto: Types.CreateTeamAsTeacherDto;
+}
+
+/**
+ * Create a team for a team assignment (as teacher)
+ */
+export function useCreateTeamAsTeacherMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.TeamDto, unknown, CreateTeamAsTeacher__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreateTeamAsTeacherTeamQueryParameters}): UseMutationResult<Types.TeamDto, unknown, CreateTeamAsTeacher__MutationParameters, TContext> {
+  const key = createTeamAsTeacherMutationKey(options?.parameters?.assignmentId!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: CreateTeamAsTeacher__MutationParameters) => Client.createTeamAsTeacher(data.assignmentId ?? options?.parameters?.assignmentId!, data.dto),
+  mutationKey: key,
+});
 }

@@ -693,7 +693,8 @@ namespace Team13.HitsClass.App.Tests
             int courseId,
             string title = "Test Assignment",
             DateTime? deadline = null,
-            List<string>? forWhomUserIds = null
+            List<string>? forWhomUserIds = null,
+            TeamDistributionType distributionType = TeamDistributionType.Random
         )
         {
             return await WithDbContext(async db =>
@@ -719,7 +720,7 @@ namespace Team13.HitsClass.App.Tests
                     {
                         Title = title,
                         DeadlineUtc = deadline ?? DateTime.UtcNow.AddDays(7),
-                        DistributionType = TeamDistributionType.Random,
+                        DistributionType = distributionType,
                         SubmissionType = SubmissionType.All,
                         MaxTeamSize = 6,
                         MinTeamSize = 3,

@@ -210,20 +210,6 @@ public class TeamServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task CreateTeam_CourseOwnerNotEnrolledAsStudent_ThrowsAccessDeniedException()
-    {
-        var course = await CreateCourse();
-        var assignment = await CreateFreeTeamAssignment(course.Id);
-
-        // _defaultUser owns the course but is not enrolled as a student
-        _userAccessorMock.Setup(x => x.GetUserId()).Returns(_defaultUser.Id);
-
-        await Assert.ThrowsAsync<AccessDeniedException>(() =>
-            _teamService.CreateTeam(assignment.Id, new CreateTeamDto { Name = "Team" })
-        );
-    }
-
-    [Fact]
     public async Task CreateTeam_TwoStudentsCanCreateSeparateTeams()
     {
         var course = await CreateCourse();
