@@ -19,6 +19,9 @@ import {
 import { markTeamMember } from '../../../../../services/api/api-client/SubmissionClient.ts';
 import { QueryFactory } from '../../../../../services/api';
 import { AttachmentsList } from '../../../OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList.tsx';
+import { useState } from 'react';
+import { Field } from 'components/uikit/Field';
+import { Input } from 'components/uikit/inputs/Input';
 
 type TeamSubmissionsModalProps = {
   assignmentId: number;
@@ -36,6 +39,8 @@ export const TeamSubmissionsModal = ({
   assignmentPayload,
 }: TeamSubmissionsModalProps) => {
   const teamSubmissionQuery = useGetTeamSubmissionQuery(teamId);
+  const [markAllOpen, setMarkAllOpen] = useState(false);
+  const [markAllValue, setMarkAllValue] = useState('');
 
   const form = useAdvancedForm<Record<string, string>>(async (data) => {
     if (!teamSubmissionQuery.data) return;
@@ -58,6 +63,21 @@ export const TeamSubmissionsModal = ({
 
   const handleClose = () => {
     onClose();
+  };
+
+  const applyMarkToAll = () => {
+    if (!teamSubmissionQuery.data) return;
+    const value = markAllValue.trim();
+    if (!value) return;
+    const memberIds = [
+      teamSubmissionQuery.data.captain.id,
+      ...teamSubmissionQuery.data.members
+        .map((m) => m.user.id)
+        .filter((id) => id !== teamSubmissionQuery.data!.captain.id),
+    ];
+    for (const id of memberIds) {
+      form.setValue(id, value, { shouldDirty: true, shouldValidate: true });
+    }
   };
 
   return (
@@ -89,8 +109,13 @@ export const TeamSubmissionsModal = ({
             <div className={styles.footer}>
               <Button
                 variant="contained"
+                type="button"
                 data-test-id="TeamSubmissions-mark-all-button"
                 className={clsx(styles.btnPrimary, styles.markAll)}
+                onClick={() => {
+                  setMarkAllValue('');
+                  setMarkAllOpen(true);
+                }}
               >
                 {'Поставить оценку всей команде'}
               </Button>
@@ -107,6 +132,29 @@ export const TeamSubmissionsModal = ({
           </form>
         )}
       </Loading>
+      <CustomModal
+        isOpen={markAllOpen}
+        isBlocking={false}
+        title="Поставить оценку всей команде"
+        onClose={() => setMarkAllOpen(false)}
+        buttons="ok-cancel"
+        okButtonText="Применить"
+        onButtonClick={(btn: 'ok' | 'cancel') => {
+          if (btn === 'ok') {
+            applyMarkToAll();
+          }
+          setMarkAllOpen(false);
+        }}
+      >
+        <Field title="Оценка">
+          <Input
+            autoFocus
+            value={markAllValue}
+            onChange={(e) => setMarkAllValue(e.target.value)}
+            data-test-id="TeamSubmissions-mark-all-input"
+          />
+        </Field>
+      </CustomModal>
     </CustomModal>
   );
 };
