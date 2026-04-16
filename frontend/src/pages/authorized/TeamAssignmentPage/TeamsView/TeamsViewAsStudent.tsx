@@ -52,8 +52,8 @@ export function TeamsViewAsStudent() {
                 color="primary"
                 onClick={async () => {
                   await acceptInvitation(invite.id);
-                  queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
-                  queryClient.invalidateQueries({ queryKey: QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(params.assignmentId) });
+                  await queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
+                  await queryClient.invalidateQueries({ queryKey: QueryFactory.TeamQuery.getTeamsForAssignmentQueryKey(params.assignmentId) });
                 }}
                 data-test-id="CourseFeedTab-accept-invite-btn"
                 className={clsx(styles.btnPrimary, styles.accept)}
@@ -65,7 +65,7 @@ export function TeamsViewAsStudent() {
                 color="primary"
                 onClick={async () => {
                   await declineInvitation(invite.id);
-                  queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
+                  await queryClient.invalidateQueries({ queryKey: QueryFactory.InvitationQuery.getAllInvitationsQueryKey(params.assignmentId) });
                 }}
                 data-test-id="CourseFeedTab-decline-invite-btn"
                 className={clsx(styles.btnPrimary, styles.decline)}
