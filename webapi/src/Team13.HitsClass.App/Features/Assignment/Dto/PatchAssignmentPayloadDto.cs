@@ -1,4 +1,4 @@
-﻿using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain;
 using Team13.WebApi.Domain.Helpers;
 using Team13.WebApi.Patching.Models;
 
@@ -10,4 +10,5 @@ public class PatchAssignmentPayloadDto : PatchRequest<PublicationPayload>
     public string Title { get; set; }
 
     public DateTime? DeadlineUtc { get; set; }
+    public int? MaxMark { get; set; }
 }

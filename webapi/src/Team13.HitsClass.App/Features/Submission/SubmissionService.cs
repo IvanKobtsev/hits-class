@@ -6,6 +6,7 @@ using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.App.Utils;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
@@ -269,6 +270,9 @@ public class SubmissionService(
         if (!canMark)
             throw new AccessDeniedException("You do not have permission to mark this submission.");
 
+        var payload = (AssignmentPayload)publication.PublicationPayload;
+        ValidateMark(payload, dto.Mark);
+
         submission.Mark = dto.Mark;
         submission.LastMarkedAtUTC = DateTime.UtcNow;
         submission.State = SubmissionState.Accepted;
@@ -353,6 +357,9 @@ public class SubmissionService(
         if (!canMark)
             throw new AccessDeniedException("You do not have permission to mark this team member.");
 
+        var payload = (TeamAssignmentPayload)publication.PublicationPayload;
+        ValidateMark(payload, dto.Mark);
+
         if (!team.Members.Any(m => m.Id == memberId))
             throw new ValidationException("This user is not a member of the team.");
 
@@ -388,5 +395,36 @@ public class SubmissionService(
         }
 
         await dbContext.SaveChangesAsync();
+    }
+
+    private void ValidateMark(AssignmentPayload payload, string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("Mark is required");
+
+        switch (payload.MarkType)
+        {
+            case MarkType.Score:
+                if (!int.TryParse(value, out var score))
+                    throw new ArgumentException("Score must be a number");
+
+                if (payload.MaxMark == null)
+                    throw new InvalidOperationException("MaxMark is not set");
+
+                if (score < 0 || score > payload.MaxMark)
+                    throw new ArgumentException($"Score must be between 0 and {payload.MaxMark}");
+
+                break;
+
+            case MarkType.PassFail:
+                var normalized = value.ToLower();
+
+                if (normalized != "pass" && normalized != "fail")
+                    throw new ArgumentException("Value must be 'pass' or 'fail'");
+
+                break;
+            default:
+                break;
+        }
     }
 }

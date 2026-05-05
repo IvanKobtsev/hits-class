@@ -9,6 +9,7 @@ namespace Team13.HitsClass.App.Features.TeamAssignment.Dto
         [RequiredOrMissing]
         public string Title { get; set; }
         public DateTime? DeadlineUtc { get; set; }
+        public int? MaxMark { get; set; }
         public int? MinTeamSize { get; set; }
         public int? MaxTeamSize { get; set; }
         public TeamDistributionType DistributionType { get; set; }
