@@ -412,7 +412,7 @@ public class SubmissionService(
                     throw new InvalidOperationException("MaxMark is not set");
 
                 if (score < 0 || score > payload.MaxMark)
-                    throw new ArgumentException($"Score must be between 0 and {payload.MaxMark}");
+                    throw new ValidationException($"Score must be between 0 and {payload.MaxMark}");
 
                 break;
 
@@ -420,7 +420,7 @@ public class SubmissionService(
                 var normalized = value.ToLower();
 
                 if (normalized != "pass" && normalized != "fail")
-                    throw new ArgumentException("Value must be 'pass' or 'fail'");
+                    throw new ValidationException("Value must be 'pass' or 'fail'");
 
                 break;
             default:

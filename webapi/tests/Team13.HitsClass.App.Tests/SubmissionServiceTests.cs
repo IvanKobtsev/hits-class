@@ -770,6 +770,104 @@ public class SubmissionServiceTests : AppServiceTestBase
         );
     }
 
+    [Fact]
+    public async Task MarkSubmission_MarkTypeIsPassFail_SetsMarkAndAcceptedState()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.PassFail, null);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "Pass", MarkComment = _defaultContent };
+
+        // Act
+        var result = await Sut.MarkSubmission(submission.Id, markDto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Mark.Should().Be("Pass");
+        result.State.Should().Be(SubmissionState.Accepted);
+        result.LastMarkedAtUTC.Should().NotBeNull();
+        result.Comments.Should().ContainSingle(c => c.Content == _defaultContent);
+    }
+
+    [Fact]
+    public async Task MarkSubmission_MarkTypeIsScoreButMarkIsHigherThanMaxMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.Score, 5);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "100", MarkComment = _defaultContent };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.MarkSubmission(submission.Id, markDto)
+        );
+
+        // Assert
+        exception.Message.Should().Be("Score must be between 0 and 5");
+    }
+
+    [Fact]
+    public async Task MarkSubmission_MarkTypeIsScoreButMarkIsBelowZero_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.Score, 5);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "-2", MarkComment = _defaultContent };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.MarkSubmission(submission.Id, markDto)
+        );
+
+        // Assert
+        exception.Message.Should().Be("Score must be between 0 and 5");
+    }
+
+    [Fact]
+    public async Task MarkSubmission_MarkTypeIsPassFailButMarkIsANumber_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.PassFail, null);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "5", MarkComment = _defaultContent };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.MarkSubmission(submission.Id, markDto)
+        );
+
+        // Assert
+        exception.Message.Should().Be("Value must be 'pass' or 'fail'");
+    }
+
     #endregion
 
     #region Helper Methods
@@ -832,7 +930,9 @@ public class SubmissionServiceTests : AppServiceTestBase
 
     private async Task<Publication> CreateAssignment(
         int courseId,
-        List<string>? forWhomUserIds = null
+        List<string>? forWhomUserIds = null,
+        MarkType markType = MarkType.Score,
+        int? maxMark = 5
     )
     {
         return await WithDbContext(async db =>
@@ -858,6 +958,8 @@ public class SubmissionServiceTests : AppServiceTestBase
                 {
                     Title = "Test Assignment",
                     DeadlineUtc = DateTime.UtcNow.AddDays(7),
+                    MarkType = markType,
+                    MaxMark = maxMark,
                 },
                 Attachments = [],
             };
