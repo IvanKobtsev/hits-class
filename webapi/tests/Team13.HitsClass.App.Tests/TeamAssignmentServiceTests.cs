@@ -580,7 +580,7 @@ namespace Team13.HitsClass.App.Tests
             {
                 Payload = new PatchTeamAssignmentPayloadDto { MaxMark = 100 },
             };
-            dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.DeadlineUtc));
+            dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.MaxMark));
 
             var result = await _teamAssignmentService.PatchTeamAssignment(assignment.Id, dto);
 
