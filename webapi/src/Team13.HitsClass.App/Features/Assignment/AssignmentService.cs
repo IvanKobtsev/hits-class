@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Assignment.Dto;
 using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.PersistenceHelpers;
@@ -66,6 +67,22 @@ namespace Team13.HitsClass.App.Features.Assignment
                     );
             }
 
+            if (
+                createAssignmentDto.Payload.MarkType == MarkType.Score
+                && createAssignmentDto.Payload.MaxMark == null
+            )
+                throw new ValidationException(
+                    "MaxMark is required for assignments with type Score"
+                );
+
+            if (
+                createAssignmentDto.Payload.MarkType == MarkType.PassFail
+                && createAssignmentDto.Payload.MaxMark != null
+            )
+                throw new ValidationException(
+                    "MaxMark is not allowed for assignments with type PassFail"
+                );
+
             var newAssignment = await publicationService.CreateNewPublication(
                 courseId,
                 createAssignmentDto,
@@ -89,6 +106,18 @@ namespace Team13.HitsClass.App.Features.Assignment
                 if (patchAssignmentDto.Payload.DeadlineUtc.Value is { Hour: 0, Minute: 0 })
                     throw new ValidationException(
                         "Deadline cannot be 00:00. Always choose 23:59 over midnight."
+                    );
+            }
+
+            if (patchAssignmentDto.Payload.MaxMark != null)
+            {
+                var assignment = await dbContext.Publications.GetOne(
+                    Publication.HasId(assignmentId)
+                );
+                var payload = (AssignmentPayload)assignment.PublicationPayload;
+                if (payload.MarkType == MarkType.PassFail)
+                    throw new ValidationException(
+                        "MaxMark is not allowed for assignments with type PassFail"
                     );
             }
 

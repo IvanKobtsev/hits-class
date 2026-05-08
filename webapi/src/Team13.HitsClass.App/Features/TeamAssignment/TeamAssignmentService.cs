@@ -1,15 +1,21 @@
+using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Notifications;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.TeamAssignment.Dto;
+using Team13.HitsClass.Domain;
+using Team13.HitsClass.Domain.PublicationPayloadTypes;
+using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.PersistenceHelpers;
 using Team13.WebApi.Patching;
 
 namespace Team13.HitsClass.App.Features.TeamAssignment
 {
     public class TeamAssignmentService(
         PublicationService publicationService,
-        NotificationService notificationService
+        NotificationService notificationService,
+        HitsClassDbContext dbContext
     )
     {
         //public async Task<AssignmentStatisticDto> GetAssignmentStatistics(int assignmentId)
@@ -41,6 +47,22 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
                         "MaxTeamSize must be bigger or equal to MinTeamSize."
                     );
             }
+
+            if (
+                createTeamAssignmentDto.Payload.MarkType == MarkType.Score
+                && createTeamAssignmentDto.Payload.MaxMark == null
+            )
+                throw new ValidationException(
+                    "MaxMark is required for assignments with type Score"
+                );
+
+            if (
+                createTeamAssignmentDto.Payload.MarkType == MarkType.PassFail
+                && createTeamAssignmentDto.Payload.MaxMark != null
+            )
+                throw new ValidationException(
+                    "MaxMark is not allowed for assignments with type PassFail"
+                );
 
             var newAssignment = await publicationService.CreateNewPublication(
                 courseId,
@@ -83,6 +105,18 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
                 throw new ValidationException(
                     "Максимальный размер команды должен быть больше или равен минимальному и не может быть больше 100."
                 );
+            }
+
+            if (patchAssignmentDto.Payload.MaxMark != null)
+            {
+                var assignment = await dbContext.Publications.GetOne(
+                    Publication.HasId(assignmentId)
+                );
+                var payload = (AssignmentPayload)assignment.PublicationPayload;
+                if (payload.MarkType == MarkType.PassFail)
+                    throw new ValidationException(
+                        "MaxMark is not allowed for assignments with type PassFail"
+                    );
             }
 
             return await publicationService.PatchPublication(

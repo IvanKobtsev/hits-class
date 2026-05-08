@@ -52,6 +52,7 @@ namespace Team13.HitsClass.App.Tests
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
                     AreTeamsFrozen = false,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -71,6 +72,8 @@ namespace Team13.HitsClass.App.Tests
             payload.MaxTeamSize.Should().Be(6);
             payload.MinTeamSize.Should().Be(3);
             payload.AreTeamsFrozen.Should().BeFalse();
+            payload.MarkType.Should().Be(MarkType.PassFail);
+            payload.MaxMark.Should().BeNull();
         }
 
         [Fact]
@@ -93,6 +96,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -123,6 +127,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -153,6 +158,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -184,6 +190,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -192,6 +199,102 @@ namespace Team13.HitsClass.App.Tests
             result.Should().NotBeNull();
             var payload = result.PublicationPayload as TeamAssignmentPayload;
             payload!.DeadlineUtc.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task CreateTeamAssignment_MarkTypeIsScoreAndNoMaxMarkIsGiven_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            var dto = new CreateTeamAssignmentDto
+            {
+                Content = _defaultContent,
+                TargetUsersIds = [student.Id],
+                Payload = new TeamAssignmentPayload
+                {
+                    Title = "Test Team Assignment",
+                    DeadlineUtc = null,
+                    DistributionType = TeamDistributionType.Random,
+                    SubmissionType = SubmissionType.All,
+                    MaxTeamSize = 6,
+                    MinTeamSize = 3,
+                    MarkType = MarkType.Score,
+                },
+            };
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.CreateTeamAssignment(course.Id, dto)
+            );
+
+            exception.Message.Should().Be("MaxMark is required for assignments with type Score");
+        }
+
+        [Fact]
+        public async Task CreateTeamAssignment_MarkTypeIsPassFailAndMaxMarkIsGiven_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            var dto = new CreateTeamAssignmentDto
+            {
+                Content = _defaultContent,
+                TargetUsersIds = [student.Id],
+                Payload = new TeamAssignmentPayload
+                {
+                    Title = "Test Team Assignment",
+                    DeadlineUtc = null,
+                    DistributionType = TeamDistributionType.Random,
+                    SubmissionType = SubmissionType.All,
+                    MaxTeamSize = 6,
+                    MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
+                    MaxMark = 100,
+                },
+            };
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.CreateTeamAssignment(course.Id, dto)
+            );
+
+            exception
+                .Message.Should()
+                .Be("MaxMark is not allowed for assignments with type PassFail");
+        }
+
+        [Fact]
+        public async Task CreateTeamAssignment_MarkTypeIsScoreAndMaxMarkIsPresent_CreatesAssignmentSuccessfully()
+        {
+            var course = await CreateCourse();
+            var student = await CreateUser("student@test.com");
+            await AddStudentToCourse(course.Id, student.Id);
+
+            var dto = new CreateTeamAssignmentDto
+            {
+                Content = _defaultContent,
+                TargetUsersIds = [student.Id],
+                Payload = new TeamAssignmentPayload
+                {
+                    Title = "Test Team Assignment",
+                    DeadlineUtc = null,
+                    DistributionType = TeamDistributionType.Random,
+                    SubmissionType = SubmissionType.All,
+                    MaxTeamSize = 6,
+                    MinTeamSize = 3,
+                    MarkType = MarkType.Score,
+                    MaxMark = 5,
+                },
+            };
+
+            var result = await _teamAssignmentService.CreateTeamAssignment(course.Id, dto);
+
+            result.Should().NotBeNull();
+            var payload = result.PublicationPayload as TeamAssignmentPayload;
+            payload!.DeadlineUtc.Should().BeNull();
+            payload.MarkType.Should().Be(MarkType.Score);
+            payload.MaxMark.Should().Be(5);
         }
 
         [Fact]
@@ -213,6 +316,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 4,
                     MinTeamSize = 4,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -243,6 +347,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 3,
                     MinTeamSize = 6,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -268,6 +373,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 6,
                     MinTeamSize = 3,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -297,6 +403,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 3,
                     MinTeamSize = 6,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -328,6 +435,7 @@ namespace Team13.HitsClass.App.Tests
                     SubmissionType = SubmissionType.All,
                     MaxTeamSize = 4,
                     MinTeamSize = 4,
+                    MarkType = MarkType.PassFail,
                 },
             };
 
@@ -455,6 +563,52 @@ namespace Team13.HitsClass.App.Tests
             result.Should().NotBeNull();
             var payload = result.PublicationPayload as TeamAssignmentPayload;
             payload!.DeadlineUtc.Should().BeNull();
+        }
+
+        [Fact]
+        public async Task PatchTeamAssignment_MarkTypeIsScoreAndNewMaxMarkIsGiven_UpdatesSuccessfully()
+        {
+            var course = await CreateCourse();
+            var assignment = await CreateTeamAssignment(
+                course.Id,
+                deadline: DateTime.UtcNow.AddDays(7),
+                markType: MarkType.Score,
+                maxMark: 5
+            );
+
+            var dto = new PatchTeamAssignmentDto
+            {
+                Payload = new PatchTeamAssignmentPayloadDto { MaxMark = 100 },
+            };
+            dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.MaxMark));
+
+            var result = await _teamAssignmentService.PatchTeamAssignment(assignment.Id, dto);
+
+            result.Should().NotBeNull();
+            var payload = result.PublicationPayload as TeamAssignmentPayload;
+            payload!.MarkType.Should().Be(MarkType.Score);
+            payload.MaxMark.Should().Be(100);
+        }
+
+        [Fact]
+        public async Task PatchTeamAssignment_MarkTypeIsPassFailAndMaxMarkIsGiven_ThrowsValidationException()
+        {
+            var course = await CreateCourse();
+            var assignment = await CreateTeamAssignment(course.Id);
+
+            var dto = new PatchTeamAssignmentDto
+            {
+                Payload = new PatchTeamAssignmentPayloadDto { MaxMark = 100 },
+            };
+            dto.Payload.SetHasProperty(nameof(PatchTeamAssignmentPayloadDto.DeadlineUtc));
+
+            var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+                await _teamAssignmentService.PatchTeamAssignment(assignment.Id, dto)
+            );
+
+            exception
+                .Message.Should()
+                .Be("MaxMark is not allowed for assignments with type PassFail");
         }
 
         [Fact]
@@ -694,7 +848,9 @@ namespace Team13.HitsClass.App.Tests
             string title = "Test Assignment",
             DateTime? deadline = null,
             List<string>? forWhomUserIds = null,
-            TeamDistributionType distributionType = TeamDistributionType.Random
+            TeamDistributionType distributionType = TeamDistributionType.Random,
+            MarkType markType = MarkType.PassFail,
+            int? maxMark = null
         )
         {
             return await WithDbContext(async db =>
@@ -724,6 +880,8 @@ namespace Team13.HitsClass.App.Tests
                         SubmissionType = SubmissionType.All,
                         MaxTeamSize = 6,
                         MinTeamSize = 3,
+                        MarkType = markType,
+                        MaxMark = maxMark,
                     },
                     Attachments = [],
                 };
