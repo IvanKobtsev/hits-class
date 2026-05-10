@@ -12,4 +12,5 @@ public class AssignmentPayload : PublicationPayload
     public MarkType MarkType { get; set; }
     public DateTime? DeadlineUtc { get; set; }
     public int? MaxMark { get; set; }
+    public int? MinMark { get; set; }
 }
