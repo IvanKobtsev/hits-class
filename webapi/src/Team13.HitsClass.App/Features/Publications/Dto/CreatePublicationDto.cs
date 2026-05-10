@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Team13.HitsClass.App.Features.AssignmentCriteria.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 
@@ -10,4 +11,5 @@ public abstract class CreatePublicationDto
     public LexicalState Content { get; set; }
     public List<string>? TargetUsersIds { get; set; }
     public List<Attachment>? Attachments { get; set; }
+    public List<CreateCriteriaDto>? Criteria { get; set; }
 }

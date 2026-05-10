@@ -1,6 +1,7 @@
 using Jering.Javascript.NodeJS;
 using Team13.HitsClass.App.Features.Announcement;
 using Team13.HitsClass.App.Features.Assignment;
+using Team13.HitsClass.App.Features.AssignmentCriteria;
 using Team13.HitsClass.App.Features.Comments;
 using Team13.HitsClass.App.Features.Courses;
 using Team13.HitsClass.App.Features.Files;
@@ -42,6 +43,7 @@ public static class SetupServices
             .AddScoped<SubmissionService>()
             .AddScoped<CommentService>()
             .AddScoped<CourseService>()
+            .AddScoped<CriteriaService>()
             .AddScoped<NotificationService>();
 
         services.AddNodeJS();

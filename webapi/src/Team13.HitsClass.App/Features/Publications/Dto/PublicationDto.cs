@@ -1,3 +1,4 @@
+using Team13.HitsClass.App.Features.AssignmentCriteria.Dto;
 using Team13.HitsClass.App.Features.Users.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
@@ -14,6 +15,7 @@ namespace Team13.HitsClass.App.Features.Publications.Dto
         public List<Attachment> Attachments { get; set; }
         public PublicationType Type { get; set; }
         public List<string> TargetUserIds { get; set; }
+        public List<CriteriaDto> Criteria { get; set; }
 
         public PublicationPayload PublicationPayload { get; set; }
     }

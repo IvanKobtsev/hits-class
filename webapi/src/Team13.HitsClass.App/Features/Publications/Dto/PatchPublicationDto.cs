@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using Team13.HitsClass.App.Features.AssignmentCriteria.Dto;
 using Team13.HitsClass.Common;
 using Team13.HitsClass.Domain;
 using Team13.WebApi.Domain.Helpers;
@@ -14,6 +15,9 @@ public abstract class PatchPublicationDto : IPatchRequest
     [RequiredOrMissing(AllowEmptyStrings = false)]
     public LexicalState Content { get; set; }
     public List<Attachment>? Attachments { get; set; }
+
+    [DoNotPatch]
+    public List<CreateCriteriaDto>? Criteria { get; set; }
 
     [DoNotPatch]
     public List<string>? TargetUsersIds { get; set; }

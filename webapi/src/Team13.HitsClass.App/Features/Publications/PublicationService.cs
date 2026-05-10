@@ -1,6 +1,7 @@
 using Jering.Javascript.NodeJS;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Team13.HitsClass.App.Features.AssignmentCriteria.Dto;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.Publications.Extensions;
 using Team13.HitsClass.App.Node.js;
@@ -44,6 +45,7 @@ public class PublicationService(
             .AsNoTracking()
             .Include(p => p.TargetUsers)
             .Include(p => p.Author)
+            .Include(p => p.Criteria)
             .Where(p => p.CourseId == courseId);
 
         if (!canViewAllPublications)
@@ -70,6 +72,7 @@ public class PublicationService(
             .Publications.AsSplitQuery()
             .Include(p => p.Author)
             .Include(p => p.TargetUsers)
+            .Include(p => p.Criteria)
             .GetOne(Publication.HasId(publicationId));
 
         var course = await dbContext
@@ -136,6 +139,9 @@ public class PublicationService(
             Attachments = createPublicationDto.Attachments,
         };
 
+        var validCriteria = ValidateCriteria(createPublicationDto.Criteria, newPublication.Id);
+        newPublication.Criteria = validCriteria;
+
         dbContext.Publications.Add(newPublication);
         await dbContext.SaveChangesAsync();
 
@@ -153,6 +159,7 @@ public class PublicationService(
             .Publications.AsSplitQuery()
             .Include(p => p.TargetUsers)
             .Include(p => p.Author)
+            .Include(p => p.Criteria)
             .GetOne(Publication.HasId(publicationId));
 
         var course = await dbContext
@@ -191,6 +198,9 @@ public class PublicationService(
             && await nodeJsService.ValidateLexicalState(patchPublicationDto.Content.Json) == null
         )
             throw new ValidationException("Invalid Lexical State.");
+
+        var validCriteria = ValidateCriteria(patchPublicationDto.Criteria, publicationId);
+        publication.Criteria = validCriteria;
 
         publication.Update(patchPublicationDto);
 
@@ -247,5 +257,29 @@ public class PublicationService(
             );
 
         return targetUsers;
+    }
+
+    private List<Criteria> ValidateCriteria(List<CreateCriteriaDto>? criteria, int assignmentId)
+    {
+        if (criteria == null)
+            return new List<Criteria>();
+        var requiredCriteria = criteria.Where(c => c.Type == CriteriaType.Requirement).ToList();
+        if (requiredCriteria.Any(c => c.MinValue != null || c.MaxValue != null))
+            throw new ValidationException(
+                "MinValue and MaxValue are not allowed in criteria with type Requirement"
+            );
+
+        // add  validation for other criteria types
+
+        return criteria
+            .Select(c => new Criteria
+            {
+                Type = c.Type,
+                Description = c.Description,
+                MaxValue = c.MaxValue,
+                MinValue = c.MinValue,
+                PublicationId = assignmentId,
+            })
+            .ToList();
     }
 }
