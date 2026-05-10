@@ -1,5 +1,6 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using NeinLinq;
+using Team13.HitsClass.App.Features.AssignmentCriteria;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.Users;
 using Team13.HitsClass.Domain;
@@ -30,6 +31,7 @@ public static class PublicationExtensions
             Attachments = publication.Attachments,
             TargetUserIds = publication.TargetUsers.Select(u => u.Id).ToList(),
             Type = publication.Type,
+            Criteria = publication.Criteria.Select(c => c.ToCriteriaDto()).ToList(),
             PublicationPayload = publication.PublicationPayload,
         };
     }
