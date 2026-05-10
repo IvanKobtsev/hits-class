@@ -55,7 +55,6 @@ export const TeamSubmissionsModal = ({
       await markTeamMember(teamId, teamMember.user.id, {
         mark,
         markComment: null,
-        markType: assignmentPayload.markType,
       });
       await queryClient.invalidateQueries({
         queryKey:

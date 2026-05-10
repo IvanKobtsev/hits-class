@@ -2,7 +2,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, test, expect, describe, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router';
-import type { Attachment } from 'services/api/api-client.types';
+import { MarkType, type Attachment } from 'services/api/api-client.types';
 import { QueryFactory } from 'services/api/index.ts';
 import { EditAssignmentModal } from './EditAssignmentModal';
 import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
@@ -88,6 +88,9 @@ function renderModal(
     initialContent?: string;
     initialDeadlineUtc?: Date | null;
     initialAttachments?: Attachment[];
+    initialMarkType?: MarkType;
+    initialMinMark?: number | null;
+    initialMaxMark?: number | null;
   } = {},
 ) {
   const {
@@ -99,6 +102,9 @@ function renderModal(
     initialContent = '',
     initialDeadlineUtc = null,
     initialAttachments = [],
+    initialMarkType = MarkType.Score,
+    initialMinMark = 2,
+    initialMaxMark = 5
   } = overrides;
 
   return render(
@@ -112,6 +118,9 @@ function renderModal(
         initialContent={wrapInLexical(initialContent)}
         initialDeadlineUtc={initialDeadlineUtc}
         initialAttachments={initialAttachments}
+        initialMarkType={initialMarkType}
+        initialMinMark={initialMinMark}
+        initialMaxMark={initialMaxMark}
       />
     </MemoryRouter>,
   );
