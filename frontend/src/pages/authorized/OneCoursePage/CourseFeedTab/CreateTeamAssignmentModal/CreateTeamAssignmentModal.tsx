@@ -1,4 +1,5 @@
 import {
+  MarkType,
   Attachment,
   FileInfoDto,
   LexicalState,
@@ -58,6 +59,9 @@ type CreateTeamAssignmentForm = {
   submissionType: SubmissionType;
   minTeamSize: number;
   maxTeamSize: number;
+  markType: MarkType;
+  minMark: number | null;
+  maxMark: number | null;
 };
 
 export type CreateTeamAssignmentModalProps = {
@@ -117,6 +121,9 @@ export const CreateTeamAssignmentModal = ({
             deadlineUtc: data.deadlineUtc ?? null,
             minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
             maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
+            markType: data.markType,
+            minMark: data.minMark,
+            maxMark: data.maxMark,
             areTeamsFrozen: false,
           },
         });

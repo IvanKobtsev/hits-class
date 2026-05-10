@@ -454,6 +454,9 @@ export function prepareSerializeAnnouncementPayload(_data: AnnouncementPayload):
 export interface AssignmentPayload extends PublicationPayload  {
   title: string;
   deadlineUtc: Date | null;
+  markType: MarkType
+  maxMark: number | null;
+  minMark: number | null;
 }
 export function deserializeAssignmentPayload(json: string): AssignmentPayload {
   const data = JSON.parse(json) as AssignmentPayload;
@@ -520,6 +523,10 @@ export enum TeamDistributionType {
 export enum SubmissionType {
     All = "All",
     One = "One",
+}
+export enum MarkType {
+    Score = "Score",
+    PassFail = "PassFail",
 }
 export interface CreatePublicationDto  {
   content: LexicalState;
@@ -1444,6 +1451,9 @@ export function prepareSerializePatchAssignmentDto(_data: PatchAssignmentDto): P
 }
 export interface PatchAssignmentPayloadDto  {
   title?: string;
+  markType: MarkType;
+  maxMark: number | null;
+  minMark: number | null;
   deadlineUtc?: Date | null;
 }
 export function deserializePatchAssignmentPayloadDto(json: string): PatchAssignmentPayloadDto {
