@@ -21,6 +21,7 @@ import {
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
 import type {
+  MarkType,
   Attachment,
   FileInfoDto,
   LexicalState,
@@ -57,6 +58,9 @@ function attachmentToFileItem(attachment: Attachment): AttachedFileItem {
 type EditAssignmentForm = {
   title: string;
   content: LexicalState;
+  marktype: MarkType;
+  minMark: number | null,
+  maxMark: number | null,
   deadlineUtc: Date | null;
 };
 
@@ -68,6 +72,9 @@ export type EditAssignmentModalProps = {
   initialTitle: string;
   initialContent: LexicalState | null;
   initialDeadlineUtc: Date | null;
+  initialMarkType: MarkType;
+  initialMinMark: number | null;
+  initialMaxMark: number | null;
   initialAttachments: Attachment[];
 };
 
@@ -79,6 +86,9 @@ export const EditAssignmentModal = ({
   initialTitle,
   initialContent,
   initialDeadlineUtc,
+  initialMarkType,
+  initialMinMark,
+  initialMaxMark,
   initialAttachments,
 }: EditAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
@@ -114,6 +124,9 @@ export const EditAssignmentModal = ({
           attachments: allAttachments,
           payload: {
             title: data.title,
+            markType: data.marktype,
+            minMark: data.minMark,
+            maxMark: data.maxMark,
             deadlineUtc: data.deadlineUtc ?? null,
           },
         });
@@ -136,6 +149,9 @@ export const EditAssignmentModal = ({
       form.reset({
         title: initialTitle,
         content: initialContent ?? undefined,
+        marktype: initialMarkType,
+        minMark: initialMinMark,
+        maxMark: initialMaxMark,
         deadlineUtc: initialDeadlineUtc,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));

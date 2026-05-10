@@ -940,6 +940,7 @@ export function prepareSerializeSubmissionListItem(_data: SubmissionListItem): S
 }
 export interface MarkDto  {
   mark: string | null;
+  markType: MarkType;
   markComment: LexicalState | null;
 }
 export function deserializeMarkDto(json: string): MarkDto {
