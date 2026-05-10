@@ -25,6 +25,7 @@ public class HitsClassDbContext
     public DbSet<PublicationComment> PublicationComments { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<Invitation> Invitations { get; set; }
+    public DbSet<Criteria> AssignmentCriteria { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -98,6 +99,7 @@ public class HitsClassDbContext
             b.HasMany(p => p.TargetUsers).WithMany();
             b.HasMany(p => p.Submissions).WithOne(s => s.Publication);
             b.HasMany(p => p.Teams).WithOne(s => s.Publication);
+            b.HasMany(p => p.Criteria).WithOne(s => s.Publication);
             b.HasMany<PublicationComment>()
                 .WithOne(c => c.Publication)
                 .HasForeignKey(c => c.PublicationId)

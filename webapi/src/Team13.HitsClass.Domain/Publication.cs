@@ -33,6 +33,7 @@ public class Publication
     public List<Submission>? Submissions { get; set; }
     public List<Team>? Teams { get; set; }
     public List<Attachment> Attachments { get; set; }
+    public List<Criteria>? Criteria { get; set; }
 
     // public List<Comment> Comments { get; set; }
 
