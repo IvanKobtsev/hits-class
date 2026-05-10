@@ -1,8 +1,9 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Team13.HitsClass.App.Features.AssignmentCriteria.Dto;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.Common;
@@ -309,6 +310,7 @@ public class PublicationServiceTests : AppServiceTestBase
         result.Content.Should().Be(dto.Content);
         result.Type.Should().Be(PublicationType.Announcement);
         result.Author.Id.Should().Be(_defaultUser.Id);
+        result.Criteria.Count.Should().Be(0);
 
         await WithDbContext(async db =>
         {
@@ -333,6 +335,14 @@ public class PublicationServiceTests : AppServiceTestBase
         {
             Content = _defaultContent,
             TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Test criteria",
+                    Type = CriteriaType.Requirement,
+                },
+            ],
         };
         var payload = new AssignmentPayload
         {
@@ -347,8 +357,79 @@ public class PublicationServiceTests : AppServiceTestBase
         result.Should().NotBeNull();
         result.Type.Should().Be(PublicationType.Assignment);
         result.PublicationPayload.Should().BeOfType<AssignmentPayload>();
+        result.Criteria.Count.Should().Be(1);
         var assignmentPayload = result.PublicationPayload as AssignmentPayload;
         assignmentPayload!.Title.Should().Be("Test Assignment");
+    }
+
+    [Fact]
+    public async Task CreateNewPublication_RequiredCriteriaWithMinValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var dto = new TestCreatePublicationDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Type = CriteriaType.Requirement,
+                    Description = "CriteriaDescription",
+                    MinValue = 0,
+                },
+            ],
+        };
+        var payload = new AssignmentPayload
+        {
+            Title = "Test Assignment",
+            DeadlineUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateNewPublication(course.Id, dto, payload)
+        );
+
+        exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateNewPublication_RequiredCriteriaWithMaxValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var dto = new TestCreatePublicationDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Type = CriteriaType.Requirement,
+                    Description = "CriteriaDescription",
+                    MaxValue = 0,
+                },
+            ],
+        };
+        var payload = new AssignmentPayload
+        {
+            Title = "Test Assignment",
+            DeadlineUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateNewPublication(course.Id, dto, payload)
+        );
+
+        exception.Should().NotBeNull();
     }
 
     [Fact]
@@ -499,6 +580,73 @@ public class PublicationServiceTests : AppServiceTestBase
         // Assert
         result.Should().NotBeNull();
         result.Content.Should().Be(_defaultUpdatedState);
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateCriteria_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Requirement,
+                },
+            ],
+        };
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Criteria.Count.Should().Be(1);
+        result.Criteria[0].Description.Should().Be("Updated criteria");
+        result.Criteria[0].Type.Should().Be(CriteriaType.Requirement);
+    }
+
+    [Fact]
+    public async Task PatchPublication_InvalidRequirementCriteria_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Requirement,
+                    MinValue = 0,
+                },
+            ],
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchPublication(publication.Id, patchDto, null)
+        );
+
+        exception
+            .Message.Should()
+            .Be("MinValue and MaxValue are not allowed in criteria with type Requirement");
     }
 
     [Fact]
@@ -948,7 +1096,8 @@ public class PublicationServiceTests : AppServiceTestBase
         int courseId,
         PublicationType type,
         LexicalState? content = null,
-        List<string>? forWhomUserIds = null
+        List<string>? forWhomUserIds = null,
+        List<Criteria>? criteria = null
     )
     {
         content ??= _defaultContent;
@@ -981,6 +1130,23 @@ public class PublicationServiceTests : AppServiceTestBase
                         },
                 Attachments = new List<Attachment>(),
             };
+            var publicationCriteria =
+                type != PublicationType.Announcement
+                    ? (
+                        criteria
+                        ??
+                        [
+                            new Criteria
+                            {
+                                Description = "Check this criteria",
+                                Type = CriteriaType.Requirement,
+                                PublicationId = publication.Id,
+                            },
+                        ]
+                    )
+                    : null;
+
+            publication.Criteria = publicationCriteria;
 
             db.Publications.Add(publication);
             await db.SaveChangesAsync();
