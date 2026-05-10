@@ -48,20 +48,31 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
                     );
             }
 
-            if (
-                createTeamAssignmentDto.Payload.MarkType == MarkType.Score
-                && createTeamAssignmentDto.Payload.MaxMark == null
-            )
-                throw new ValidationException(
-                    "MaxMark is required for assignments with type Score"
-                );
+            if (createTeamAssignmentDto.Payload.MarkType == MarkType.Score)
+            {
+                var minMark = createTeamAssignmentDto.Payload.MinMark;
+                var maxMark = createTeamAssignmentDto.Payload.MaxMark;
+                if (maxMark == null)
+                    throw new ValidationException(
+                        "MaxMark is required for assignments with type Score"
+                    );
+                if (minMark == null)
+                    throw new ValidationException(
+                        "MinMark is required for assignments with type Score"
+                    );
+                if (minMark > maxMark)
+                    throw new ValidationException("MinMark can't be bigger than MaxMark");
+            }
 
             if (
                 createTeamAssignmentDto.Payload.MarkType == MarkType.PassFail
-                && createTeamAssignmentDto.Payload.MaxMark != null
+                && (
+                    createTeamAssignmentDto.Payload.MaxMark != null
+                    || createTeamAssignmentDto.Payload.MinMark != null
+                )
             )
                 throw new ValidationException(
-                    "MaxMark is not allowed for assignments with type PassFail"
+                    "MaxMark and MinMark are not allowed for assignments with type PassFail"
                 );
 
             var newAssignment = await publicationService.CreateNewPublication(
@@ -107,7 +118,9 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
                 );
             }
 
-            if (patchAssignmentDto.Payload.MaxMark != null)
+            var minMark = patchAssignmentDto.Payload.MinMark;
+            var maxMark = patchAssignmentDto.Payload.MaxMark;
+            if (maxMark != null || minMark != null)
             {
                 var assignment = await dbContext.Publications.GetOne(
                     Publication.HasId(assignmentId)
@@ -115,8 +128,15 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
                 var payload = (AssignmentPayload)assignment.PublicationPayload;
                 if (payload.MarkType == MarkType.PassFail)
                     throw new ValidationException(
-                        "MaxMark is not allowed for assignments with type PassFail"
+                        "MaxMark and MinMark are not allowed for assignments with type PassFail"
                     );
+
+                if (
+                    (minMark == null && maxMark != null && payload.MinMark > maxMark)
+                    || (maxMark == null && minMark != null && minMark > payload.MaxMark)
+                    || (minMark > maxMark)
+                )
+                    throw new ValidationException("MinMark can't be bigger than MaxMark");
             }
 
             return await publicationService.PatchPublication(

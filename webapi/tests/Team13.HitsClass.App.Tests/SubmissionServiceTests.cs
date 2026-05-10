@@ -805,7 +805,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         await AddTeacherToCourse(course.Id, teacher.Id);
         var student = await CreateUser("student@test.com");
         await AddStudentToCourse(course.Id, student.Id);
-        var assignment = await CreateAssignment(course.Id, null, MarkType.Score, 5);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.Score, 5, 0);
         var submission = await CreateDbSubmission(assignment.Id, student.Id);
         _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
 
@@ -818,6 +818,30 @@ public class SubmissionServiceTests : AppServiceTestBase
 
         // Assert
         exception.Message.Should().Be("Score must be between 0 and 5");
+    }
+
+    [Fact]
+    public async Task MarkSubmission_MarkTypeIsScoreButMarkIsLowerThanMinMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var teacher = await CreateUser("courseteacher@test.com");
+        await AddTeacherToCourse(course.Id, teacher.Id);
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var assignment = await CreateAssignment(course.Id, null, MarkType.Score, 5, 2);
+        var submission = await CreateDbSubmission(assignment.Id, student.Id);
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(teacher.Id);
+
+        var markDto = new MarkDto { Mark = "1", MarkComment = _defaultContent };
+
+        // Act
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.MarkSubmission(submission.Id, markDto)
+        );
+
+        // Assert
+        exception.Message.Should().Be("Score must be between 2 and 5");
     }
 
     [Fact]
@@ -932,7 +956,8 @@ public class SubmissionServiceTests : AppServiceTestBase
         int courseId,
         List<string>? forWhomUserIds = null,
         MarkType markType = MarkType.Score,
-        int? maxMark = 5
+        int? maxMark = 5,
+        int? minMark = 0
     )
     {
         return await WithDbContext(async db =>
@@ -960,6 +985,7 @@ public class SubmissionServiceTests : AppServiceTestBase
                     DeadlineUtc = DateTime.UtcNow.AddDays(7),
                     MarkType = markType,
                     MaxMark = maxMark,
+                    MinMark = minMark,
                 },
                 Attachments = [],
             };

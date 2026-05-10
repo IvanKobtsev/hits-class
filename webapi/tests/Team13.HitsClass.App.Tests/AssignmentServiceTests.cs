@@ -334,7 +334,7 @@ public class AssignmentServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task CreateAssignment_MarkTypeIsScoreAndMaxMarkIsPresent_CreatesAssignment()
+    public async Task CreateAssignment_MarkTypeIsScoreMaxMarkAndMinMarkArePresent_CreatesAssignment()
     {
         // Arrange
         var course = await CreateCourse();
@@ -351,6 +351,7 @@ public class AssignmentServiceTests : AppServiceTestBase
                 DeadlineUtc = null,
                 MarkType = MarkType.Score,
                 MaxMark = 100,
+                MinMark = 0,
             },
         };
 
@@ -368,6 +369,7 @@ public class AssignmentServiceTests : AppServiceTestBase
         payload.Title.Should().Be("Test Assignment");
         payload.MarkType.Should().Be(MarkType.Score);
         payload.MaxMark.Should().Be(100);
+        payload.MinMark.Should().Be(0);
     }
 
     [Fact]
@@ -399,6 +401,35 @@ public class AssignmentServiceTests : AppServiceTestBase
     }
 
     [Fact]
+    public async Task CreateAssignment_MarkTypeIsScoreNoMinMarkProvided_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var dto = new CreateAssignmentDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Payload = new AssignmentPayload
+            {
+                Title = "Wrong Assignment",
+                DeadlineUtc = null,
+                MarkType = MarkType.Score,
+                MaxMark = 10,
+            },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateAssignment(course.Id, dto)
+        );
+
+        exception.Message.Should().Be("MinMark is required for assignments with type Score");
+    }
+
+    [Fact]
     public async Task CreateAssignment_MarkTypeIsPassFailAndMaxMarkIsGiven_ThrowsValidationException()
     {
         // Arrange
@@ -424,7 +455,102 @@ public class AssignmentServiceTests : AppServiceTestBase
             await Sut.CreateAssignment(course.Id, dto)
         );
 
-        exception.Message.Should().Be("MaxMark is not allowed for assignments with type PassFail");
+        exception
+            .Message.Should()
+            .Be("MaxMark and MinMark are not allowed for assignments with type PassFail");
+    }
+
+    [Fact]
+    public async Task CreateAssignment_MarkTypeIsPassFailAndMinMarkIsGiven_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var dto = new CreateAssignmentDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Payload = new AssignmentPayload
+            {
+                Title = "Wrong Assignment",
+                DeadlineUtc = null,
+                MarkType = MarkType.PassFail,
+                MinMark = 0,
+            },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateAssignment(course.Id, dto)
+        );
+
+        exception
+            .Message.Should()
+            .Be("MaxMark and MinMark are not allowed for assignments with type PassFail");
+    }
+
+    [Fact]
+    public async Task CreateAssignment_MarkTypeIsPassFailMaxMarkAndMinMarkAreGiven_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var dto = new CreateAssignmentDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Payload = new AssignmentPayload
+            {
+                Title = "Wrong Assignment",
+                DeadlineUtc = null,
+                MarkType = MarkType.PassFail,
+                MaxMark = 5,
+                MinMark = 0,
+            },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateAssignment(course.Id, dto)
+        );
+
+        exception
+            .Message.Should()
+            .Be("MaxMark and MinMark are not allowed for assignments with type PassFail");
+    }
+
+    [Fact]
+    public async Task CreateAssignment_MinMarkIsBiggerThanMaxMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+
+        var dto = new CreateAssignmentDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Payload = new AssignmentPayload
+            {
+                Title = "Wrong Assignment",
+                DeadlineUtc = null,
+                MarkType = MarkType.Score,
+                MaxMark = 4,
+                MinMark = 5,
+            },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateAssignment(course.Id, dto)
+        );
+
+        exception.Message.Should().Be("MinMark can't be bigger than MaxMark");
     }
 
     [Fact]
@@ -660,6 +786,186 @@ public class AssignmentServiceTests : AppServiceTestBase
     }
 
     [Fact]
+    public async Task PatchAssignment_MarkTypeIsScoreAndNewMinMarkIsGiven_UpdatesAssignment()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(
+            course.Id,
+            "Title",
+            null,
+            null,
+            MarkType.Score,
+            5,
+            2
+        );
+
+        var newDeadline = DateTime.UtcNow.AddDays(14);
+        var dto = new PatchAssignmentDto
+        {
+            Content = _defaultUpdatedContent,
+            Payload = new PatchAssignmentPayloadDto
+            {
+                Title = "Updated Title",
+                DeadlineUtc = newDeadline,
+                MinMark = 0,
+            },
+        };
+        dto.SetHasProperty(nameof(dto.Content));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.Title));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MinMark));
+
+        // Act
+        var result = await Sut.PatchAssignment(assignment.Id, dto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().Be(_defaultUpdatedContent);
+
+        var payload = result.PublicationPayload as AssignmentPayload;
+        payload!.Title.Should().Be("Updated Title");
+        payload.DeadlineUtc.Should().BeCloseTo(newDeadline, TimeSpan.FromSeconds(1));
+        payload.MinMark.Should().Be(0);
+        payload.MarkType.Should().Be(MarkType.Score);
+    }
+
+    [Fact]
+    public async Task PatchAssignment_MarkTypeIsScoreAndNewMaxMarkAndMinMarkAreGiven_UpdatesAssignment()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(
+            course.Id,
+            "Title",
+            null,
+            null,
+            MarkType.Score,
+            5,
+            2
+        );
+
+        var newDeadline = DateTime.UtcNow.AddDays(14);
+        var dto = new PatchAssignmentDto
+        {
+            Content = _defaultUpdatedContent,
+            Payload = new PatchAssignmentPayloadDto
+            {
+                Title = "Updated Title",
+                DeadlineUtc = newDeadline,
+                MaxMark = 100,
+                MinMark = 0,
+            },
+        };
+        dto.SetHasProperty(nameof(dto.Content));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.Title));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MaxMark));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MinMark));
+
+        // Act
+        var result = await Sut.PatchAssignment(assignment.Id, dto);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Content.Should().Be(_defaultUpdatedContent);
+
+        var payload = result.PublicationPayload as AssignmentPayload;
+        payload!.Title.Should().Be("Updated Title");
+        payload.DeadlineUtc.Should().BeCloseTo(newDeadline, TimeSpan.FromSeconds(1));
+        payload.MaxMark.Should().Be(100);
+        payload.MinMark.Should().Be(0);
+        payload.MarkType.Should().Be(MarkType.Score);
+    }
+
+    [Fact]
+    public async Task PatchAssignment_MinMarkIsBiggerThanMaxMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(
+            course.Id,
+            markType: MarkType.Score,
+            minMark: 0,
+            maxMark: 5
+        );
+
+        var dto = new PatchAssignmentDto
+        {
+            Payload = new PatchAssignmentPayloadDto
+            {
+                DeadlineUtc = null,
+                MaxMark = 5,
+                MinMark = 10,
+            },
+        };
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MaxMark));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MinMark));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchAssignment(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("MinMark can't be bigger than MaxMark");
+    }
+
+    [Fact]
+    public async Task PatchAssignment_NewMinMarkIsBiggerThanOldMaxMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(
+            course.Id,
+            markType: MarkType.Score,
+            minMark: 0,
+            maxMark: 5
+        );
+
+        var dto = new PatchAssignmentDto
+        {
+            Payload = new PatchAssignmentPayloadDto { DeadlineUtc = null, MinMark = 10 },
+        };
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MinMark));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchAssignment(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("MinMark can't be bigger than MaxMark");
+    }
+
+    [Fact]
+    public async Task PatchAssignment_OldMinMarkIsBiggerThanNewMaxMark_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var assignment = await CreateAssignment(
+            course.Id,
+            markType: MarkType.Score,
+            minMark: 20,
+            maxMark: 100
+        );
+
+        var dto = new PatchAssignmentDto
+        {
+            Payload = new PatchAssignmentPayloadDto { DeadlineUtc = null, MaxMark = 5 },
+        };
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.DeadlineUtc));
+        dto.Payload.SetHasProperty(nameof(PatchAssignmentPayloadDto.MaxMark));
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchAssignment(assignment.Id, dto)
+        );
+
+        exception.Message.Should().Be("MinMark can't be bigger than MaxMark");
+    }
+
+    [Fact]
     public async Task PatchAssignment_MarkTypeIsPassFailAndMaxMarkIsGiven_ThrowsValidationException()
     {
         // Arrange
@@ -677,7 +983,9 @@ public class AssignmentServiceTests : AppServiceTestBase
             await Sut.PatchAssignment(assignment.Id, dto)
         );
 
-        exception.Message.Should().Be("MaxMark is not allowed for assignments with type PassFail");
+        exception
+            .Message.Should()
+            .Be("MaxMark and MinMark are not allowed for assignments with type PassFail");
     }
 
     [Fact]
@@ -894,7 +1202,8 @@ public class AssignmentServiceTests : AppServiceTestBase
         DateTime? deadline = null,
         List<string>? forWhomUserIds = null,
         MarkType markType = MarkType.PassFail,
-        int? maxMark = null
+        int? maxMark = null,
+        int? minMark = null
     )
     {
         return await WithDbContext(async db =>
@@ -922,6 +1231,7 @@ public class AssignmentServiceTests : AppServiceTestBase
                     DeadlineUtc = deadline ?? DateTime.UtcNow.AddDays(7),
                     MarkType = markType,
                     MaxMark = maxMark,
+                    MinMark = minMark,
                 },
                 Attachments = [],
             };

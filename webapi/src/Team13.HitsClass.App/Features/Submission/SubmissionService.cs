@@ -410,9 +410,13 @@ public class SubmissionService(
 
                 if (payload.MaxMark == null)
                     throw new InvalidOperationException("MaxMark is not set");
+                if (payload.MinMark == null)
+                    throw new InvalidOperationException("MinMark is not set");
 
-                if (score < 0 || score > payload.MaxMark)
-                    throw new ValidationException($"Score must be between 0 and {payload.MaxMark}");
+                if (score < payload.MinMark || score > payload.MaxMark)
+                    throw new ValidationException(
+                        $"Score must be between {payload.MinMark} and {payload.MaxMark}"
+                    );
 
                 break;
 
