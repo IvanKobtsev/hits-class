@@ -211,6 +211,20 @@ export const CreatePersonalAssignmentModal = ({
                   title={'Зачет/незачет'}
                 />
               </Field>
+              <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
+                <Input
+                  {...form.register('minMark', { ...requiredRule() })}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-minMark-input"
+                />
+              </Field>
+               <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+                <Input
+                  {...form.register('maxMark', { ...requiredRule() })}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-maxMark-input"
+                />
+              </Field>
               <Field title="Срок сдачи">
                 <HookFormDatePicker
                   name="deadlineUtc"
