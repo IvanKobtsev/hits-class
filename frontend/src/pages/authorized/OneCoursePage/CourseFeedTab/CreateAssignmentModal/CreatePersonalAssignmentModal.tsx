@@ -213,14 +213,14 @@ export const CreatePersonalAssignmentModal = ({
               </Field>
               <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
                 <Input
-                  {...form.register('minMark', { ...requiredRule() })}
+                  {...form.register('minMark')}
                   errorText={form.formState.errors.minMark?.message}
                   testId="CreateAssignment-minMark-input"
                 />
               </Field>
-               <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+              <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
                 <Input
-                  {...form.register('maxMark', { ...requiredRule() })}
+                  {...form.register('maxMark')}
                   errorText={form.formState.errors.minMark?.message}
                   testId="CreateAssignment-maxMark-input"
                 />
