@@ -342,6 +342,12 @@ public class PublicationServiceTests : AppServiceTestBase
                     Description = "Test criteria",
                     Type = CriteriaType.Requirement,
                 },
+                new CreateCriteriaDto
+                {
+                    Description = "Test score criteria",
+                    Type = CriteriaType.Score,
+                    MaxValue = 10,
+                },
             ],
         };
         var payload = new AssignmentPayload
@@ -357,7 +363,7 @@ public class PublicationServiceTests : AppServiceTestBase
         result.Should().NotBeNull();
         result.Type.Should().Be(PublicationType.Assignment);
         result.PublicationPayload.Should().BeOfType<AssignmentPayload>();
-        result.Criteria.Count.Should().Be(1);
+        result.Criteria.Count.Should().Be(2);
         var assignmentPayload = result.PublicationPayload as AssignmentPayload;
         assignmentPayload!.Title.Should().Be("Test Assignment");
     }
@@ -430,6 +436,116 @@ public class PublicationServiceTests : AppServiceTestBase
         );
 
         exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateNewPublication_ScoreCriteriaWithoutMaxValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var dto = new TestCreatePublicationDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Type = CriteriaType.Score,
+                    Description = "Criteria Description",
+                },
+            ],
+        };
+        var payload = new AssignmentPayload
+        {
+            Title = "Test Assignment",
+            DeadlineUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateNewPublication(course.Id, dto, payload)
+        );
+
+        exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateNewPublication_ScoreCriteriaMinValueIsBiggerThanMaxValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var dto = new TestCreatePublicationDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Type = CriteriaType.Score,
+                    Description = "Criteria Description",
+                    MinValue = 5,
+                    MaxValue = 2,
+                },
+            ],
+        };
+        var payload = new AssignmentPayload
+        {
+            Title = "Test Assignment",
+            DeadlineUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.CreateNewPublication(course.Id, dto, payload)
+        );
+
+        exception.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateNewPublication_ScoreCriteriaWithoutMinValue_CreatesAssignment()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var student = await CreateUser("student@test.com");
+        await AddStudentToCourse(course.Id, student.Id);
+        var dto = new TestCreatePublicationDto
+        {
+            Content = _defaultContent,
+            TargetUsersIds = [student.Id],
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Test score criteria",
+                    Type = CriteriaType.Score,
+                    MaxValue = 10,
+                },
+            ],
+        };
+        var payload = new AssignmentPayload
+        {
+            Title = "Test Assignment",
+            DeadlineUtc = DateTime.UtcNow.AddDays(7),
+        };
+
+        // Act
+        var result = await Sut.CreateNewPublication(course.Id, dto, payload);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Type.Should().Be(PublicationType.Assignment);
+        result.Criteria.Count.Should().Be(1);
+        result.Criteria[0].Description.Should().Be("Test score criteria");
+        result.Criteria[0].Type.Should().Be(CriteriaType.Score);
+        result.Criteria[0].MinValue.Should().Be(0);
+        result.Criteria[0].MaxValue.Should().Be(10);
     }
 
     [Fact]
@@ -583,7 +699,7 @@ public class PublicationServiceTests : AppServiceTestBase
     }
 
     [Fact]
-    public async Task PatchPublication_UpdateCriteria_UpdatesPublication()
+    public async Task PatchPublication_UpdateRequirementCriteria_UpdatesPublication()
     {
         // Arrange
         var course = await CreateCourse();
@@ -647,6 +763,141 @@ public class PublicationServiceTests : AppServiceTestBase
         exception
             .Message.Should()
             .Be("MinValue and MaxValue are not allowed in criteria with type Requirement");
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateScoreCriteriaMinValueIsNull_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Score,
+                    MaxValue = 10,
+                },
+            ],
+        };
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Criteria.Count.Should().Be(1);
+        result.Criteria[0].Description.Should().Be("Updated criteria");
+        result.Criteria[0].MinValue.Should().Be(0);
+        result.Criteria[0].MaxValue.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task PatchPublication_UpdateScoreCriteria_UpdatesPublication()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Score,
+                    MaxValue = 10,
+                    MinValue = 1,
+                },
+            ],
+        };
+
+        // Act
+        var result = await Sut.PatchPublication(publication.Id, patchDto, null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Criteria.Count.Should().Be(1);
+        result.Criteria[0].Description.Should().Be("Updated criteria");
+        result.Criteria[0].MinValue.Should().Be(1);
+        result.Criteria[0].MaxValue.Should().Be(10);
+    }
+
+    [Fact]
+    public async Task PatchPublication_ScoreCriteriaWithoutMaxValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Score,
+                },
+            ],
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchPublication(publication.Id, patchDto, null)
+        );
+
+        exception.Message.Should().Be("MaxValue is required for criteria with type Score");
+    }
+
+    [Fact]
+    public async Task PatchPublication_ScoreCriteriaMinValueIsBiggerThanMaxValue_ThrowsValidationException()
+    {
+        // Arrange
+        var course = await CreateCourse();
+        var publication = await CreatePublication(
+            course.Id,
+            PublicationType.Assignment,
+            _defaultContent
+        );
+
+        var patchDto = new TestPatchPublicationDto
+        {
+            Criteria =
+            [
+                new CreateCriteriaDto
+                {
+                    Description = "Updated criteria",
+                    Type = CriteriaType.Score,
+                    MinValue = 5,
+                    MaxValue = 3,
+                },
+            ],
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ValidationException>(async () =>
+            await Sut.PatchPublication(publication.Id, patchDto, null)
+        );
+
+        exception.Message.Should().Be("MaxValue of a criteria can't be less than MinValue");
     }
 
     [Fact]
