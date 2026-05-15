@@ -222,8 +222,6 @@ export const EditTeamAssignmentModal = ({
     });
   }, []);
 
-  const markType = form.watch('markType');
-
   return (
     <CustomModal
       isOpen={isOpen}
@@ -248,24 +246,8 @@ export const EditTeamAssignmentModal = ({
               testId="EditAssignment-content-input"
             />
           </Field>
-          <Field
-            title="Тип оценки"
-            fieldClassName={styles.markType}
-          >
-            <RadioButton
-              {...form.register('markType')}
-              value={MarkType.Score}
-              defaultChecked={true}
-              title={'Числовая'}
-            />
-            <RadioButton
-              {...form.register('markType')}
-              value={MarkType.PassFail}
-              title={'Зачет/незачет'}
-            />
-          </Field>
-          
-          {markType === MarkType.Score && (
+
+          {initialMarkType === MarkType.Score && (
             <>
               <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
                 <Input
@@ -283,7 +265,7 @@ export const EditTeamAssignmentModal = ({
               </Field>
             </>
           )}
-          
+
           <Field title="Срок сдачи">
             <HookFormDatePicker
               name="deadlineUtc"
