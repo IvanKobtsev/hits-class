@@ -13,8 +13,8 @@ namespace Team13.HitsClass.App.Features.AssignmentCriteria
         [HttpPut("{criteriaId:int}")]
         public async Task<CriteriaDto> PatchCriteria(
             [FromRoute] int criteriaId,
-            [FromBody] string description
-        ) => await criteriaService.PatchCriteria(criteriaId, description);
+            [FromBody] PatchCriteriaDto patchCriteriaDto
+        ) => await criteriaService.PatchCriteria(criteriaId, patchCriteriaDto);
 
         /// <summary>
         /// Delete specific criteria
