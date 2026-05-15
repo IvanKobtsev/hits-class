@@ -2,6 +2,8 @@ import { CustomModal } from 'components/uikit/modal/CustomModal';
 import { Loading } from 'components/uikit/suspense/Loading';
 import styles from './TeamSubmissionsModal.module.scss';
 import {
+  MarkDto,
+  MarkType,
   TeamAssignmentPayload,
   TeamSubmissionDto,
   UserWithMarkDto,

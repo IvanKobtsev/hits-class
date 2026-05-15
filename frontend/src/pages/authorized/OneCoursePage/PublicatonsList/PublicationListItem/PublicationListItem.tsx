@@ -23,6 +23,7 @@ import {
   PublicationType,
   AssignmentPayload,
   TeamAssignmentPayload,
+  MarkType,
 } from 'services/api/api-client.types';
 import { clsx } from 'clsx';
 import { useModal } from 'components/uikit/modal/useModal';
@@ -346,6 +347,9 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           onSuccess={() => showSnackbar('Задание обновлено')}
           publicationId={id}
           initialTitle={assignmentData?.title ?? ''}
+          initialMarkType={assignmentData?.markType ?? MarkType.Score}
+          initialMinMark={assignmentData?.minMark ?? 2}
+          initialMaxMark={assignmentData?.maxMark ?? 5}
           initialContent={content}
           initialDeadlineUtc={
             assignmentData?.deadlineUtc
@@ -375,11 +379,14 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialDistributionType={
             (publicationPayload as TeamAssignmentPayload).distributionType
           }
-          initialMinSize={
-            (assignmentData as TeamAssignmentPayload).minTeamSize ?? undefined
+          initialMarkType={
+            (publicationPayload as TeamAssignmentPayload).markType
           }
-          initialMaxSize={
-            (assignmentData as TeamAssignmentPayload).maxTeamSize ?? undefined
+          initialMinMark={
+            (assignmentData as TeamAssignmentPayload).minMark ?? null
+          }
+          initialMaxMark={
+            (assignmentData as TeamAssignmentPayload).maxMark ?? null
           }
         />
       )}

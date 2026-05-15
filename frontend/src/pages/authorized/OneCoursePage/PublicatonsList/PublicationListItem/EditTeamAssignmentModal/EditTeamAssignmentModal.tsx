@@ -23,6 +23,7 @@ import {
   Attachment,
   FileInfoDto,
   LexicalState,
+  MarkType,
   SubmissionType,
   TeamDistributionType,
 } from 'services/api/api-client.types';
@@ -65,6 +66,9 @@ type EditTeamAssignmentForm = {
   submissionType: SubmissionType;
   minTeamSize: number;
   maxTeamSize: number;
+  markType: MarkType;
+  minMark: number | null;
+  maxMark: number | null;
 };
 
 export type EditTeamAssignmentModalProps = {
@@ -80,6 +84,9 @@ export type EditTeamAssignmentModalProps = {
   initialDistributionType: TeamDistributionType;
   initialMinSize?: number;
   initialMaxSize?: number;
+  initialMarkType: MarkType;
+  initialMinMark: number | null;
+  initialMaxMark: number | null;
 };
 
 export const EditTeamAssignmentModal = ({
@@ -95,6 +102,9 @@ export const EditTeamAssignmentModal = ({
   initialDistributionType,
   initialMinSize,
   initialMaxSize,
+  initialMarkType,
+  initialMinMark,
+  initialMaxMark
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -133,6 +143,9 @@ export const EditTeamAssignmentModal = ({
           submissionType: data.submissionType,
           minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
           maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
+          markType: data.markType,
+          minMark: !data.minMark ? null : data.minMark,
+          maxMark: !data.maxMark ? null : data.maxMark,
         },
       });
       await queryClient.invalidateQueries({
@@ -156,6 +169,9 @@ export const EditTeamAssignmentModal = ({
         distributionType: initialDistributionType,
         minTeamSize: initialMinSize,
         maxTeamSize: initialMaxSize,
+        markType: initialMarkType,
+        minMark: initialMinMark,
+        maxMark: initialMaxMark
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -230,6 +246,24 @@ export const EditTeamAssignmentModal = ({
               testId="EditAssignment-content-input"
             />
           </Field>
+          {initialMarkType === MarkType.Score && (
+            <>
+              <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
+                <Input
+                  {...form.register('minMark')}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-minMark-input"
+                />
+              </Field>
+              <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+                <Input
+                  {...form.register('maxMark')}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-maxMark-input"
+                />
+              </Field>
+            </>
+          )}
           <Field title="Срок сдачи">
             <HookFormDatePicker
               name="deadlineUtc"

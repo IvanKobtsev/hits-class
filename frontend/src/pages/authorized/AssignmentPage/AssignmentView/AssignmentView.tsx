@@ -4,6 +4,7 @@ import {
   AssignmentPayload,
   PublicationDto,
   SubmissionDto,
+  MarkType
 } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
@@ -51,7 +52,7 @@ export const AssignmentView = ({
 }: AssignmentViewProps) => {
   const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
   const createdAtUTC = new Date(createdAtUTCRaw);
-  const { title, deadlineUtc: deadlineUtcRaw } =
+  const { title, deadlineUtc: deadlineUtcRaw, markType, minMark, maxMark } =
     assignment.publicationPayload as AssignmentPayload;
   const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
@@ -97,6 +98,40 @@ export const AssignmentView = ({
               {deadlineUtc ? formatDateTimeLocal(deadlineUtc) : 'Не указан'}
             </span>
           </span>
+
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Тип оценки:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-markType"
+            >
+              {markType == MarkType.Score ? 'Числовая' : 'Зачет'}
+            </span>
+          </span>
+
+          {markType === MarkType.Score && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Минимальная оценка:</span>
+              <span
+                className={styles.metaValue}
+                data-test-id="AssignmentView-minMark"
+              >
+                {minMark ? minMark : 'Не указана'}
+              </span>
+            </span>
+          )}
+
+          {markType === MarkType.Score && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Максимальная оценка:</span>
+              <span
+                className={styles.metaValue}
+                data-test-id="AssignmentView-maxMark"
+              >
+                {maxMark ? maxMark : 'Не указана'}
+              </span>
+            </span>
+          )}
         </div>
       </div>
 

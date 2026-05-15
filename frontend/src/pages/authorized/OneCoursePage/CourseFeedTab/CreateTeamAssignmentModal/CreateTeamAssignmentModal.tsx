@@ -1,4 +1,5 @@
 import {
+  MarkType,
   Attachment,
   FileInfoDto,
   LexicalState,
@@ -58,6 +59,9 @@ type CreateTeamAssignmentForm = {
   submissionType: SubmissionType;
   minTeamSize: number;
   maxTeamSize: number;
+  markType: MarkType;
+  minMark: number | null;
+  maxMark: number | null;
 };
 
 export type CreateTeamAssignmentModalProps = {
@@ -117,6 +121,9 @@ export const CreateTeamAssignmentModal = ({
             deadlineUtc: data.deadlineUtc ?? null,
             minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
             maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
+            markType: data.markType,
+            minMark: data.minMark,
+            maxMark: data.maxMark,
             areTeamsFrozen: false,
           },
         });
@@ -206,6 +213,36 @@ export const CreateTeamAssignmentModal = ({
                   name="deadlineUtc"
                   control={form.control}
                   withTime
+                />
+              </Field>
+              <Field
+                title="Тип оценки"
+                fieldClassName={styles.markType}
+              >
+                <RadioButton
+                  {...form.register('markType')}
+                  value={MarkType.Score}
+                  defaultChecked={true}
+                  title={'Числовая'}
+                />
+                <RadioButton
+                  {...form.register('markType')}
+                  value={MarkType.PassFail}
+                  title={'Зачет/незачет'}
+                />
+              </Field>
+              <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
+                <Input
+                  {...form.register('minMark')}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-minMark-input"
+                />
+              </Field>
+              <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+                <Input
+                  {...form.register('maxMark')}
+                  errorText={form.formState.errors.minMark?.message}
+                  testId="CreateAssignment-maxMark-input"
                 />
               </Field>
               <Field
