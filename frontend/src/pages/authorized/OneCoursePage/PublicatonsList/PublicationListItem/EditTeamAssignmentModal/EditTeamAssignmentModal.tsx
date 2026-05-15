@@ -246,7 +246,6 @@ export const EditTeamAssignmentModal = ({
               testId="EditAssignment-content-input"
             />
           </Field>
-
           {initialMarkType === MarkType.Score && (
             <>
               <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
@@ -265,7 +264,6 @@ export const EditTeamAssignmentModal = ({
               </Field>
             </>
           )}
-
           <Field title="Срок сдачи">
             <HookFormDatePicker
               name="deadlineUtc"
