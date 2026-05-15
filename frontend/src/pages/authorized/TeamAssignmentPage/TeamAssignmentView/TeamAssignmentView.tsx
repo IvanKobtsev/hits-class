@@ -35,7 +35,7 @@ export const TeamAssignmentView = ({
 }: AssignmentViewProps) => {
   const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
   const createdAtUTC = new Date(createdAtUTCRaw);
-  const { title, deadlineUtc: deadlineUtcRaw } =
+  const { title, deadlineUtc: deadlineUtcRaw, markType, minMark, maxMark } =
     assignment.publicationPayload as AssignmentPayload;
   const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
@@ -79,6 +79,26 @@ export const TeamAssignmentView = ({
               data-test-id="AssignmentView-deadline"
             >
               {deadlineUtc ? formatDateTimeLocal(deadlineUtc) : 'Не указан'}
+            </span>
+          </span>
+
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Минимальная оценка:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-minMark"
+            >
+              {minMark ? minMark : 'Не указана'}
+            </span>
+          </span>
+
+          <span className={styles.metaItem}>
+            <span className={styles.metaLabel}>Максимальная оценка:</span>
+            <span
+              className={styles.metaValue}
+              data-test-id="AssignmentView-maxMark"
+            >
+              {maxMark ? maxMark : 'Не указана'}
             </span>
           </span>
         </div>
