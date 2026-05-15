@@ -379,11 +379,14 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialDistributionType={
             (publicationPayload as TeamAssignmentPayload).distributionType
           }
-          initialMinSize={
-            (assignmentData as TeamAssignmentPayload).minTeamSize ?? undefined
+          initialMarkType={
+            (publicationPayload as TeamAssignmentPayload).markType
           }
-          initialMaxSize={
-            (assignmentData as TeamAssignmentPayload).maxTeamSize ?? undefined
+          initialMinMark={
+            (assignmentData as TeamAssignmentPayload).minMark ?? null
+          }
+          initialMaxMark={
+            (assignmentData as TeamAssignmentPayload).maxMark ?? null
           }
         />
       )}
