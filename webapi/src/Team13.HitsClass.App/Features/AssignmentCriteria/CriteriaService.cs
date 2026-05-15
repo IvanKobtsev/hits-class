@@ -80,7 +80,7 @@ namespace Team13.HitsClass.App.Features.AssignmentCriteria
 
             criteria.Update(patchCriteriaDto);
 
-            if (minValue.HasValue)
+            if (patchCriteriaDto.IsFieldPresent(nameof(patchCriteriaDto.MinValue)))
             {
                 criteria.MinValue =
                     minValue == null && criteria.Type != CriteriaType.Requirement ? 0 : minValue;
