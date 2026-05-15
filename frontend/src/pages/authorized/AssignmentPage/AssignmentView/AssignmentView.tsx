@@ -4,6 +4,7 @@ import {
   AssignmentPayload,
   PublicationDto,
   SubmissionDto,
+  MarkType
 } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
@@ -99,24 +100,38 @@ export const AssignmentView = ({
           </span>
 
           <span className={styles.metaItem}>
-            <span className={styles.metaLabel}>Минимальная оценка:</span>
+            <span className={styles.metaLabel}>Тип оценки:</span>
             <span
               className={styles.metaValue}
-              data-test-id="AssignmentView-minMark"
+              data-test-id="AssignmentView-markType"
             >
-              {minMark ? minMark : 'Не указана'}
+              {markType == MarkType.Score ? 'Числовая' : 'Зачет'}
             </span>
           </span>
 
-          <span className={styles.metaItem}>
-            <span className={styles.metaLabel}>Максимальная оценка:</span>
-            <span
-              className={styles.metaValue}
-              data-test-id="AssignmentView-maxMark"
-            >
-              {maxMark ? maxMark : 'Не указана'}
+          {markType === MarkType.Score && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Минимальная оценка:</span>
+              <span
+                className={styles.metaValue}
+                data-test-id="AssignmentView-minMark"
+              >
+                {minMark ? minMark : 'Не указана'}
+              </span>
             </span>
-          </span>
+          )}
+
+          {markType === MarkType.Score && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Максимальная оценка:</span>
+              <span
+                className={styles.metaValue}
+                data-test-id="AssignmentView-maxMark"
+              >
+                {maxMark ? maxMark : 'Не указана'}
+              </span>
+            </span>
+          )}
         </div>
       </div>
 
