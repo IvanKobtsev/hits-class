@@ -20,7 +20,7 @@ import {
   AttachedFileItem,
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
-import type {
+import {
   MarkType,
   Attachment,
   FileInfoDto,
@@ -30,6 +30,7 @@ import { QueryFactory } from 'services/api';
 import styles from './EditAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
 import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
+import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -58,7 +59,7 @@ function attachmentToFileItem(attachment: Attachment): AttachedFileItem {
 type EditAssignmentForm = {
   title: string;
   content: LexicalState;
-  marktype: MarkType;
+  markType: MarkType;
   minMark: number | null,
   maxMark: number | null,
   deadlineUtc: Date | null;
@@ -124,7 +125,7 @@ export const EditAssignmentModal = ({
           attachments: allAttachments,
           payload: {
             title: data.title,
-            markType: data.marktype,
+            markType: data.markType,
             minMark: data.minMark,
             maxMark: data.maxMark,
             deadlineUtc: data.deadlineUtc ?? null,
@@ -149,7 +150,7 @@ export const EditAssignmentModal = ({
       form.reset({
         title: initialTitle,
         content: initialContent ?? undefined,
-        marktype: initialMarkType,
+        markType: initialMarkType,
         minMark: initialMinMark,
         maxMark: initialMaxMark,
         deadlineUtc: initialDeadlineUtc,
@@ -225,6 +226,36 @@ export const EditAssignmentModal = ({
               form={form}
               name={'content'}
               testId="EditAssignment-content-input"
+            />
+          </Field>
+          <Field
+            title="Тип оценки"
+            fieldClassName={styles.markType}
+          >
+            <RadioButton
+              {...form.register('markType')}
+              value={MarkType.Score}
+              defaultChecked={true}
+              title={'Числовая'}
+            />
+            <RadioButton
+              {...form.register('markType')}
+              value={MarkType.PassFail}
+              title={'Зачет/незачет'}
+            />
+          </Field>
+          <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
+            <Input
+              {...form.register('minMark')}
+              errorText={form.formState.errors.minMark?.message}
+              testId="CreateAssignment-minMark-input"
+            />
+          </Field>
+          <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+            <Input
+              {...form.register('maxMark')}
+              errorText={form.formState.errors.minMark?.message}
+              testId="CreateAssignment-maxMark-input"
             />
           </Field>
           <Field title="Срок сдачи">

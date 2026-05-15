@@ -662,6 +662,9 @@ export interface PatchTeamAssignmentPayloadDto  {
   deadlineUtc?: Date | null;
   minTeamSize?: number | null;
   maxTeamSize?: number | null;
+  markType?: MarkType | null;
+  minMark?: number | null;
+  maxMark?: number | null;
   distributionType?: TeamDistributionType;
   submissionType?: SubmissionType;
   areTeamsFrozen?: boolean;
