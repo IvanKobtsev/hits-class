@@ -9,6 +9,7 @@ using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.PersistenceHelpers;
+using Team13.WebApi.Patching;
 
 namespace Team13.HitsClass.App.Features.AssignmentCriteria
 {
@@ -43,7 +44,10 @@ namespace Team13.HitsClass.App.Features.AssignmentCriteria
             await dbContext.SaveChangesAsync();
         }
 
-        public async Task<CriteriaDto> PatchCriteria(int criteriaId, string description)
+        public async Task<CriteriaDto> PatchCriteria(
+            int criteriaId,
+            PatchCriteriaDto patchCriteriaDto
+        )
         {
             var user = await dbContext.Users.GetOne(User.HasId(userAccessor.GetUserId()));
             var criteria = await dbContext.AssignmentCriteria.GetOne(Criteria.HasId(criteriaId));
@@ -64,7 +68,24 @@ namespace Team13.HitsClass.App.Features.AssignmentCriteria
                     "You do not have permissions to edit this criteria."
                 );
 
-            criteria.Description = description;
+            var minValue = patchCriteriaDto.MinValue;
+            var maxValue = patchCriteriaDto.MaxValue;
+            if (criteria.Type == CriteriaType.Requirement && (minValue != null || maxValue != null))
+                throw new ValidationException(
+                    "MinValue and MaxValue are not allowed in criteria with type Requirement"
+                );
+
+            if (minValue > maxValue)
+                throw new ValidationException("MaxValue of a criteria can't be less than MinValue");
+
+            criteria.Update(patchCriteriaDto);
+
+            if (patchCriteriaDto.IsFieldPresent(nameof(patchCriteriaDto.MinValue)))
+            {
+                criteria.MinValue =
+                    minValue == null && criteria.Type != CriteriaType.Requirement ? 0 : minValue;
+            }
+
             await dbContext.SaveChangesAsync();
             return criteria.ToCriteriaDto();
         }

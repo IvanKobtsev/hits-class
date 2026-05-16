@@ -269,7 +269,13 @@ public class PublicationService(
                 "MinValue and MaxValue are not allowed in criteria with type Requirement"
             );
 
-        // add  validation for other criteria types
+        var scoreCriteria = criteria.Where(c => c.Type == CriteriaType.Score).ToList();
+        if (scoreCriteria.Any(c => c.MaxValue == null))
+            throw new ValidationException("MaxValue is required for criteria with type Score");
+        if (scoreCriteria.Any(c => c.MinValue > c.MaxValue))
+            throw new ValidationException("MaxValue of a criteria can't be less than MinValue");
+
+        // add validation for other criteria types
 
         return criteria
             .Select(c => new Criteria
@@ -277,7 +283,8 @@ public class PublicationService(
                 Type = c.Type,
                 Description = c.Description,
                 MaxValue = c.MaxValue,
-                MinValue = c.MinValue,
+                MinValue =
+                    c.MinValue == null && c.Type != CriteriaType.Requirement ? 0 : c.MinValue,
                 PublicationId = assignmentId,
             })
             .ToList();
