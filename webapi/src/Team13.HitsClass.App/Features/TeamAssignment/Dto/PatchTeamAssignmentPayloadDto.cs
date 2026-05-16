@@ -1,4 +1,4 @@
-using Team13.HitsClass.Domain;
+﻿using Team13.HitsClass.Domain;
 using Team13.WebApi.Domain.Helpers;
 using Team13.WebApi.Patching.Models;
 
@@ -16,5 +16,6 @@ namespace Team13.HitsClass.App.Features.TeamAssignment.Dto
         public TeamDistributionType DistributionType { get; set; }
         public SubmissionType SubmissionType { get; set; }
         public bool AreTeamsFrozen { get; set; }
+        public DeadlineCriteria? DeadlineCriteria { get; set; }
     }
 }

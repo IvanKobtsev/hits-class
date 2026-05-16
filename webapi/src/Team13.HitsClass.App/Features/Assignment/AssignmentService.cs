@@ -94,6 +94,11 @@ namespace Team13.HitsClass.App.Features.Assignment
                     "MaxMark and MinMark are not allowed for assignments with type PassFail"
                 );
 
+            DeadlineCriteriaValidator.Validate(
+                createAssignmentDto.Payload.DeadlineCriteria,
+                createAssignmentDto.Payload.DeadlineUtc
+            );
+
             var newAssignment = await publicationService.CreateNewPublication(
                 courseId,
                 createAssignmentDto,
@@ -140,6 +145,23 @@ namespace Team13.HitsClass.App.Features.Assignment
                     || (minMark > maxMark)
                 )
                     throw new ValidationException("MinMark can't be bigger than MaxMark");
+            }
+
+            if (patchAssignmentDto.Payload.DeadlineCriteria != null)
+            {
+                var effectiveDeadline =
+                    patchAssignmentDto.Payload.DeadlineUtc
+                    ?? (
+                        (AssignmentPayload)
+                            (
+                                await dbContext.Publications.GetOne(Publication.HasId(assignmentId))
+                            ).PublicationPayload
+                    ).DeadlineUtc;
+
+                DeadlineCriteriaValidator.Validate(
+                    patchAssignmentDto.Payload.DeadlineCriteria,
+                    effectiveDeadline
+                );
             }
 
             return await publicationService.PatchPublication(
