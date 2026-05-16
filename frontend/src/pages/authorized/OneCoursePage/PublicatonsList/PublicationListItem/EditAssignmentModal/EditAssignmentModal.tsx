@@ -21,6 +21,8 @@ import {
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
 import {
+  BonusType,
+  DeadlineCriteria,
   MarkType,
   Attachment,
   FileInfoDto,
@@ -31,6 +33,7 @@ import styles from './EditAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
 import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
+import { DeadlineCriteriaFields } from '../../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -63,6 +66,12 @@ type EditAssignmentForm = {
   minMark: number | null,
   maxMark: number | null,
   deadlineUtc: Date | null;
+  hasEarlyBonus: boolean;
+  earlyBonusEarliestDate: Date | null;
+  earlyBonusValue: string;
+  earlyBonusType: BonusType;
+  hasLatePenalty: boolean;
+  latePenaltyLatestDate: Date | null;
 };
 
 export type EditAssignmentModalProps = {
@@ -76,6 +85,7 @@ export type EditAssignmentModalProps = {
   initialMarkType: MarkType;
   initialMinMark: number | null;
   initialMaxMark: number | null;
+  initialDeadlineCriteria?: DeadlineCriteria | null;
   initialAttachments: Attachment[];
 };
 
@@ -90,6 +100,7 @@ export const EditAssignmentModal = ({
   initialMarkType,
   initialMinMark,
   initialMaxMark,
+  initialDeadlineCriteria,
   initialAttachments,
 }: EditAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
@@ -120,15 +131,32 @@ export const EditAssignmentModal = ({
           .map((f) => existingAttachmentsByFileId[f.id]);
         const allAttachments = [...remainingExisting, ...newAttachments];
 
+        const deadlineCriteria =
+          data.hasEarlyBonus || data.hasLatePenalty
+            ? {
+                earlyBonus:
+                  data.hasEarlyBonus && data.earlyBonusEarliestDate
+                    ? {
+                        earliestDate: data.earlyBonusEarliestDate,
+                        bonusValue: Number(data.earlyBonusValue),
+                        bonusType: data.earlyBonusType,
+                      }
+                    : null,
+                latePenalty:
+                  data.hasLatePenalty && data.latePenaltyLatestDate
+                    ? { latestDate: data.latePenaltyLatestDate }
+                    : null,
+              }
+            : null;
         await mutateAsync({
           content: data.content,
           attachments: allAttachments,
           payload: {
             title: data.title,
-            markType: data.markType,
             minMark: data.minMark,
             maxMark: data.maxMark,
             deadlineUtc: data.deadlineUtc ?? null,
+            deadlineCriteria,
           },
         });
         await queryClient.invalidateQueries({
@@ -154,6 +182,12 @@ export const EditAssignmentModal = ({
         minMark: initialMinMark,
         maxMark: initialMaxMark,
         deadlineUtc: initialDeadlineUtc,
+        hasEarlyBonus: !!initialDeadlineCriteria?.earlyBonus,
+        earlyBonusEarliestDate: initialDeadlineCriteria?.earlyBonus?.earliestDate ?? null,
+        earlyBonusValue: String(initialDeadlineCriteria?.earlyBonus?.bonusValue ?? ''),
+        earlyBonusType: initialDeadlineCriteria?.earlyBonus?.bonusType ?? BonusType.Score,
+        hasLatePenalty: !!initialDeadlineCriteria?.latePenalty,
+        latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate ?? null,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -255,6 +289,12 @@ export const EditAssignmentModal = ({
               withTime
             />
           </Field>
+          <DeadlineCriteriaFields
+            register={form.register}
+            control={form.control}
+            watch={form.watch}
+            deadlineSet={!!form.watch('deadlineUtc')}
+          />
           <Field
             title="Прикреплённые файлы"
             testId="EditAssignment-attachments"

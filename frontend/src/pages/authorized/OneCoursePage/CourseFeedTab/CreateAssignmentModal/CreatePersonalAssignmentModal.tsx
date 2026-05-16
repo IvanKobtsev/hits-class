@@ -24,6 +24,7 @@ import {
   AttachedFilesTable,
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
 import {
+  BonusType,
   MarkType,
   type Attachment,
   type FileInfoDto,
@@ -33,6 +34,7 @@ import styles from './CreatePersonalAssignmentModal.module.scss';
 import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { LexicalTextAreaControlled } from 'components/lexical/text-area/LexicalTextArea.tsx';
 import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
+import { DeadlineCriteriaFields } from '../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -56,6 +58,12 @@ type CreatePersonalAssignmentForm = {
   maxMark: number | null;
   markType: MarkType;
   deadlineUtc: Date | null;
+  hasEarlyBonus: boolean;
+  earlyBonusEarliestDate: Date | null;
+  earlyBonusValue: string;
+  earlyBonusType: BonusType;
+  hasLatePenalty: boolean;
+  latePenaltyLatestDate: Date | null;
 };
 
 export type CreatePersonalAssignmentModalProps = {
@@ -103,10 +111,28 @@ export const CreatePersonalAssignmentModal = ({
           selectedIds.size === 0 || selectedIds.size === students.length
             ? null
             : [...selectedIds];
+        const deadlineCriteria =
+          data.hasEarlyBonus || data.hasLatePenalty
+            ? {
+                earlyBonus:
+                  data.hasEarlyBonus && data.earlyBonusEarliestDate
+                    ? {
+                        earliestDate: data.earlyBonusEarliestDate,
+                        bonusValue: Number(data.earlyBonusValue),
+                        bonusType: data.earlyBonusType,
+                      }
+                    : null,
+                latePenalty:
+                  data.hasLatePenalty && data.latePenaltyLatestDate
+                    ? { latestDate: data.latePenaltyLatestDate }
+                    : null,
+              }
+            : null;
         await mutateAsync({
           content: data.content,
           targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
+          criteria: null,
           payload: {
             publicationType: 'Assignment',
             title: data.title,
@@ -114,6 +140,7 @@ export const CreatePersonalAssignmentModal = ({
             minMark: data.minMark ?? null,
             maxMark: data.maxMark ?? null,
             deadlineUtc: data.deadlineUtc ?? null,
+            deadlineCriteria,
           },
         });
         await queryClient.invalidateQueries({ queryKey: [] });
@@ -232,6 +259,12 @@ export const CreatePersonalAssignmentModal = ({
                   withTime
                 />
               </Field>
+              <DeadlineCriteriaFields
+                register={form.register}
+                control={form.control}
+                watch={form.watch}
+                deadlineSet={!!form.watch('deadlineUtc')}
+              />
               <Field
                 title="Прикреплённые файлы"
                 testId="CreateAssignment-attachments"

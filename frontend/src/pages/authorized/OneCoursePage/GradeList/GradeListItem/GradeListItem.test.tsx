@@ -34,6 +34,7 @@ function makePublication(overrides: Partial<PublicationDto> = {}): PublicationDt
     author: { id: 'u1', email: 'teacher@test.com', legalName: 'Преподаватель', groupNumber: null, roles: null },
     attachments: [],
     targetUserIds: [],
+    criteria: [],
     publicationPayload: {
       publicationType: 'Assignment',
       title: 'Тестовое задание',

@@ -74,6 +74,12 @@ export * as AssignmentQuery from './api-client/AssignmentQuery';
 
 
 
+export * as CriteriaClient from './api-client/CriteriaClient';
+
+export * as CriteriaQuery from './api-client/CriteriaQuery';
+
+
+
 export * as AnnouncementClient from './api-client/AnnouncementClient';
 
 export * as AnnouncementQuery from './api-client/AnnouncementQuery';
@@ -225,6 +231,8 @@ export function initPersister() {
 
 
   addResultTypeFactory('AssignmentClient___getAssignmentStatistics', (data: any) => Types.initAssignmentStatisticDto(data));
+
+
 
 
 

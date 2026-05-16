@@ -1,4 +1,5 @@
 import {
+  BonusType,
   MarkType,
   Attachment,
   FileInfoDto,
@@ -35,6 +36,7 @@ import { queryClient } from 'services/api/query-client-helper.ts';
 import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
 import { useCreateAssignmentMutation } from '../../../../../services/api/api-client/TeamAssignmentQuery.ts';
 import { useDistributeRandomlyMutationWithParameters } from '../../../../../services/api/api-client/TeamQuery.ts';
+import { DeadlineCriteriaFields } from '../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -62,6 +64,12 @@ type CreateTeamAssignmentForm = {
   markType: MarkType;
   minMark: number | null;
   maxMark: number | null;
+  hasEarlyBonus: boolean;
+  earlyBonusEarliestDate: Date | null;
+  earlyBonusValue: string;
+  earlyBonusType: BonusType;
+  hasLatePenalty: boolean;
+  latePenaltyLatestDate: Date | null;
 };
 
 export type CreateTeamAssignmentModalProps = {
@@ -94,46 +102,65 @@ export const CreateTeamAssignmentModal = ({
 
   const form = useAdvancedForm<CreateTeamAssignmentForm>(
     async (data) => {
-        const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
-          const item = files.find((f) => f.id === id);
-          return item && item.status !== 'too_large';
+      const uploadableEntries = Object.entries(rawFiles).filter(([id]) => {
+        const item = files.find((f) => f.id === id);
+        return item && item.status !== 'too_large';
+      });
+      const fileInfos = await Promise.all(
+        uploadableEntries.map(([, file]) =>
+          uploadFileAsync({ file: { data: file, fileName: file.name } }),
+        ),
+      );
+      const attachments = fileInfos.map(fileInfoToAttachment);
+      const students = course?.students ?? [];
+      const targetUsersIds =
+        selectedIds.size === 0 || selectedIds.size === students.length
+          ? null
+          : [...selectedIds];
+      const deadlineCriteria =
+        data.hasEarlyBonus || data.hasLatePenalty
+          ? {
+              earlyBonus:
+                data.hasEarlyBonus && data.earlyBonusEarliestDate
+                  ? {
+                      earliestDate: data.earlyBonusEarliestDate,
+                      bonusValue: Number(data.earlyBonusValue),
+                      bonusType: data.earlyBonusType,
+                    }
+                  : null,
+              latePenalty:
+                data.hasLatePenalty && data.latePenaltyLatestDate
+                  ? { latestDate: data.latePenaltyLatestDate }
+                  : null,
+            }
+          : null;
+      const createdAssignment = await mutateAsync({
+        content: data.content,
+        targetUsersIds,
+        attachments: attachments.length > 0 ? attachments : null,
+        criteria: null,
+        payload: {
+          publicationType: 'TeamAssignment',
+          distributionType: data.distributionType,
+          submissionType: data.submissionType,
+          title: data.title,
+          deadlineUtc: data.deadlineUtc ?? null,
+          minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
+          maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
+          markType: data.markType,
+          minMark: data.minMark,
+          maxMark: data.maxMark,
+          areTeamsFrozen: false,
+          deadlineCriteria,
+        },
+      });
+      if (data.distributionType === TeamDistributionType.Random) {
+        await distributeRandomlyAsync({
+          assignmentId: createdAssignment.id,
         });
-        const fileInfos = await Promise.all(
-          uploadableEntries.map(([, file]) =>
-            uploadFileAsync({ file: { data: file, fileName: file.name } }),
-          ),
-        );
-        const attachments = fileInfos.map(fileInfoToAttachment);
-        const students = course?.students ?? [];
-        const targetUsersIds =
-          selectedIds.size === 0 || selectedIds.size === students.length
-            ? null
-            : [...selectedIds];
-        const createdAssignment = await mutateAsync({
-          content: data.content,
-          targetUsersIds,
-          attachments: attachments.length > 0 ? attachments : null,
-          payload: {
-            publicationType: 'TeamAssignment',
-            distributionType: data.distributionType,
-            submissionType: data.submissionType,
-            title: data.title,
-            deadlineUtc: data.deadlineUtc ?? null,
-            minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
-            maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
-            markType: data.markType,
-            minMark: data.minMark,
-            maxMark: data.maxMark,
-            areTeamsFrozen: false,
-          },
-        });
-        if (data.distributionType === TeamDistributionType.Random) {
-          await distributeRandomlyAsync({
-            assignmentId: createdAssignment.id,
-          });
-        }
-        await queryClient.invalidateQueries({ queryKey: [] });
-        onClose();
+      }
+      await queryClient.invalidateQueries({ queryKey: [] });
+      onClose();
     },
     {
       shouldResetOnSuccess: true,
@@ -215,10 +242,13 @@ export const CreateTeamAssignmentModal = ({
                   withTime
                 />
               </Field>
-              <Field
-                title="Тип оценки"
-                fieldClassName={styles.markType}
-              >
+              <DeadlineCriteriaFields
+                register={form.register}
+                control={form.control}
+                watch={form.watch}
+                deadlineSet={!!form.watch('deadlineUtc')}
+              />
+              <Field title="Тип оценки" fieldClassName={styles.markType}>
                 <RadioButton
                   {...form.register('markType')}
                   value={MarkType.Score}
@@ -231,14 +261,20 @@ export const CreateTeamAssignmentModal = ({
                   title={'Зачет/незачет'}
                 />
               </Field>
-              <Field title="Минимальная оценка" testId="CreateAssignment-minMark">
+              <Field
+                title="Минимальная оценка"
+                testId="CreateAssignment-minMark"
+              >
                 <Input
                   {...form.register('minMark')}
                   errorText={form.formState.errors.minMark?.message}
                   testId="CreateAssignment-minMark-input"
                 />
               </Field>
-              <Field title="Максимальная оценка" testId="CreateAssignment-maxMark">
+              <Field
+                title="Максимальная оценка"
+                testId="CreateAssignment-maxMark"
+              >
                 <Input
                   {...form.register('maxMark')}
                   errorText={form.formState.errors.minMark?.message}
