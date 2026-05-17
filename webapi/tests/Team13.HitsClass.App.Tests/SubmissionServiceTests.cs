@@ -817,7 +817,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         );
 
         // Assert
-        exception.Message.Should().Be("Score must be between 0 and 5");
+        exception.Message.Should().Be("Оценка должна быть между 0 и 5");
     }
 
     [Fact]
@@ -841,7 +841,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         );
 
         // Assert
-        exception.Message.Should().Be("Score must be between 2 and 5");
+        exception.Message.Should().Be("Оценка должна быть между 2 и 5");
     }
 
     [Fact]
@@ -865,7 +865,7 @@ public class SubmissionServiceTests : AppServiceTestBase
         );
 
         // Assert
-        exception.Message.Should().Be("Score must be between 0 and 5");
+        exception.Message.Should().Be("Оценка должна быть между 0 и 5");
     }
 
     [Fact]

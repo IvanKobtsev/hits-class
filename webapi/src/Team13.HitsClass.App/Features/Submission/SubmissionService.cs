@@ -415,7 +415,7 @@ public class SubmissionService(
 
                 if (score < payload.MinMark || score > payload.MaxMark)
                     throw new ValidationException(
-                        $"Score must be between {payload.MinMark} and {payload.MaxMark}"
+                        $"Оценка должна быть между {payload.MinMark} и {payload.MaxMark}"
                     );
 
                 break;

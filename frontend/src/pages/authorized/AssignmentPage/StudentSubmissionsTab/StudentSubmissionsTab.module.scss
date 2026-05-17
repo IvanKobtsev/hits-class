@@ -163,6 +163,10 @@
 
   &:focus {
     border-color: $classroom-blue;
+
+    &::placeholder {
+      color: transparent;
+    }
   }
 }
 
@@ -447,6 +451,10 @@
 
 .criteriaSummaryLabel {
   color: $classroom-text-secondary;
+}
+
+.strong {
+  color: $classroom-text-primary;
 }
 
 .criteriaApplyButton {

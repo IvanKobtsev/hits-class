@@ -1,22 +1,22 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
-  useGetSubmissionsQuery,
-  useGetSubmissionQuery,
-  useMarkSubmissionMutation,
-  getSubmissionsQueryKey,
   getSubmissionQueryKey,
+  getSubmissionsQueryKey,
+  useGetSubmissionQuery,
+  useGetSubmissionsQuery,
+  useMarkSubmissionMutation,
 } from 'services/api/api-client/SubmissionQuery';
 import { useAddCommentToSubmissionMutation } from 'services/api/api-client/CommentQuery';
-import type {
+import {
+  Attachment,
+  CriteriaDto,
+  CriteriaType,
+  FileInfoDto,
+  LexicalState,
   SubmissionListItem,
   SubmissionState,
-  FileInfoDto,
-  Attachment,
-  LexicalState,
-  CriteriaDto,
 } from 'services/api/api-client.types';
-import { CriteriaType } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import styles from './StudentSubmissionsTab.module.scss';
@@ -151,6 +151,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   >(null);
   const [markValue, setMarkValue] = useState('');
   const [finalMarkValue, setFinalMarkValue] = useState('');
+  const [hintedMarkValue, setHintedMarkValue] = useState('');
   const [clampMessage, setClampMessage] = useState<string>('');
   const [markComment, setMarkComment] = useState('');
   const [commentText, setCommentText] = useState('');
@@ -199,7 +200,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
 
   const handleSelectSubmission = useCallback((sub: SubmissionListItem) => {
     setSelectedSubmissionId(sub.id);
-    setMarkValue(sub.mark ?? '');
+    setMarkValue('');
     setFinalMarkValue('');
     setClampMessage('');
     setMarkComment('');
@@ -234,18 +235,27 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const totalMultiplier =
     multiplierCriteria.length > 0
       ? multiplierCriteria.reduce(
-          (sum, c) => sum + (Number(criteriaScores[c.id]) || 0),
+          (sum, c) => sum + (Number(criteriaScores[c.id]) || (c.minValue ?? 0)),
           0,
         )
       : null;
   const hasUnmetRequirements = requirementCriteria.some(
     (c) => criteriaScores[c.id] !== 'true',
   );
-  const rawMarkNum = Number(markValue) || 0;
+  const everyMinimumIsPassed = criteria.every(
+    (c) =>
+      c.minValue === null ||
+      c.minValue === 0 ||
+      c.type !== CriteriaType.Score ||
+      Number(c.minValue) <= Number(criteriaScores[c.id]),
+  );
+
   const computedFinalScore =
-    criteria.length > 0
-      ? parseFloat((rawMarkNum * (totalMultiplier ?? 1) + (additionalScore ?? 0)).toFixed(10))
-      : null;
+    criteria.length > 0 && !hasUnmetRequirements && everyMinimumIsPassed
+      ? parseFloat(
+          ((additionalScore ?? 0) * (totalMultiplier ?? 1)).toFixed(10),
+        )
+      : 0;
 
   const handleApplyCriteria = useCallback(() => {
     if (computedFinalScore === null) return;
@@ -258,6 +268,8 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
       clamped = minMark;
       message = '* Итоговая оценка округлена до минимума';
     }
+
+    setHintedMarkValue(String(computedFinalScore));
     setFinalMarkValue(String(clamped));
     setClampMessage(message);
   }, [computedFinalScore, minMark, maxMark]);
@@ -279,6 +291,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
           void queryClient.invalidateQueries({
             queryKey: getSubmissionQueryKey(selectedSubmissionId),
           });
+        },
+        onError: (e: any) => {
+          alert(e.detail);
         },
       },
     );
@@ -410,7 +425,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                       {additionalScore !== null && (
                         <span className={styles.criteriaSummaryItem}>
                           <span className={styles.criteriaSummaryLabel}>
-                            Дополнительный балл:
+                            Итоговый балл:
                           </span>
                           <strong>{additionalScore}</strong>
                         </span>
@@ -436,6 +451,11 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                             * Не все требования выполнены
                           </span>
                         )}
+                      {!everyMinimumIsPassed && (
+                        <span className={styles.requirementWarning}>
+                          * Не все минимумы пройдены
+                        </span>
+                      )}
                       {clampMessage && (
                         <span className={styles.clampMessage}>
                           {clampMessage}
@@ -448,19 +468,22 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
             )}
 
             <div className={styles.markSection}>
-              <span className={styles.markLabel}>Сырой балл:</span>
-              <input
-                className={styles.markInput}
-                value={markValue}
-                onChange={(e) => setMarkValue(e.target.value)}
-                placeholder="—"
-              />
+              <span className={styles.markLabel}>
+                Предварительный балл:{' '}
+                <strong className={styles.strong}>
+                  {!!hintedMarkValue ? hintedMarkValue : '0'}
+                </strong>
+              </span>
               {criteria.length > 0 && (
                 <>
                   <span className={styles.markLabel}>Итог:</span>
                   <input
                     className={styles.markInput}
-                    value={finalMarkValue}
+                    defaultValue={
+                      !finalMarkValue
+                        ? (selectedSubmission?.mark ?? undefined)
+                        : finalMarkValue
+                    }
                     onChange={(e) => {
                       setFinalMarkValue(e.target.value);
                       setClampMessage('');
@@ -472,7 +495,16 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               <button
                 className={styles.markSaveButton}
                 onClick={handleSaveMark}
-                disabled={isMarking}
+                disabled={
+                  isMarking ||
+                  selectedSubmission?.mark === finalMarkValue ||
+                  !finalMarkValue
+                }
+                title={
+                  selectedSubmission?.mark === finalMarkValue
+                    ? 'Оценка уже выставлена'
+                    : undefined
+                }
               >
                 Сохранить
               </button>
