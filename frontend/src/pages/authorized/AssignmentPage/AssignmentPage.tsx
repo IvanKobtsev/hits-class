@@ -69,6 +69,9 @@ export const AssignmentPage = () => {
           <StudentSubmissionsTab
             assignmentId={id}
             deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
+            minMark={(publication.publicationPayload as AssignmentPayload)?.minMark ?? null}
+            maxMark={(publication.publicationPayload as AssignmentPayload)?.maxMark ?? null}
+            criteria={publication.criteria}
           />
         </div>
       )}
