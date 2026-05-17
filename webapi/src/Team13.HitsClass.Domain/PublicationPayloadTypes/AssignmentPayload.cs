@@ -13,4 +13,5 @@ public class AssignmentPayload : PublicationPayload
     public DateTime? DeadlineUtc { get; set; }
     public int? MaxMark { get; set; }
     public int? MinMark { get; set; }
+    public DeadlineCriteria? DeadlineCriteria { get; set; }
 }

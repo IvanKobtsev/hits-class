@@ -127,6 +127,7 @@ const mockPublication: PublicationDto = {
   },
   attachments: [],
   targetUserIds: [],
+  criteria: [],
   type: 'Announcement' as any,
   publicationPayload: { publicationType: 'Announcement' } as any,
 };

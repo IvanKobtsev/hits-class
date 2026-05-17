@@ -95,6 +95,7 @@ export const CreateAnnouncementModal = ({
           content: data.content,
           targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
+          criteria: null,
           payload: { publicationType: 'Announcement' },
         });
         await queryClient.invalidateQueries({

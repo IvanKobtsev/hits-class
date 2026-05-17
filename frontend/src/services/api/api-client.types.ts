@@ -301,6 +301,7 @@ export interface PublicationDto  {
   attachments: Attachment[];
   type: PublicationType;
   targetUserIds: string[];
+  criteria: CriteriaDto[];
   publicationPayload: PublicationPayload;
 }
 export function deserializePublicationDto(json: string): PublicationDto {
@@ -321,6 +322,11 @@ export function initPublicationDto(_data: PublicationDto) {
     }
     _data.type = _data["type"];
     _data.targetUserIds = _data["targetUserIds"];
+    if (Array.isArray(_data["criteria"])) {
+      _data.criteria = _data["criteria"].map(item => 
+        initCriteriaDto(item)
+      );
+    }
     _data.publicationPayload = _data["publicationPayload"] && initPublicationPayload(_data["publicationPayload"]);
   }
   return _data;
@@ -340,6 +346,11 @@ export function prepareSerializePublicationDto(_data: PublicationDto): Publicati
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
         prepareSerializeAttachment(item)
+    );
+  }
+  if (Array.isArray(_data.criteria)) {
+    data["criteria"] = _data.criteria.map(item => 
+        prepareSerializeCriteriaDto(item)
     );
   }
   data["publicationPayload"] = _data.publicationPayload && prepareSerializePublicationPayload(_data.publicationPayload);
@@ -399,6 +410,39 @@ export enum PublicationType {
     Assignment = "Assignment",
     TeamAssignment = "TeamAssignment",
 }
+export interface CriteriaDto  {
+  id: number;
+  description: string;
+  type: CriteriaType;
+  minValue: number | null;
+  maxValue: number | null;
+}
+export function deserializeCriteriaDto(json: string): CriteriaDto {
+  const data = JSON.parse(json) as CriteriaDto;
+  initCriteriaDto(data);
+  return data;
+}
+export function initCriteriaDto(_data: CriteriaDto) {
+  if (_data) {
+    _data.type = _data["type"];
+  }
+  return _data;
+}
+export function serializeCriteriaDto(_data: CriteriaDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCriteriaDto(_data as CriteriaDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCriteriaDto(_data: CriteriaDto): CriteriaDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CriteriaDto;
+}
+export enum CriteriaType {
+    Score = "Score",
+    Multiplier = "Multiplier",
+    Requirement = "Requirement",
+}
 export interface PublicationPayload  {
   publicationType: string;
 }
@@ -453,10 +497,11 @@ export function prepareSerializeAnnouncementPayload(_data: AnnouncementPayload):
 }
 export interface AssignmentPayload extends PublicationPayload  {
   title: string;
+  markType: MarkType;
   deadlineUtc: Date | null;
-  markType: MarkType
   maxMark: number | null;
   minMark: number | null;
+  deadlineCriteria: DeadlineCriteria | null;
 }
 export function deserializeAssignmentPayload(json: string): AssignmentPayload {
   const data = JSON.parse(json) as AssignmentPayload;
@@ -469,7 +514,9 @@ export function deserializeAssignmentPayload(json: string): AssignmentPayload {
 export function initAssignmentPayload(_data: AssignmentPayload) {
   initPublicationPayload(_data);
   if (_data) {
+    _data.markType = _data["markType"];
     _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
+    _data.deadlineCriteria = _data["deadlineCriteria"] && initDeadlineCriteria(_data["deadlineCriteria"]);
   }
   return _data;
 }
@@ -482,7 +529,97 @@ export function serializeAssignmentPayload(_data: AssignmentPayload | undefined)
 export function prepareSerializeAssignmentPayload(_data: AssignmentPayload): AssignmentPayload {
   const data = prepareSerializePublicationPayload(_data as AssignmentPayload) as Record<string, any>;
   data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
+  data["deadlineCriteria"] = _data.deadlineCriteria && prepareSerializeDeadlineCriteria(_data.deadlineCriteria);
   return data as AssignmentPayload;
+}
+export enum MarkType {
+    Score = "Score",
+    PassFail = "PassFail",
+}
+export interface DeadlineCriteria  {
+  earlyBonus: EarlyBonus | null;
+  latePenalty: LatePenalty | null;
+}
+export function deserializeDeadlineCriteria(json: string): DeadlineCriteria {
+  const data = JSON.parse(json) as DeadlineCriteria;
+  initDeadlineCriteria(data);
+  return data;
+}
+export function initDeadlineCriteria(_data: DeadlineCriteria) {
+  if (_data) {
+    _data.earlyBonus = _data["earlyBonus"] && initEarlyBonus(_data["earlyBonus"]);
+    _data.latePenalty = _data["latePenalty"] && initLatePenalty(_data["latePenalty"]);
+  }
+  return _data;
+}
+export function serializeDeadlineCriteria(_data: DeadlineCriteria | undefined) {
+  if (_data) {
+    _data = prepareSerializeDeadlineCriteria(_data as DeadlineCriteria);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeDeadlineCriteria(_data: DeadlineCriteria): DeadlineCriteria {
+  const data: Record<string, any> = { ..._data };
+  data["earlyBonus"] = _data.earlyBonus && prepareSerializeEarlyBonus(_data.earlyBonus);
+  data["latePenalty"] = _data.latePenalty && prepareSerializeLatePenalty(_data.latePenalty);
+  return data as DeadlineCriteria;
+}
+export interface EarlyBonus  {
+  earliestDate: Date;
+  bonusValue: number;
+  bonusType: BonusType;
+}
+export function deserializeEarlyBonus(json: string): EarlyBonus {
+  const data = JSON.parse(json) as EarlyBonus;
+  initEarlyBonus(data);
+  return data;
+}
+export function initEarlyBonus(_data: EarlyBonus) {
+  if (_data) {
+    _data.earliestDate = _data["earliestDate"] ? new Date(_data["earliestDate"].toString()) : <any>null;
+    _data.bonusType = _data["bonusType"];
+  }
+  return _data;
+}
+export function serializeEarlyBonus(_data: EarlyBonus | undefined) {
+  if (_data) {
+    _data = prepareSerializeEarlyBonus(_data as EarlyBonus);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeEarlyBonus(_data: EarlyBonus): EarlyBonus {
+  const data: Record<string, any> = { ..._data };
+  data["earliestDate"] = _data.earliestDate && _data.earliestDate.toISOString();
+  return data as EarlyBonus;
+}
+export enum BonusType {
+    Score = "Score",
+    Multiplier = "Multiplier",
+}
+export interface LatePenalty  {
+  latestDate: Date;
+}
+export function deserializeLatePenalty(json: string): LatePenalty {
+  const data = JSON.parse(json) as LatePenalty;
+  initLatePenalty(data);
+  return data;
+}
+export function initLatePenalty(_data: LatePenalty) {
+  if (_data) {
+    _data.latestDate = _data["latestDate"] ? new Date(_data["latestDate"].toString()) : <any>null;
+  }
+  return _data;
+}
+export function serializeLatePenalty(_data: LatePenalty | undefined) {
+  if (_data) {
+    _data = prepareSerializeLatePenalty(_data as LatePenalty);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeLatePenalty(_data: LatePenalty): LatePenalty {
+  const data: Record<string, any> = { ..._data };
+  data["latestDate"] = _data.latestDate && _data.latestDate.toISOString();
+  return data as LatePenalty;
 }
 export interface TeamAssignmentPayload extends AssignmentPayload  {
   minTeamSize: number | null;
@@ -524,14 +661,11 @@ export enum SubmissionType {
     All = "All",
     One = "One",
 }
-export enum MarkType {
-    Score = "Score",
-    PassFail = "PassFail",
-}
 export interface CreatePublicationDto  {
   content: LexicalState;
   targetUsersIds: string[] | null;
   attachments: Attachment[] | null;
+  criteria: CreateCriteriaDto[] | null;
 }
 export function deserializeCreatePublicationDto(json: string): CreatePublicationDto {
   const data = JSON.parse(json) as CreatePublicationDto;
@@ -545,6 +679,11 @@ export function initCreatePublicationDto(_data: CreatePublicationDto) {
     if (Array.isArray(_data["attachments"])) {
       _data.attachments = _data["attachments"].map(item => 
         initAttachment(item)
+      );
+    }
+    if (Array.isArray(_data["criteria"])) {
+      _data.criteria = _data["criteria"].map(item => 
+        initCreateCriteriaDto(item)
       );
     }
   }
@@ -562,6 +701,11 @@ export function prepareSerializeCreatePublicationDto(_data: CreatePublicationDto
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
         prepareSerializeAttachment(item)
+    );
+  }
+  if (Array.isArray(_data.criteria)) {
+    data["criteria"] = _data.criteria.map(item => 
+        prepareSerializeCreateCriteriaDto(item)
     );
   }
   return data as CreatePublicationDto;
@@ -592,10 +736,38 @@ export function prepareSerializeCreateTeamAssignmentDto(_data: CreateTeamAssignm
   data["payload"] = _data.payload && prepareSerializeTeamAssignmentPayload(_data.payload);
   return data as CreateTeamAssignmentDto;
 }
+export interface CreateCriteriaDto  {
+  description: string;
+  type: CriteriaType;
+  minValue: number | null;
+  maxValue: number | null;
+}
+export function deserializeCreateCriteriaDto(json: string): CreateCriteriaDto {
+  const data = JSON.parse(json) as CreateCriteriaDto;
+  initCreateCriteriaDto(data);
+  return data;
+}
+export function initCreateCriteriaDto(_data: CreateCriteriaDto) {
+  if (_data) {
+    _data.type = _data["type"];
+  }
+  return _data;
+}
+export function serializeCreateCriteriaDto(_data: CreateCriteriaDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateCriteriaDto(_data as CreateCriteriaDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateCriteriaDto(_data: CreateCriteriaDto): CreateCriteriaDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateCriteriaDto;
+}
 /** The base DTO for Publication patching. */
 export interface PatchPublicationDto  {
   content?: LexicalState;
   attachments?: Attachment[] | null;
+  criteria?: CreateCriteriaDto[] | null;
   targetUsersIds?: string[] | null;
 }
 export function deserializePatchPublicationDto(json: string): PatchPublicationDto {
@@ -609,6 +781,11 @@ export function initPatchPublicationDto(_data: PatchPublicationDto) {
     if (Array.isArray(_data["attachments"])) {
       _data.attachments = _data["attachments"].map(item => 
         initAttachment(item)
+      );
+    }
+    if (Array.isArray(_data["criteria"])) {
+      _data.criteria = _data["criteria"].map(item => 
+        initCreateCriteriaDto(item)
       );
     }
     _data.targetUsersIds = _data["targetUsersIds"];
@@ -627,6 +804,11 @@ export function prepareSerializePatchPublicationDto(_data: PatchPublicationDto):
   if (Array.isArray(_data.attachments)) {
     data["attachments"] = _data.attachments.map(item => 
         prepareSerializeAttachment(item)
+    );
+  }
+  if (Array.isArray(_data.criteria)) {
+    data["criteria"] = _data.criteria.map(item => 
+        prepareSerializeCreateCriteriaDto(item)
     );
   }
   return data as PatchPublicationDto;
@@ -660,14 +842,14 @@ export function prepareSerializePatchTeamAssignmentDto(_data: PatchTeamAssignmen
 export interface PatchTeamAssignmentPayloadDto  {
   title?: string;
   deadlineUtc?: Date | null;
+  maxMark?: number | null;
+  minMark?: number | null;
   minTeamSize?: number | null;
   maxTeamSize?: number | null;
-  markType?: MarkType | null;
-  minMark?: number | null;
-  maxMark?: number | null;
   distributionType?: TeamDistributionType;
   submissionType?: SubmissionType;
   areTeamsFrozen?: boolean;
+  deadlineCriteria?: DeadlineCriteria | null;
 }
 export function deserializePatchTeamAssignmentPayloadDto(json: string): PatchTeamAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchTeamAssignmentPayloadDto;
@@ -679,6 +861,7 @@ export function initPatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayl
     _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
     _data.distributionType = _data["distributionType"];
     _data.submissionType = _data["submissionType"];
+    _data.deadlineCriteria = _data["deadlineCriteria"] && initDeadlineCriteria(_data["deadlineCriteria"]);
   }
   return _data;
 }
@@ -691,6 +874,7 @@ export function serializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmen
 export function prepareSerializePatchTeamAssignmentPayloadDto(_data: PatchTeamAssignmentPayloadDto): PatchTeamAssignmentPayloadDto {
   const data: Record<string, any> = { ..._data };
   data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
+  data["deadlineCriteria"] = _data.deadlineCriteria && prepareSerializeDeadlineCriteria(_data.deadlineCriteria);
   return data as PatchTeamAssignmentPayloadDto;
 }
 export interface SubmissionDto  {
@@ -1454,10 +1638,10 @@ export function prepareSerializePatchAssignmentDto(_data: PatchAssignmentDto): P
 }
 export interface PatchAssignmentPayloadDto  {
   title?: string;
-  markType: MarkType;
-  maxMark: number | null;
-  minMark: number | null;
   deadlineUtc?: Date | null;
+  maxMark?: number | null;
+  minMark?: number | null;
+  deadlineCriteria?: DeadlineCriteria | null;
 }
 export function deserializePatchAssignmentPayloadDto(json: string): PatchAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchAssignmentPayloadDto;
@@ -1467,6 +1651,7 @@ export function deserializePatchAssignmentPayloadDto(json: string): PatchAssignm
 export function initPatchAssignmentPayloadDto(_data: PatchAssignmentPayloadDto) {
   if (_data) {
     _data.deadlineUtc = _data["deadlineUtc"] ? new Date(_data["deadlineUtc"].toString()) : <any>null;
+    _data.deadlineCriteria = _data["deadlineCriteria"] && initDeadlineCriteria(_data["deadlineCriteria"]);
   }
   return _data;
 }
@@ -1479,6 +1664,7 @@ export function serializePatchAssignmentPayloadDto(_data: PatchAssignmentPayload
 export function prepareSerializePatchAssignmentPayloadDto(_data: PatchAssignmentPayloadDto): PatchAssignmentPayloadDto {
   const data: Record<string, any> = { ..._data };
   data["deadlineUtc"] = _data.deadlineUtc && _data.deadlineUtc.toISOString();
+  data["deadlineCriteria"] = _data.deadlineCriteria && prepareSerializeDeadlineCriteria(_data.deadlineCriteria);
   return data as PatchAssignmentPayloadDto;
 }
 export interface CreateAnnouncementDto extends CreatePublicationDto  {

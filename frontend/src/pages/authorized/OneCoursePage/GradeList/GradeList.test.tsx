@@ -43,6 +43,7 @@ function makeAssignment(
     },
     attachments: [],
     targetUserIds: [],
+    criteria: [],
     publicationPayload: {
       publicationType: 'Assignment',
       title: `Задание ${id}`,
@@ -67,6 +68,7 @@ function makeAnnouncement(id: number): PublicationDto {
     },
     attachments: [],
     targetUserIds: [],
+    criteria: [],
     publicationPayload: { publicationType: 'Announcement' },
   };
 }
