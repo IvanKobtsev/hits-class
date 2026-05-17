@@ -14,7 +14,9 @@ import type {
   FileInfoDto,
   Attachment,
   LexicalState,
+  CriteriaDto,
 } from 'services/api/api-client.types';
+import { CriteriaType } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import styles from './StudentSubmissionsTab.module.scss';
@@ -120,7 +122,10 @@ function formatDate(date: Date | null | undefined): string {
   return `${day}.${month}.${d.getFullYear()} ${hours}:${minutes}`;
 }
 
-function isSubmittedLate(submittedAt: Date | null, deadline: Date | null): boolean {
+function isSubmittedLate(
+  submittedAt: Date | null,
+  deadline: Date | null,
+): boolean {
   if (!submittedAt || !deadline) return false;
   return new Date(submittedAt) > new Date(deadline);
 }
@@ -128,19 +133,30 @@ function isSubmittedLate(submittedAt: Date | null, deadline: Date | null): boole
 type StudentSubmissionsTabProps = {
   assignmentId: number;
   deadlineUtc: Date | null;
+  minMark: number | null;
+  maxMark: number | null;
+  criteria: CriteriaDto[];
 };
 
 export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   assignmentId,
   deadlineUtc,
+  minMark,
+  maxMark,
+  criteria,
 }) => {
   const queryClient = useQueryClient();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<
     number | null
   >(null);
   const [markValue, setMarkValue] = useState('');
+  const [finalMarkValue, setFinalMarkValue] = useState('');
+  const [clampMessage, setClampMessage] = useState<string>('');
   const [markComment, setMarkComment] = useState('');
   const [commentText, setCommentText] = useState('');
+  const [criteriaScores, setCriteriaScores] = useState<Record<number, string>>(
+    {},
+  );
 
   const { data: submissionsData } = useGetSubmissionsQuery(
     assignmentId,
@@ -184,21 +200,75 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const handleSelectSubmission = useCallback((sub: SubmissionListItem) => {
     setSelectedSubmissionId(sub.id);
     setMarkValue(sub.mark ?? '');
+    setFinalMarkValue('');
+    setClampMessage('');
     setMarkComment('');
+    setCriteriaScores({});
   }, []);
 
   const handleBack = useCallback(() => {
     setSelectedSubmissionId(null);
     setMarkValue('');
+    setFinalMarkValue('');
+    setClampMessage('');
     setMarkComment('');
     setCommentText('');
+    setCriteriaScores({});
   }, []);
+
+  const scoreCriteria = criteria.filter((c) => c.type === CriteriaType.Score);
+  const multiplierCriteria = criteria.filter(
+    (c) => c.type === CriteriaType.Multiplier,
+  );
+  const requirementCriteria = criteria.filter(
+    (c) => c.type === CriteriaType.Requirement,
+  );
+
+  const additionalScore =
+    scoreCriteria.length > 0
+      ? scoreCriteria.reduce(
+          (sum, c) => sum + (Number(criteriaScores[c.id]) || 0),
+          0,
+        )
+      : null;
+  const totalMultiplier =
+    multiplierCriteria.length > 0
+      ? multiplierCriteria.reduce(
+          (sum, c) => sum + (Number(criteriaScores[c.id]) || 0),
+          0,
+        )
+      : null;
+  const hasUnmetRequirements = requirementCriteria.some(
+    (c) => criteriaScores[c.id] !== 'true',
+  );
+  const rawMarkNum = Number(markValue) || 0;
+  const computedFinalScore =
+    criteria.length > 0
+      ? parseFloat((rawMarkNum * (totalMultiplier ?? 1) + (additionalScore ?? 0)).toFixed(10))
+      : null;
+
+  const handleApplyCriteria = useCallback(() => {
+    if (computedFinalScore === null) return;
+    let clamped = computedFinalScore;
+    let message = '';
+    if (maxMark !== null && clamped > maxMark) {
+      clamped = maxMark;
+      message = '* Итоговая оценка округлена до максимума';
+    } else if (minMark !== null && clamped < minMark) {
+      clamped = minMark;
+      message = '* Итоговая оценка округлена до минимума';
+    }
+    setFinalMarkValue(String(clamped));
+    setClampMessage(message);
+  }, [computedFinalScore, minMark, maxMark]);
 
   const handleSaveMark = useCallback(() => {
     if (selectedSubmissionId == null) return;
+    const submittedMark =
+      criteria.length > 0 ? finalMarkValue || null : markValue || null;
     markSubmission(
       {
-        mark: markValue || null,
+        mark: submittedMark,
         markComment: !!markComment ? { json: markComment } : null,
       },
       {
@@ -214,6 +284,8 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     );
   }, [
     selectedSubmissionId,
+    criteria.length,
+    finalMarkValue,
     markValue,
     markComment,
     markSubmission,
@@ -257,7 +329,12 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               <span
                 className={`${styles.statusBadge} ${isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(selectedSubmission.state)}`}
               >
-                {isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(selectedSubmission.state)}
+                {isSubmittedLate(
+                  selectedSubmission.lastSubmittedAtUTC,
+                  deadlineUtc,
+                )
+                  ? 'Сдано с опозданием'
+                  : statusLabel(selectedSubmission.state)}
               </span>
             </div>
 
@@ -270,14 +347,128 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               />
             )}
 
+            {criteria.length > 0 && (
+              <div className={styles.criteriaSection}>
+                <div className={styles.criteriaHeader}>Критерии оценивания</div>
+                {criteria.map((c) => (
+                  <div key={c.id} className={styles.criteriaItem}>
+                    <div className={styles.criteriaDescription}>
+                      {c.description}
+                    </div>
+                    <div className={styles.criteriaControl}>
+                      {c.type === CriteriaType.Requirement ? (
+                        <label className={styles.criteriaCheckboxLabel}>
+                          <input
+                            type="checkbox"
+                            className={styles.criteriaCheckbox}
+                            checked={criteriaScores[c.id] === 'true'}
+                            onChange={(e) =>
+                              setCriteriaScores((prev) => ({
+                                ...prev,
+                                [c.id]: e.target.checked ? 'true' : 'false',
+                              }))
+                            }
+                          />
+                          Выполнено
+                        </label>
+                      ) : (
+                        <div className={styles.criteriaScoreInput}>
+                          <input
+                            type="number"
+                            className={styles.markInput}
+                            value={criteriaScores[c.id] ?? ''}
+                            onChange={(e) =>
+                              setCriteriaScores((prev) => ({
+                                ...prev,
+                                [c.id]: e.target.value,
+                              }))
+                            }
+                            placeholder="—"
+                            min={c.minValue ?? undefined}
+                            max={c.maxValue ?? undefined}
+                          />
+                          {c.type === CriteriaType.Score &&
+                            c.maxValue != null && (
+                              <span className={styles.criteriaRange}>
+                                / {c.maxValue}
+                                {c.minValue != null &&
+                                  c.minValue !== 0 &&
+                                  ` (мин. ${c.minValue})`}
+                              </span>
+                            )}
+                          {c.type === CriteriaType.Multiplier && (
+                            <span className={styles.criteriaRange}>×</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {(additionalScore !== null || totalMultiplier !== null) && (
+                  <div className={styles.criteriaSummary}>
+                    <div className={styles.criteriaSummaryRow}>
+                      {additionalScore !== null && (
+                        <span className={styles.criteriaSummaryItem}>
+                          <span className={styles.criteriaSummaryLabel}>
+                            Дополнительный балл:
+                          </span>
+                          <strong>{additionalScore}</strong>
+                        </span>
+                      )}
+                      {totalMultiplier !== null && (
+                        <span className={styles.criteriaSummaryItem}>
+                          <span className={styles.criteriaSummaryLabel}>
+                            Итоговый множитель:
+                          </span>
+                          <strong>{totalMultiplier}</strong>
+                        </span>
+                      )}
+                      <button
+                        className={styles.criteriaApplyButton}
+                        type="button"
+                        onClick={handleApplyCriteria}
+                      >
+                        Применить
+                      </button>
+                      {requirementCriteria.length > 0 &&
+                        hasUnmetRequirements && (
+                          <span className={styles.requirementWarning}>
+                            * Не все требования выполнены
+                          </span>
+                        )}
+                      {clampMessage && (
+                        <span className={styles.clampMessage}>
+                          {clampMessage}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className={styles.markSection}>
-              <span className={styles.markLabel}>Оценка:</span>
+              <span className={styles.markLabel}>Сырой балл:</span>
               <input
                 className={styles.markInput}
                 value={markValue}
                 onChange={(e) => setMarkValue(e.target.value)}
                 placeholder="—"
               />
+              {criteria.length > 0 && (
+                <>
+                  <span className={styles.markLabel}>Итог:</span>
+                  <input
+                    className={styles.markInput}
+                    value={finalMarkValue}
+                    onChange={(e) => {
+                      setFinalMarkValue(e.target.value);
+                      setClampMessage('');
+                    }}
+                    placeholder="—"
+                  />
+                </>
+              )}
               <button
                 className={styles.markSaveButton}
                 onClick={handleSaveMark}
@@ -382,7 +573,9 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
               <span
                 className={`${styles.statusBadge} ${isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(sub.state)}`}
               >
-                {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc) ? 'Сдано с опозданием' : statusLabel(sub.state)}
+                {isSubmittedLate(sub.lastSubmittedAtUTC, deadlineUtc)
+                  ? 'Сдано с опозданием'
+                  : statusLabel(sub.state)}
               </span>
               <div
                 className={`${styles.mark} ${sub.mark == null ? styles.markEmpty : ''}`}
