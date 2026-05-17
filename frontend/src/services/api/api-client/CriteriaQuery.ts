@@ -46,7 +46,7 @@ export function patchCriteriaMutationKey(criteriaId: number): MutationKey {
 /**
  * Update specific criteria
  */
-export function usePatchCriteriaMutation<TContext>(criteriaId: number, options?: Omit<UseMutationOptions<Types.CriteriaDto, unknown, string, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.CriteriaDto, unknown, string, TContext> {
+export function usePatchCriteriaMutation<TContext>(criteriaId: number, options?: Omit<UseMutationOptions<Types.CriteriaDto, unknown, Types.PatchCriteriaDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.CriteriaDto, unknown, Types.PatchCriteriaDto, TContext> {
   const key = patchCriteriaMutationKey(criteriaId);
   
   const metaContext = useContext(QueryMetaContext);
@@ -54,13 +54,13 @@ export function usePatchCriteriaMutation<TContext>(criteriaId: number, options?:
   
   return useMutation({
     ...options,
-    mutationFn: (description: string) => Client.patchCriteria(criteriaId, description),
+    mutationFn: (patchCriteriaDto: Types.PatchCriteriaDto) => Client.patchCriteria(criteriaId, patchCriteriaDto),
     mutationKey: key,
   });
 }
   
 type PatchCriteria__MutationParameters = PatchCriteriaCriteriaQueryParameters & {
-  description: string;
+  patchCriteriaDto: Types.PatchCriteriaDto;
 }
 
 /**
@@ -74,7 +74,7 @@ export function usePatchCriteriaMutationWithParameters<TContext>(options?: Omit<
   
 return useMutation({
   ...options, 
-  mutationFn: (data: PatchCriteria__MutationParameters) => Client.patchCriteria(data.criteriaId ?? options?.parameters?.criteriaId!, data.description),
+  mutationFn: (data: PatchCriteria__MutationParameters) => Client.patchCriteria(data.criteriaId ?? options?.parameters?.criteriaId!, data.patchCriteriaDto),
   mutationKey: key,
 });
 }

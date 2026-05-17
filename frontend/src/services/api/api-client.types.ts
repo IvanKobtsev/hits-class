@@ -1667,6 +1667,29 @@ export function prepareSerializePatchAssignmentPayloadDto(_data: PatchAssignment
   data["deadlineCriteria"] = _data.deadlineCriteria && prepareSerializeDeadlineCriteria(_data.deadlineCriteria);
   return data as PatchAssignmentPayloadDto;
 }
+export interface PatchCriteriaDto  {
+  description?: string;
+  minValue?: number;
+  maxValue?: number;
+}
+export function deserializePatchCriteriaDto(json: string): PatchCriteriaDto {
+  const data = JSON.parse(json) as PatchCriteriaDto;
+  initPatchCriteriaDto(data);
+  return data;
+}
+export function initPatchCriteriaDto(_data: PatchCriteriaDto) {
+    return _data;
+}
+export function serializePatchCriteriaDto(_data: PatchCriteriaDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePatchCriteriaDto(_data as PatchCriteriaDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePatchCriteriaDto(_data: PatchCriteriaDto): PatchCriteriaDto {
+  const data: Record<string, any> = { ..._data };
+  return data as PatchCriteriaDto;
+}
 export interface CreateAnnouncementDto extends CreatePublicationDto  {
   payload: AnnouncementPayload;
 }

@@ -9422,14 +9422,14 @@ namespace Team13.HitsClass.Http.Generated
         /// Update specific criteria
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, string description);
+        System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, PatchCriteriaDto patchCriteriaDto);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Update specific criteria
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, string description, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, PatchCriteriaDto patchCriteriaDto, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Delete specific criteria
@@ -9482,9 +9482,9 @@ namespace Team13.HitsClass.Http.Generated
         /// Update specific criteria
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, string description)
+        public virtual System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, PatchCriteriaDto patchCriteriaDto)
         {
-            return PatchCriteriaAsync(criteriaId, description, System.Threading.CancellationToken.None);
+            return PatchCriteriaAsync(criteriaId, patchCriteriaDto, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -9492,13 +9492,13 @@ namespace Team13.HitsClass.Http.Generated
         /// Update specific criteria
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, string description, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<CriteriaDto> PatchCriteriaAsync(int criteriaId, PatchCriteriaDto patchCriteriaDto, System.Threading.CancellationToken cancellationToken)
         {
             if (criteriaId == null)
                 throw new System.ArgumentNullException("criteriaId");
 
-            if (description == null)
-                throw new System.ArgumentNullException("description");
+            if (patchCriteriaDto == null)
+                throw new System.ArgumentNullException("patchCriteriaDto");
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/api/criteria/{criteriaId}");
@@ -9510,7 +9510,7 @@ namespace Team13.HitsClass.Http.Generated
             {
                 using (var request_ = new System.Net.Http.HttpRequestMessage())
                 {
-                    var json_ = System.Text.Json.JsonSerializer.Serialize(description, _settings.Value);
+                    var json_ = System.Text.Json.JsonSerializer.Serialize(patchCriteriaDto, _settings.Value);
                     var content_ = new System.Net.Http.StringContent(json_);
                     content_.Headers.ContentType = System.Net.Http.Headers.MediaTypeHeaderValue.Parse("application/json");
                     request_.Content = content_;
@@ -12632,6 +12632,27 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]   
         public DeadlineCriteria DeadlineCriteria { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class PatchCriteriaDto
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("description")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public string Description { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("minValue")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public decimal? MinValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("maxValue")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public decimal? MaxValue { get; set; }
 
     }
 

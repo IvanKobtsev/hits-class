@@ -16,14 +16,14 @@ import { getAxios, getBaseUrl } from './helpers';
 /**
  * Update specific criteria
  */
-export function patchCriteria(criteriaId: number, description: string, config?: AxiosRequestConfig | undefined): Promise<Types.CriteriaDto> {
+export function patchCriteria(criteriaId: number, patchCriteriaDto: Types.PatchCriteriaDto, config?: AxiosRequestConfig | undefined): Promise<Types.CriteriaDto> {
     let url_ = getBaseUrl() + "/api/criteria/{criteriaId}";
     if (criteriaId === undefined || criteriaId === null)
       throw new Error("The parameter 'criteriaId' must be defined.");
     url_ = url_.replace("{criteriaId}", encodeURIComponent("" + criteriaId));
       url_ = url_.replace(/[?&]$/, "");
 
-    const content_ = JSON.stringify(description);
+    const content_ = Types.serializePatchCriteriaDto(patchCriteriaDto);
 
     let options_: AxiosRequestConfig = {
         ..._requestConfigPatchCriteria,

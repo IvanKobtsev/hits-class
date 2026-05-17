@@ -22,6 +22,7 @@ import {
 import {
   Attachment,
   BonusType,
+  CriteriaDto,
   DeadlineCriteria,
   FileInfoDto,
   LexicalState,
@@ -29,6 +30,7 @@ import {
   SubmissionType,
   TeamDistributionType,
 } from 'services/api/api-client.types';
+import { CriteriaFields, CriteriaItem, makeCriteriaKey } from '../../../CriteriaFields/CriteriaFields';
 import { DeadlineCriteriaFields } from '../../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 import { QueryFactory } from 'services/api';
 import styles from './EditTeamAssignmentModal.module.scss';
@@ -96,6 +98,7 @@ export type EditTeamAssignmentModalProps = {
   initialMarkType: MarkType;
   initialMinMark: number | null;
   initialMaxMark: number | null;
+  initialCriteria?: CriteriaDto[];
   initialDeadlineCriteria?: DeadlineCriteria | null;
 };
 
@@ -115,6 +118,7 @@ export const EditTeamAssignmentModal = ({
   initialMarkType,
   initialMinMark,
   initialMaxMark,
+  initialCriteria,
   initialDeadlineCriteria,
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
@@ -125,6 +129,7 @@ export const EditTeamAssignmentModal = ({
   const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] =
     useState<Record<string, Attachment>>({});
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
+  const [criteria, setCriteria] = useState<CriteriaItem[]>([]);
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
   const form = useAdvancedForm<EditTeamAssignmentForm>(
@@ -164,6 +169,7 @@ export const EditTeamAssignmentModal = ({
       await mutateAsync({
         content: data.content,
         attachments: allAttachments,
+        criteria: criteria.map(({ _key: _, ...dto }) => dto),
         payload: {
           title: data.title,
           deadlineUtc: data.deadlineUtc ?? null,
@@ -212,6 +218,7 @@ export const EditTeamAssignmentModal = ({
         Object.fromEntries(initialAttachments.map((a) => [a.uuid, a])),
       );
       setRawFiles({});
+      setCriteria((initialCriteria ?? []).map(({ id: _, ...c }) => ({ ...c, _key: makeCriteriaKey() })));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -221,6 +228,7 @@ export const EditTeamAssignmentModal = ({
     setFiles([]);
     setExistingAttachmentsByFileId({});
     setRawFiles({});
+    setCriteria([]);
     onClose();
   };
 
@@ -375,6 +383,7 @@ export const EditTeamAssignmentModal = ({
               />
             </Field>
           </div>
+          <CriteriaFields value={criteria} onChange={setCriteria} />
           <Field
             title="Прикреплённые файлы"
             testId="EditAssignment-attachments"

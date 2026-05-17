@@ -1,0 +1,60 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.itemHeader {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.descriptionInput {
+  flex: 1;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #888;
+  padding: 0 4px;
+  line-height: 1;
+
+  &:hover {
+    color: #d32f2f;
+  }
+}
+
+.typeRow {
+  display: flex;
+  gap: 16px;
+}
+
+.valuesRow {
+  display: flex;
+  gap: 16px;
+}
