@@ -52,6 +52,7 @@ const mockAssignment: PublicationDto = {
   lastUpdatedAtUTC: null,
   attachments: [],
   targetUserIds: [],
+  criteria: [],
   type: 'Assignment' as any,
   publicationPayload: {
     publicationType: 'Assignment',

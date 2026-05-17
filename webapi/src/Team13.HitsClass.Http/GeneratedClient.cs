@@ -11704,6 +11704,11 @@ namespace Team13.HitsClass.Http.Generated
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
         public int? MinMark { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("deadlineCriteria")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public DeadlineCriteria DeadlineCriteria { get; set; }
+
     }
 
     [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
@@ -11715,6 +11720,70 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Runtime.Serialization.EnumMember(Value = @"PassFail")]
         PassFail = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class DeadlineCriteria
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("earlyBonus")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public EarlyBonus EarlyBonus { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("latePenalty")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public LatePenalty LatePenalty { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class EarlyBonus
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("earliestDate")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTimeOffset EarliestDate { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("bonusValue")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        public decimal BonusValue { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("bonusType")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter))]
+        public BonusType BonusType { get; set; }
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public enum BonusType
+    {
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Score")]
+        Score = 0,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"Multiplier")]
+        Multiplier = 1,
+
+    }
+
+    [System.CodeDom.Compiler.GeneratedCode("NJsonSchema", "13.20.0.0 (NJsonSchema v11.0.0.0 (Newtonsoft.Json v13.0.0.0))")]
+    public partial class LatePenalty
+    {
+
+        [System.Text.Json.Serialization.JsonPropertyName("latestDate")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.Never)]   
+        [System.ComponentModel.DataAnnotations.Required(AllowEmptyStrings = true)]
+        public System.DateTimeOffset LatestDate { get; set; }
 
     }
 
@@ -11912,6 +11981,11 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]   
         public bool? AreTeamsFrozen { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("deadlineCriteria")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]   
+        public DeadlineCriteria DeadlineCriteria { get; set; }
 
     }
 
@@ -12553,6 +12627,11 @@ namespace Team13.HitsClass.Http.Generated
 
         [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]   
         public int? MinMark { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("deadlineCriteria")]
+
+        [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]   
+        public DeadlineCriteria DeadlineCriteria { get; set; }
 
     }
 

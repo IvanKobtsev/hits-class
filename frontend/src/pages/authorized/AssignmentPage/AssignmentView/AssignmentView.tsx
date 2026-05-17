@@ -2,9 +2,10 @@ import AssignmentIcon from 'assets/icons/list-ul.svg?react';
 import { LexicalViewer } from 'components/lexical/LexicalViewer';
 import {
   AssignmentPayload,
+  BonusType,
   PublicationDto,
   SubmissionDto,
-  MarkType
+  MarkType,
 } from 'services/api/api-client.types';
 import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import styles from './AssignmentView.module.scss';
@@ -52,7 +53,7 @@ export const AssignmentView = ({
 }: AssignmentViewProps) => {
   const { content, author, createdAtUTC: createdAtUTCRaw } = assignment;
   const createdAtUTC = new Date(createdAtUTCRaw);
-  const { title, deadlineUtc: deadlineUtcRaw, markType, minMark, maxMark } =
+  const { title, deadlineUtc: deadlineUtcRaw, markType, minMark, maxMark, deadlineCriteria } =
     assignment.publicationPayload as AssignmentPayload;
   const deadlineUtc = deadlineUtcRaw ? new Date(deadlineUtcRaw) : null;
 
@@ -129,6 +130,26 @@ export const AssignmentView = ({
                 data-test-id="AssignmentView-maxMark"
               >
                 {maxMark ? maxMark : 'Не указана'}
+              </span>
+            </span>
+          )}
+
+          {deadlineCriteria?.earlyBonus && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Бонус за раннюю сдачу:</span>
+              <span className={styles.metaValue}>
+                до {formatDateTimeLocal(new Date(deadlineCriteria.earlyBonus.earliestDate))},{' '}
+                +{deadlineCriteria.earlyBonus.bonusValue}{' '}
+                {deadlineCriteria.earlyBonus.bonusType === BonusType.Score ? 'балл(ов)' : '×'}
+              </span>
+            </span>
+          )}
+
+          {deadlineCriteria?.latePenalty && (
+            <span className={styles.metaItem}>
+              <span className={styles.metaLabel}>Штраф за опоздание:</span>
+              <span className={styles.metaValue}>
+                последний срок {formatDateTimeLocal(new Date(deadlineCriteria.latePenalty.latestDate))}
               </span>
             </span>
           )}

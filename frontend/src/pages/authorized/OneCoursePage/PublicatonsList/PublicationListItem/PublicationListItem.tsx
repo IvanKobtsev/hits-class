@@ -357,6 +357,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               ? new Date(assignmentData.deadlineUtc)
               : null
           }
+          initialDeadlineCriteria={assignmentData?.deadlineCriteria ?? null}
           initialAttachments={attachments ?? []}
           initialCriteria={criteria}
         />
@@ -391,6 +392,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
             (assignmentData as TeamAssignmentPayload).maxMark ?? null
           }
           initialCriteria={criteria}
+          initialDeadlineCriteria={assignmentData?.deadlineCriteria ?? null}
         />
       )}
       {isTargetUsersModalOpen && (

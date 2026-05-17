@@ -12,4 +12,5 @@ public class PatchAssignmentPayloadDto : PatchRequest<PublicationPayload>
     public DateTime? DeadlineUtc { get; set; }
     public int? MaxMark { get; set; }
     public int? MinMark { get; set; }
+    public DeadlineCriteria? DeadlineCriteria { get; set; }
 }

@@ -21,7 +21,9 @@ import {
 } from 'pages/authorized/AssignmentPage/CreateSubmissionPanel/AttachedFilesTable/AttachedFilesTable';
 import {
   Attachment,
+  BonusType,
   CriteriaDto,
+  DeadlineCriteria,
   FileInfoDto,
   LexicalState,
   MarkType,
@@ -29,6 +31,7 @@ import {
   TeamDistributionType,
 } from 'services/api/api-client.types';
 import { CriteriaFields, CriteriaItem, makeCriteriaKey } from '../../../CriteriaFields/CriteriaFields';
+import { DeadlineCriteriaFields } from '../../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 import { QueryFactory } from 'services/api';
 import styles from './EditTeamAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
@@ -71,6 +74,12 @@ type EditTeamAssignmentForm = {
   markType: MarkType;
   minMark: number | null;
   maxMark: number | null;
+  hasEarlyBonus: boolean;
+  earlyBonusEarliestDate: Date | null;
+  earlyBonusValue: string;
+  earlyBonusType: BonusType;
+  hasLatePenalty: boolean;
+  latePenaltyLatestDate: Date | null;
 };
 
 export type EditTeamAssignmentModalProps = {
@@ -90,6 +99,7 @@ export type EditTeamAssignmentModalProps = {
   initialMinMark: number | null;
   initialMaxMark: number | null;
   initialCriteria?: CriteriaDto[];
+  initialDeadlineCriteria?: DeadlineCriteria | null;
 };
 
 export const EditTeamAssignmentModal = ({
@@ -109,6 +119,7 @@ export const EditTeamAssignmentModal = ({
   initialMinMark,
   initialMaxMark,
   initialCriteria,
+  initialDeadlineCriteria,
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -138,6 +149,23 @@ export const EditTeamAssignmentModal = ({
         .map((f) => existingAttachmentsByFileId[f.id]);
       const allAttachments = [...remainingExisting, ...newAttachments];
 
+      const deadlineCriteria =
+        data.hasEarlyBonus || data.hasLatePenalty
+          ? {
+              earlyBonus:
+                data.hasEarlyBonus && data.earlyBonusEarliestDate
+                  ? {
+                      earliestDate: data.earlyBonusEarliestDate,
+                      bonusValue: Number(data.earlyBonusValue),
+                      bonusType: data.earlyBonusType,
+                    }
+                  : null,
+              latePenalty:
+                data.hasLatePenalty && data.latePenaltyLatestDate
+                  ? { latestDate: data.latePenaltyLatestDate }
+                  : null,
+            }
+          : null;
       await mutateAsync({
         content: data.content,
         attachments: allAttachments,
@@ -149,9 +177,9 @@ export const EditTeamAssignmentModal = ({
           submissionType: data.submissionType,
           minTeamSize: !data.minTeamSize ? null : data.minTeamSize,
           maxTeamSize: !data.maxTeamSize ? null : data.maxTeamSize,
-          markType: data.markType,
           minMark: !data.minMark ? null : data.minMark,
           maxMark: !data.maxMark ? null : data.maxMark,
+          deadlineCriteria,
         },
       });
       await queryClient.invalidateQueries({
@@ -177,7 +205,13 @@ export const EditTeamAssignmentModal = ({
         maxTeamSize: initialMaxSize,
         markType: initialMarkType,
         minMark: initialMinMark,
-        maxMark: initialMaxMark
+        maxMark: initialMaxMark,
+        hasEarlyBonus: !!initialDeadlineCriteria?.earlyBonus,
+        earlyBonusEarliestDate: initialDeadlineCriteria?.earlyBonus?.earliestDate ?? null,
+        earlyBonusValue: String(initialDeadlineCriteria?.earlyBonus?.bonusValue ?? ''),
+        earlyBonusType: initialDeadlineCriteria?.earlyBonus?.bonusType ?? BonusType.Score,
+        hasLatePenalty: !!initialDeadlineCriteria?.latePenalty,
+        latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate ?? null,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -279,6 +313,12 @@ export const EditTeamAssignmentModal = ({
               withTime
             />
           </Field>
+          <DeadlineCriteriaFields
+            register={form.register}
+            control={form.control}
+            watch={form.watch}
+            deadlineSet={!!form.watch('deadlineUtc')}
+          />
           <Field
             title="Тип распределения"
             fieldClassName={styles.distributionType}
