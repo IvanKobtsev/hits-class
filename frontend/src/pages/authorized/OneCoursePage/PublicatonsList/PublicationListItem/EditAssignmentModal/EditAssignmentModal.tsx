@@ -23,9 +23,11 @@ import {
 import {
   MarkType,
   Attachment,
+  CriteriaDto,
   FileInfoDto,
   LexicalState,
 } from 'services/api/api-client.types';
+import { CriteriaFields, CriteriaItem, makeCriteriaKey } from '../../../CriteriaFields/CriteriaFields';
 import { QueryFactory } from 'services/api';
 import styles from './EditAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
@@ -77,6 +79,7 @@ export type EditAssignmentModalProps = {
   initialMinMark: number | null;
   initialMaxMark: number | null;
   initialAttachments: Attachment[];
+  initialCriteria?: CriteriaDto[];
 };
 
 export const EditAssignmentModal = ({
@@ -91,6 +94,7 @@ export const EditAssignmentModal = ({
   initialMinMark,
   initialMaxMark,
   initialAttachments,
+  initialCriteria,
 }: EditAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -100,6 +104,7 @@ export const EditAssignmentModal = ({
   const [existingAttachmentsByFileId, setExistingAttachmentsByFileId] =
     useState<Record<string, Attachment>>({});
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
+  const [criteria, setCriteria] = useState<CriteriaItem[]>([]);
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
   const form = useAdvancedForm<EditAssignmentForm>(
@@ -123,6 +128,7 @@ export const EditAssignmentModal = ({
         await mutateAsync({
           content: data.content,
           attachments: allAttachments,
+          criteria: criteria.map(({ _key: _, ...dto }) => dto),
           payload: {
             title: data.title,
             markType: data.markType,
@@ -160,6 +166,7 @@ export const EditAssignmentModal = ({
         Object.fromEntries(initialAttachments.map((a) => [a.uuid, a])),
       );
       setRawFiles({});
+      setCriteria((initialCriteria ?? []).map(({ id: _, ...c }) => ({ ...c, _key: makeCriteriaKey() })));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -169,6 +176,7 @@ export const EditAssignmentModal = ({
     setFiles([]);
     setExistingAttachmentsByFileId({});
     setRawFiles({});
+    setCriteria([]);
     onClose();
   };
 
@@ -255,6 +263,7 @@ export const EditAssignmentModal = ({
               withTime
             />
           </Field>
+          <CriteriaFields value={criteria} onChange={setCriteria} />
           <Field
             title="Прикреплённые файлы"
             testId="EditAssignment-attachments"

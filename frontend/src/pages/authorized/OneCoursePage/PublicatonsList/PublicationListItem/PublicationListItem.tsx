@@ -73,6 +73,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
   author,
   attachments = [],
   targetUserIds,
+  criteria,
   publicationPayload,
 }) => {
   const isTeamAssignment = type === PublicationType.TeamAssignment;
@@ -357,6 +358,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
               : null
           }
           initialAttachments={attachments ?? []}
+          initialCriteria={criteria}
         />
       )}
       {isEditModalOpen && isTeamAssignment && (
@@ -388,6 +390,7 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialMaxMark={
             (assignmentData as TeamAssignmentPayload).maxMark ?? null
           }
+          initialCriteria={criteria}
         />
       )}
       {isTargetUsersModalOpen && (

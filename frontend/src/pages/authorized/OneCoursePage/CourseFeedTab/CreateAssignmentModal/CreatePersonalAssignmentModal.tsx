@@ -29,6 +29,7 @@ import {
   type FileInfoDto,
   type LexicalState,
 } from 'services/api/api-client.types';
+import { CriteriaFields, CriteriaItem, makeCriteriaKey } from '../../CriteriaFields/CriteriaFields';
 import styles from './CreatePersonalAssignmentModal.module.scss';
 import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { LexicalTextAreaControlled } from 'components/lexical/text-area/LexicalTextArea.tsx';
@@ -77,6 +78,7 @@ export const CreatePersonalAssignmentModal = ({
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [criteria, setCriteria] = useState<CriteriaItem[]>([]);
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
   useEffect(() => {
@@ -107,6 +109,7 @@ export const CreatePersonalAssignmentModal = ({
           content: data.content,
           targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
+          criteria: criteria.length > 0 ? criteria.map(({ _key: _, ...dto }) => dto) : null,
           payload: {
             publicationType: 'Assignment',
             title: data.title,
@@ -132,6 +135,7 @@ export const CreatePersonalAssignmentModal = ({
     form.reset();
     setFiles([]);
     setRawFiles({});
+    setCriteria([]);
     onClose();
   };
 
@@ -232,6 +236,7 @@ export const CreatePersonalAssignmentModal = ({
                   withTime
                 />
               </Field>
+              <CriteriaFields value={criteria} onChange={setCriteria} />
               <Field
                 title="Прикреплённые файлы"
                 testId="CreateAssignment-attachments"

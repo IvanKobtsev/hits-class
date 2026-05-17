@@ -35,6 +35,7 @@ import { queryClient } from 'services/api/query-client-helper.ts';
 import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
 import { useCreateAssignmentMutation } from '../../../../../services/api/api-client/TeamAssignmentQuery.ts';
 import { useDistributeRandomlyMutationWithParameters } from '../../../../../services/api/api-client/TeamQuery.ts';
+import { CriteriaFields, CriteriaItem } from '../../CriteriaFields/CriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -84,6 +85,7 @@ export const CreateTeamAssignmentModal = ({
   const [files, setFiles] = useState<AttachedFileItem[]>([]);
   const [rawFiles, setRawFiles] = useState<Record<string, File>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [criteria, setCriteria] = useState<CriteriaItem[]>([]);
   const { mutateAsync: uploadFileAsync } = useUploadFileMutation();
 
   useEffect(() => {
@@ -113,6 +115,7 @@ export const CreateTeamAssignmentModal = ({
           content: data.content,
           targetUsersIds,
           attachments: attachments.length > 0 ? attachments : null,
+          criteria: criteria.length > 0 ? criteria.map(({ _key: _, ...dto }) => dto) : null,
           payload: {
             publicationType: 'TeamAssignment',
             distributionType: data.distributionType,
@@ -145,6 +148,7 @@ export const CreateTeamAssignmentModal = ({
     form.reset();
     setFiles([]);
     setRawFiles({});
+    setCriteria([]);
     onClose();
   };
 
@@ -309,6 +313,7 @@ export const CreateTeamAssignmentModal = ({
                   />
                 </Field>
               </div>
+              <CriteriaFields value={criteria} onChange={setCriteria} />
               <Field
                 title="Прикреплённые файлы"
                 testId="CreateAssignment-attachments"
