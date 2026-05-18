@@ -7,6 +7,7 @@ import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { useCourseRole } from 'pages/authorized/OneCoursePage/useCourseRole';
 import type { AssignmentPayload } from 'services/api/api-client.types';
 import { AssignmentView } from './AssignmentView/AssignmentView';
+import { DeadlineHelper } from './DeadlineHelper/DeadlineHelper';
 import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
 import { SubmissionPanel } from './CreateSubmissionPanel/SubmissionPanel';
@@ -58,6 +59,10 @@ export const AssignmentPage = () => {
           {!isTeacher && (
             <div className={styles.right}>
               <SubmissionPanel assignmentId={id} submission={submission} />
+              <DeadlineHelper
+                deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
+                deadlineCriteria={(publication.publicationPayload as AssignmentPayload)?.deadlineCriteria ?? null}
+              />
               <PrivateCommentView assignmentId={id} comments={submission?.comments ?? []} />
             </div>
           )}
