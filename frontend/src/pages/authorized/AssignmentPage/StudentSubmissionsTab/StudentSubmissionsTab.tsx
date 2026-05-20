@@ -130,9 +130,23 @@ function isSubmittedLate(
   return new Date(submittedAt) > new Date(deadline);
 }
 
+function calcLateCoefficient(
+  submittedAt: Date,
+  deadlineUtc: Date,
+  latestDate: Date,
+): number {
+  const s = new Date(submittedAt).getTime();
+  const d = new Date(deadlineUtc).getTime();
+  const l = new Date(latestDate).getTime();
+  if (s <= d) return 1;
+  if (s >= l) return 0;
+  return parseFloat((1 - (s - d) / (l - d)).toFixed(2));
+}
+
 type StudentSubmissionsTabProps = {
   assignmentId: number;
   deadlineUtc: Date | null;
+  latestDate: Date | null;
   minMark: number | null;
   maxMark: number | null;
   criteria: CriteriaDto[];
@@ -141,6 +155,7 @@ type StudentSubmissionsTabProps = {
 export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   assignmentId,
   deadlineUtc,
+  latestDate,
   minMark,
   maxMark,
   criteria,
@@ -158,6 +173,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const [criteriaScores, setCriteriaScores] = useState<Record<number, string>>(
     {},
   );
+  const [lateCoefficientOverride, setLateCoefficientOverride] = useState<string>('');
 
   const { data: submissionsData } = useGetSubmissionsQuery(
     assignmentId,
@@ -205,6 +221,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     setClampMessage('');
     setMarkComment('');
     setCriteriaScores({});
+    setLateCoefficientOverride('');
   }, []);
 
   const handleBack = useCallback(() => {
@@ -215,6 +232,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     setMarkComment('');
     setCommentText('');
     setCriteriaScores({});
+    setLateCoefficientOverride('');
   }, []);
 
   const scoreCriteria = criteria.filter((c) => c.type === CriteriaType.Score);
@@ -308,6 +326,29 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
     assignmentId,
   ]);
 
+  const isSelectedLate =
+    selectedSubmission != null &&
+    isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc);
+
+  const computedCoefficient =
+    isSelectedLate &&
+    selectedSubmission?.lastSubmittedAtUTC &&
+    deadlineUtc &&
+    latestDate
+      ? calcLateCoefficient(
+          new Date(selectedSubmission.lastSubmittedAtUTC),
+          new Date(deadlineUtc),
+          new Date(latestDate),
+        )
+      : null;
+
+  const lateCoefficientDisplayValue =
+    lateCoefficientOverride !== ''
+      ? lateCoefficientOverride
+      : computedCoefficient !== null
+        ? String(computedCoefficient)
+        : '';
+
   if (selectedSubmissionId != null && selectedSubmission) {
     return (
       <div className={styles.container} data-test-id="student-submissions-tab">
@@ -340,18 +381,45 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
             </button>
           </div>
           <div className={styles.selectedBody}>
-            <div>
+            <div className={styles.statusRow}>
               <span
-                className={`${styles.statusBadge} ${isSubmittedLate(selectedSubmission.lastSubmittedAtUTC, deadlineUtc) ? styles.statusLate : statusClass(selectedSubmission.state)}`}
+                className={`${styles.statusBadge} ${isSelectedLate ? styles.statusLate : statusClass(selectedSubmission.state)}`}
               >
-                {isSubmittedLate(
-                  selectedSubmission.lastSubmittedAtUTC,
-                  deadlineUtc,
-                )
+                {isSelectedLate
                   ? 'Сдано с опозданием'
                   : statusLabel(selectedSubmission.state)}
               </span>
+              {isSelectedLate && deadlineUtc && (
+                <span className={styles.lateNote}>
+                  * Сдано после дедлайна {formatDate(new Date(deadlineUtc))}
+                </span>
+              )}
             </div>
+
+            {computedCoefficient !== null && (
+              <div className={styles.coefficientRow}>
+                <span className={styles.coefficientLabel}>
+                  Коэффициент опоздания:
+                </span>
+                <input
+                  type="number"
+                  className={styles.coefficientInput}
+                  value={lateCoefficientDisplayValue}
+                  min={0}
+                  max={1}
+                  step={0.0001}
+                  onChange={(e) => setLateCoefficientOverride(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className={styles.coefficientRefreshButton}
+                  title="Сбросить к расчётному значению"
+                  onClick={() => setLateCoefficientOverride('')}
+                >
+                  ↺
+                </button>
+              </div>
+            )}
 
             {selectedSubmission.attachments.length > 0 && (
               <AttachmentsList

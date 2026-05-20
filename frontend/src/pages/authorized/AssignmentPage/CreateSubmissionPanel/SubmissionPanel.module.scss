@@ -41,6 +41,62 @@
   }
 }
 
+.unsubmitWarning {
+  margin: 0 16px 12px;
+  padding: 12px;
+  background: rgba(#dc2626, 0.06);
+  border: 1px solid rgba(#dc2626, 0.25);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.warningText {
+  margin: 0;
+  font-size: 13px;
+  color: #b91c1c;
+  line-height: 1.5;
+}
+
+.warningActions {
+  display: flex;
+  gap: 8px;
+}
+
+.warningConfirmButton {
+  padding: 5px 12px;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: darken(#dc2626, 8%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.warningCancelButton {
+  padding: 5px 12px;
+  background: none;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 13px;
+  color: $classroom-text-secondary;
+  cursor: pointer;
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
 .footer {
   padding: 0 16px 16px;
 }

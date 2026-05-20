@@ -44,11 +44,15 @@ function draftInfosFromSubmission(
 export type SubmissionPanelProps = {
   assignmentId?: number;
   submission?: SubmissionDto;
+  deadlineUtc?: Date | null;
+  latestDate?: Date | null;
 };
 
 export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
   assignmentId,
   submission,
+  deadlineUtc,
+  latestDate,
 }) => {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -60,6 +64,8 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
   const [uploadedFileInfos, setUploadedFileInfos] = useState<Record<string, FileInfoDto>>(() =>
     draftInfosFromSubmission(submission),
   );
+
+  const [showUnsubmitWarning, setShowUnsubmitWarning] = useState(false);
 
   const { mutate: uploadFile } = useUploadFileMutation();
   const { mutate: createSubmission, isPending: isSubmitting } =
@@ -161,6 +167,7 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
   }, [assignmentId, attachments, canSubmit, createSubmission, queryClient]);
 
   const handleCancel = useCallback(() => {
+    setShowUnsubmitWarning(false);
     if (assignmentId == null || !submission) return;
     const previousAttachments = submission.attachments;
     retractSubmission(undefined, {
@@ -179,6 +186,17 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
     });
   }, [assignmentId, retractSubmission, queryClient, submission]);
 
+  const handleCancelClick = useCallback(() => {
+    const now = Date.now();
+    const deadlineMs = deadlineUtc ? new Date(deadlineUtc).getTime() : null;
+    const latestMs = latestDate ? new Date(latestDate).getTime() : null;
+    if (deadlineMs != null && latestMs != null && now > deadlineMs) {
+      setShowUnsubmitWarning(true);
+    } else {
+      handleCancel();
+    }
+  }, [deadlineUtc, latestDate, handleCancel]);
+
   if (isSubmitted) {
     const submittedFiles = submission!.attachments.map(fileInfoToItem);
     return (
@@ -187,6 +205,32 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
         <div className={styles.body}>
           <AttachedFilesTable files={submittedFiles} />
         </div>
+        {showUnsubmitWarning && (
+          <div className={styles.unsubmitWarning}>
+            <p className={styles.warningText}>
+              ⚠ Вы сдаёте работу в период штрафного времени. Коэффициент оценки снижается
+              со временем — чем позже вы пересдадите, тем ниже он будет. Вы уверены, что
+              хотите отменить сдачу?
+            </p>
+            <div className={styles.warningActions}>
+              <button
+                type="button"
+                className={styles.warningConfirmButton}
+                disabled={isCancelling}
+                onClick={handleCancel}
+              >
+                Да, отменить сдачу
+              </button>
+              <button
+                type="button"
+                className={styles.warningCancelButton}
+                onClick={() => setShowUnsubmitWarning(false)}
+              >
+                Оставить
+              </button>
+            </div>
+          </div>
+        )}
         <div className={styles.footer}>
           <Button
             title="Отменить сдачу"
@@ -194,7 +238,7 @@ export const SubmissionPanel: React.FC<SubmissionPanelProps> = ({
             width={ButtonWidth.Fullwidth}
             className={styles.submitButton}
             disabled={isCancelling}
-            onClick={handleCancel}
+            onClick={handleCancelClick}
             aria-label="Отменить сдачу"
           />
         </div>
