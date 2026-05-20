@@ -5,5 +5,7 @@ namespace Team13.HitsClass.Domain
         Score = 0,
         Multiplier = 1,
         Requirement = 2,
+        BonusScore = 3,
+        BonusMultiplier = 4,
     }
 }

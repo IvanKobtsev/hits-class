@@ -1,15 +1,17 @@
 import * as React from 'react';
 
 import styles from './CheckBox.module.scss';
+import clsx from "clsx";
 
 type Props = React.InputHTMLAttributes<HTMLInputElement> & {
   title?: string;
   testId?: string;
+  className?: string;
 };
 
 export const CheckBox = React.forwardRef<HTMLInputElement, Props>(
   function CheckBox(props, ref) {
-    const { title, testId, ...rest } = props;
+    const { title, className, testId, ...rest } = props;
     const id =
       props.id ?? props.name != undefined
         ? `uni-check-box-${props.name}`
@@ -20,7 +22,7 @@ export const CheckBox = React.forwardRef<HTMLInputElement, Props>(
           ref={ref}
           {...rest}
           id={id}
-          className={styles.customCheckbox}
+          className={clsx(styles.customCheckbox, className)}
           type="checkbox"
           data-test-id={testId}
         />

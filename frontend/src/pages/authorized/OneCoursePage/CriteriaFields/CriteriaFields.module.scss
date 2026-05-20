@@ -58,3 +58,8 @@
   display: flex;
   gap: 16px;
 }
+
+.checkbox {
+  z-index: 1 !important;
+  margin-top: 26px;
+}

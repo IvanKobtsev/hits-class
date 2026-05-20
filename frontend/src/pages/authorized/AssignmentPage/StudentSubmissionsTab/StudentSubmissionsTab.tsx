@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import React, {useCallback, useState} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
 import {
   getSubmissionQueryKey,
   getSubmissionsQueryKey,
@@ -7,7 +7,7 @@ import {
   useGetSubmissionsQuery,
   useMarkSubmissionMutation,
 } from 'services/api/api-client/SubmissionQuery';
-import { useAddCommentToSubmissionMutation } from 'services/api/api-client/CommentQuery';
+import {useAddCommentToSubmissionMutation} from 'services/api/api-client/CommentQuery';
 import {
   Attachment,
   CriteriaDto,
@@ -17,8 +17,10 @@ import {
   SubmissionListItem,
   SubmissionState,
 } from 'services/api/api-client.types';
-import { AttachmentsList } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
-import { LexicalViewer } from 'components/lexical/LexicalViewer';
+import {
+  AttachmentsList
+} from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
+import {LexicalViewer} from 'components/lexical/LexicalViewer';
 import styles from './StudentSubmissionsTab.module.scss';
 
 const AVATAR_COLORS = [
@@ -218,27 +220,44 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   }, []);
 
   const scoreCriteria = criteria.filter((c) => c.type === CriteriaType.Score);
+  const bonusScoreCriteria = criteria.filter((c) => c.type === CriteriaType.BonusScore);
   const multiplierCriteria = criteria.filter(
     (c) => c.type === CriteriaType.Multiplier,
+  );
+  const bonusMultiplierCriteria = criteria.filter(
+    (c) => c.type === CriteriaType.BonusMultiplier,
   );
   const requirementCriteria = criteria.filter(
     (c) => c.type === CriteriaType.Requirement,
   );
 
-  const additionalScore =
+  const baseScore =
     scoreCriteria.length > 0
       ? scoreCriteria.reduce(
           (sum, c) => sum + (Number(criteriaScores[c.id]) || 0),
           0,
         )
       : null;
-  const totalMultiplier =
+  const bonusScore = bonusScoreCriteria.length > 0
+    ? bonusScoreCriteria.reduce(
+      (sum, c) => sum + (Number(criteriaScores[c.id]) || 0),
+      0,
+    )
+    : null;
+  const baseMultiplier =
     multiplierCriteria.length > 0
       ? multiplierCriteria.reduce(
           (sum, c) => sum + (Number(criteriaScores[c.id]) || (c.minValue ?? 0)),
           0,
         )
       : null;
+  const bonusMultiplier =
+    bonusMultiplierCriteria.length > 0
+    ? bonusMultiplierCriteria.reduce(
+      (sum, c) => sum + (Number(criteriaScores[c.id]) || (c.minValue ?? 0)),
+      0,
+    )
+    : null;
   const hasUnmetRequirements = requirementCriteria.some(
     (c) => criteriaScores[c.id] !== 'true',
   );
@@ -253,7 +272,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   const computedFinalScore =
     criteria.length > 0 && !hasUnmetRequirements && everyMinimumIsPassed
       ? parseFloat(
-          ((additionalScore ?? 0) * (totalMultiplier ?? 1)).toFixed(10),
+          ((baseScore ?? 0) * (baseMultiplier ?? 1) + ((bonusScore ?? 0) * (bonusMultiplier ?? 1))).toFixed(10),
         )
       : 0;
 
@@ -368,7 +387,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                 {criteria.map((c) => (
                   <div key={c.id} className={styles.criteriaItem}>
                     <div className={styles.criteriaDescription}>
-                      {c.description}
+                      {c.description} {c.type === CriteriaType.BonusScore || c.type === CriteriaType.BonusMultiplier ? '(бонус)' : ''}
                     </div>
                     <div className={styles.criteriaControl}>
                       {c.type === CriteriaType.Requirement ? (
@@ -402,7 +421,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                             min={c.minValue ?? undefined}
                             max={c.maxValue ?? undefined}
                           />
-                          {c.type === CriteriaType.Score &&
+                          {(c.type === CriteriaType.Score || c.type === CriteriaType.BonusScore) &&
                             c.maxValue != null && (
                               <span className={styles.criteriaRange}>
                                 / {c.maxValue}
@@ -411,7 +430,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                                   ` (мин. ${c.minValue})`}
                               </span>
                             )}
-                          {c.type === CriteriaType.Multiplier && (
+                          {(c.type === CriteriaType.Multiplier || c.type === CriteriaType.BonusMultiplier) && (
                             <span className={styles.criteriaRange}>×</span>
                           )}
                         </div>
@@ -419,23 +438,39 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                     </div>
                   </div>
                 ))}
-                {(additionalScore !== null || totalMultiplier !== null) && (
+                {(baseScore !== null || baseMultiplier !== null) && (
                   <div className={styles.criteriaSummary}>
                     <div className={styles.criteriaSummaryRow}>
-                      {additionalScore !== null && (
+                      {baseScore !== null && (
                         <span className={styles.criteriaSummaryItem}>
                           <span className={styles.criteriaSummaryLabel}>
-                            Итоговый балл:
+                            Сырые баллы:
                           </span>
-                          <strong>{additionalScore}</strong>
+                          <strong>{baseScore}</strong>
                         </span>
                       )}
-                      {totalMultiplier !== null && (
+                      {baseMultiplier !== null && (
                         <span className={styles.criteriaSummaryItem}>
                           <span className={styles.criteriaSummaryLabel}>
-                            Итоговый множитель:
+                            Множитель сырых баллов:
                           </span>
-                          <strong>{totalMultiplier}</strong>
+                          <strong>{baseMultiplier}</strong>
+                        </span>
+                      )}
+                      {bonusScore !== null && (
+                        <span className={styles.criteriaSummaryItem}>
+                          <span className={styles.criteriaSummaryLabel}>
+                            Бонусные баллы:
+                          </span>
+                          <strong>{bonusScore}</strong>
+                        </span>
+                      )}
+                      {bonusMultiplier !== null && (
+                        <span className={styles.criteriaSummaryItem}>
+                          <span className={styles.criteriaSummaryLabel}>
+                            Множитель бонуса:
+                          </span>
+                          <strong>{bonusMultiplier}</strong>
                         </span>
                       )}
                       <button
