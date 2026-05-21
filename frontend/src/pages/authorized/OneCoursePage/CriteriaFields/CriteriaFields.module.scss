@@ -59,6 +59,18 @@
   gap: 16px;
 }
 
+.maxScore {
+  font-size: 13px;
+  color: #555;
+  padding: 4px 2px;
+  cursor: default;
+  width: fit-content;
+
+  strong {
+    color: #222;
+  }
+}
+
 .checkbox {
   z-index: 1 !important;
   margin-top: 26px;

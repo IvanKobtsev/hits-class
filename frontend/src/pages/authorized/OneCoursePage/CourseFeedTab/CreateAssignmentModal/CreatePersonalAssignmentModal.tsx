@@ -268,7 +268,18 @@ export const CreatePersonalAssignmentModal = ({
                 watch={form.watch}
                 deadlineSet={!!form.watch('deadlineUtc')}
               />
-              <CriteriaFields value={criteria} onChange={setCriteria} />
+              <CriteriaFields
+                value={criteria}
+                onChange={setCriteria}
+                earlyBonus={
+                  form.watch('hasEarlyBonus') && form.watch('earlyBonusValue')
+                    ? {
+                        bonusValue: Number(form.watch('earlyBonusValue')),
+                        bonusType: form.watch('earlyBonusType'),
+                      }
+                    : null
+                }
+              />
               <Field
                 title="Прикреплённые файлы"
                 testId="CreateAssignment-attachments"
