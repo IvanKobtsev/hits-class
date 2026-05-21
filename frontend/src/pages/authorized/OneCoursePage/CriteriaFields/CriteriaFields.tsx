@@ -1,9 +1,10 @@
-import { CreateCriteriaDto, CriteriaType } from 'services/api/api-client.types';
-import { Input } from 'components/uikit/inputs/Input';
-import { Button, ButtonColor } from 'components/uikit/buttons/Button';
-import { RadioButton } from 'components/uikit/RadioButton';
-import { Field } from 'components/uikit/Field';
+import {CreateCriteriaDto, CriteriaType} from 'services/api/api-client.types';
+import {Input} from 'components/uikit/inputs/Input';
+import {Button, ButtonColor} from 'components/uikit/buttons/Button';
+import {RadioButton} from 'components/uikit/RadioButton';
+import {Field} from 'components/uikit/Field';
 import styles from './CriteriaFields.module.scss';
+import {CheckBox} from "../../../../components/uikit/CheckBox.tsx";
 
 export type CriteriaItem = CreateCriteriaDto & { _key: string };
 
@@ -31,6 +32,10 @@ export const CriteriaFields = ({ value, onChange }: Props) => {
   const remove = (key: string) => {
     onChange(value.filter(item => item._key !== key));
   };
+
+  const isBonus = (type: CriteriaType): boolean => {
+    return type === CriteriaType.BonusMultiplier || type === CriteriaType.BonusScore;
+  }
 
   return (
     <div className={styles.section}>
@@ -66,15 +71,15 @@ export const CriteriaFields = ({ value, onChange }: Props) => {
             <RadioButton
               name={`criteria-type-${item._key}`}
               value={CriteriaType.Score}
-              checked={item.type === CriteriaType.Score}
-              onChange={() => update(item._key, { type: CriteriaType.Score })}
+              checked={item.type === CriteriaType.Score || item.type === CriteriaType.BonusScore}
+              onChange={() => update(item._key, { type: isBonus(item.type) ? CriteriaType.BonusScore : CriteriaType.Score })}
               title="Баллы"
             />
             <RadioButton
               name={`criteria-type-${item._key}`}
               value={CriteriaType.Multiplier}
-              checked={item.type === CriteriaType.Multiplier}
-              onChange={() => update(item._key, { type: CriteriaType.Multiplier })}
+              checked={item.type === CriteriaType.Multiplier || item.type === CriteriaType.BonusMultiplier}
+              onChange={() => update(item._key, { type: isBonus(item.type) ? CriteriaType.BonusMultiplier : CriteriaType.Multiplier })}
               title="Коэффициент"
             />
           </div>
@@ -96,6 +101,17 @@ export const CriteriaFields = ({ value, onChange }: Props) => {
                   placeholder="10"
                 />
               </Field>
+              <CheckBox title={"Бонус"} name={"bonus" + item._key} className={styles.checkbox} defaultChecked={item.type === CriteriaType.BonusMultiplier || item.type === CriteriaType.BonusScore}
+                        onClick={() =>
+                          update(item._key, { type:
+                              (item.type === CriteriaType.BonusMultiplier ?
+                                CriteriaType.Multiplier :
+                                item.type === CriteriaType.BonusScore ?
+                                  CriteriaType.Score :
+                                  item.type === CriteriaType.Multiplier ?
+                                    CriteriaType.BonusMultiplier :
+                                    CriteriaType.BonusScore) })}
+              />
             </div>
           )}
         </div>

@@ -11654,6 +11654,12 @@ namespace Team13.HitsClass.Http.Generated
         [System.Runtime.Serialization.EnumMember(Value = @"Requirement")]
         Requirement = 2,
 
+        [System.Runtime.Serialization.EnumMember(Value = @"BonusScore")]
+        BonusScore = 3,
+
+        [System.Runtime.Serialization.EnumMember(Value = @"BonusMultiplier")]
+        BonusMultiplier = 4,
+
     }
 
     [JsonInheritanceConverter(typeof(PublicationPayload), "publicationType")]

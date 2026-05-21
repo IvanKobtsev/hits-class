@@ -442,6 +442,8 @@ export enum CriteriaType {
     Score = "Score",
     Multiplier = "Multiplier",
     Requirement = "Requirement",
+    BonusScore = "BonusScore",
+    BonusMultiplier = "BonusMultiplier",
 }
 export interface PublicationPayload  {
   publicationType: string;
