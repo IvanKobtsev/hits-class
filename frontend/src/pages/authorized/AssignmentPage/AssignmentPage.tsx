@@ -58,7 +58,12 @@ export const AssignmentPage = () => {
           </div>
           {!isTeacher && (
             <div className={styles.right}>
-              <SubmissionPanel assignmentId={id} submission={submission} />
+              <SubmissionPanel
+                assignmentId={id}
+                submission={submission}
+                deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
+                latestDate={(publication.publicationPayload as AssignmentPayload)?.deadlineCriteria?.latePenalty?.latestDate ?? null}
+              />
               <DeadlineHelper
                 deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
                 deadlineCriteria={(publication.publicationPayload as AssignmentPayload)?.deadlineCriteria ?? null}
@@ -74,6 +79,7 @@ export const AssignmentPage = () => {
           <StudentSubmissionsTab
             assignmentId={id}
             deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
+            latestDate={(publication.publicationPayload as AssignmentPayload)?.deadlineCriteria?.latePenalty?.latestDate ?? null}
             minMark={(publication.publicationPayload as AssignmentPayload)?.minMark ?? null}
             maxMark={(publication.publicationPayload as AssignmentPayload)?.maxMark ?? null}
             criteria={publication.criteria}

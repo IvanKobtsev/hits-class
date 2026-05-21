@@ -46,7 +46,7 @@ function renderTab(deadlineUtc: Date | null = DEADLINE) {
   return render(
     <QueryClientProvider client={testQueryClient}>
       <MemoryRouter>
-        <StudentSubmissionsTab assignmentId={10} deadlineUtc={deadlineUtc} minMark={null} maxMark={null} criteria={[]} />
+        <StudentSubmissionsTab assignmentId={10} deadlineUtc={deadlineUtc} latestDate={null} minMark={null} maxMark={null} criteria={[]} />
       </MemoryRouter>
     </QueryClientProvider>,
   );

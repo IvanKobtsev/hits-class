@@ -89,7 +89,54 @@ export const DeadlineHelper: React.FC<Props> = ({ deadlineUtc, deadlineCriteria 
   const total = end - start;
 
   const pct = (ms: number) => ((ms - start) / total) * 100;
-  const nowPct = pct(now.getTime());
+
+  // Visual collision avoidance: spread point circles that are too close together.
+  // Works in screen-space (percentage) so the time scale stays accurate.
+  const MIN_GAP_PCT = 12;
+  const sortedPoints = [...points].sort(
+    (a, b) => a.time.getTime() - b.time.getTime(),
+  );
+  const rawPointPcts = sortedPoints.map((p) => pct(p.time.getTime()));
+  const adjPos = [...rawPointPcts];
+  // Forward pass — push each point right if it overlaps the previous one
+  for (let i = 1; i < adjPos.length; i++) {
+    if (adjPos[i] - adjPos[i - 1] < MIN_GAP_PCT) {
+      adjPos[i] = adjPos[i - 1] + MIN_GAP_PCT;
+    }
+  }
+  // Backward pass — pull left if forward pass pushed the last point too far right
+  for (let i = adjPos.length - 2; i >= 0; i--) {
+    if (adjPos[i + 1] - adjPos[i] < MIN_GAP_PCT) {
+      adjPos[i] = adjPos[i + 1] - MIN_GAP_PCT;
+    }
+  }
+  const adjustedLeft = new Map(
+    sortedPoints.map((p, i) => [p.type, adjPos[i]]),
+  );
+
+  // Map the "now" line through the same piecewise-linear transform so its
+  // position stays consistent with the nudged point circles.
+  const rawNowPct = pct(now.getTime());
+  let nowPct = rawNowPct;
+  if (rawPointPcts.length > 0) {
+    const first = rawPointPcts[0];
+    const last = rawPointPcts[rawPointPcts.length - 1];
+    if (rawNowPct <= first) {
+      nowPct = adjPos[0] + (rawNowPct - first);
+    } else if (rawNowPct >= last) {
+      nowPct = adjPos[adjPos.length - 1] + (rawNowPct - last);
+    } else {
+      for (let i = 0; i < rawPointPcts.length - 1; i++) {
+        if (rawNowPct >= rawPointPcts[i] && rawNowPct <= rawPointPcts[i + 1]) {
+          const t =
+            (rawNowPct - rawPointPcts[i]) /
+            (rawPointPcts[i + 1] - rawPointPcts[i]);
+          nowPct = adjPos[i] + t * (adjPos[i + 1] - adjPos[i]);
+          break;
+        }
+      }
+    }
+  }
 
   return (
     <div className={styles.container}>
@@ -98,7 +145,7 @@ export const DeadlineHelper: React.FC<Props> = ({ deadlineUtc, deadlineCriteria 
         <div className={styles.track} />
 
         {points.map((point) => {
-          const left = pct(point.time.getTime());
+          const left = adjustedLeft.get(point.type) ?? pct(point.time.getTime());
           const flipTooltip = left > 65;
           return (
             <div

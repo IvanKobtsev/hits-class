@@ -276,6 +276,19 @@
   }
 }
 
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.lateNote {
+  font-size: 12px;
+  color: #dc2626;
+  font-style: italic;
+}
+
 .submittedAt {
   font-size: 12px;
   color: $classroom-text-secondary;
@@ -481,6 +494,60 @@
   font-size: 12px;
   color: #16a34a;
   font-style: italic;
+}
+
+.coefficientRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.coefficientLabel {
+  font-size: 13px;
+  color: $classroom-text-secondary;
+}
+
+.coefficientInput {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  outline: none;
+  // Hide browser-native spinner arrows
+  -moz-appearance: textfield;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  &:focus {
+    border-color: $classroom-blue;
+  }
+}
+
+.coefficientRefreshButton {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  color: $classroom-text-secondary;
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    background: $classroom-surface-alt;
+    color: $classroom-text-primary;
+  }
 }
 
 .commentSendButton {
