@@ -362,7 +362,6 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialCriteria={criteria}
           initialIsPeerReviewEnabled={assignmentData?.isPeerReviewEnabled}
           initialJuryCountPerDefendant={assignmentData?.juryCountPerDefendant}
-          courseId={Number(params.courseId)}
         />
       )}
       {isEditModalOpen && isTeamAssignment && (
@@ -398,7 +397,6 @@ export const PublicationListItem: React.FC<PublicationDto> = ({
           initialDeadlineCriteria={assignmentData?.deadlineCriteria ?? null}
           initialIsPeerReviewEnabled={assignmentData?.isPeerReviewEnabled}
           initialJuryCountPerDefendant={assignmentData?.juryCountPerDefendant}
-          courseId={Number(params.courseId)}
         />
       )}
       {isTargetUsersModalOpen && (

@@ -37,7 +37,6 @@ import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/
 import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
 import { CheckBox } from '../../../../../../components/uikit/CheckBox.tsx';
 import { DeadlineCriteriaFields } from '../../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
-import { PeerReviewMappingsPanel } from '../../../PeerReviewMappingsPanel/PeerReviewMappingsPanel';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -96,7 +95,6 @@ export type EditAssignmentModalProps = {
   initialCriteria?: CriteriaDto[];
   initialIsPeerReviewEnabled?: boolean;
   initialJuryCountPerDefendant?: number | null;
-  courseId: number;
 };
 
 export const EditAssignmentModal = ({
@@ -115,7 +113,6 @@ export const EditAssignmentModal = ({
   initialCriteria,
   initialIsPeerReviewEnabled,
   initialJuryCountPerDefendant,
-  courseId,
 }: EditAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -326,24 +323,16 @@ export const EditAssignmentModal = ({
             />
           </Field>
           {form.watch('isPeerReviewEnabled') && (
-            <>
-              <Field title="Количество жюри на ответчика">
-                <Input
-                  {...form.register('juryCountPerDefendant', {
-                    ...requiredRule(),
-                    min: { value: 1, message: 'Минимум 1' },
-                  })}
-                  type="number"
-                  errorText={form.formState.errors.juryCountPerDefendant?.message}
-                />
-              </Field>
-              {initialIsPeerReviewEnabled && (
-                <PeerReviewMappingsPanel
-                  publicationId={publicationId}
-                  courseId={courseId}
-                />
-              )}
-            </>
+            <Field title="Количество жюри на ответчика">
+              <Input
+                {...form.register('juryCountPerDefendant', {
+                  ...requiredRule(),
+                  min: { value: 1, message: 'Минимум 1' },
+                })}
+                type="number"
+                errorText={form.formState.errors.juryCountPerDefendant?.message}
+              />
+            </Field>
           )}
           <CriteriaFields
             value={criteria}

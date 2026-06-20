@@ -12,9 +12,10 @@ import { PrivateCommentView } from './PrivateCommentView/PrivateCommentView';
 import { PublicCommentView } from './PublicCommentView/PublicCommentView';
 import { SubmissionPanel } from './CreateSubmissionPanel/SubmissionPanel';
 import { StudentSubmissionsTab } from './StudentSubmissionsTab/StudentSubmissionsTab';
+import { PeerReviewMappingsPanel } from 'pages/authorized/OneCoursePage/PeerReviewMappingsPanel/PeerReviewMappingsPanel';
 import styles from './AssignmentPage.module.scss';
 
-type TabValue = 'assignment' | 'submissions';
+type TabValue = 'assignment' | 'submissions' | 'peer-review';
 
 export const AssignmentPage = () => {
   const { assignmentId, courseId } = useParams();
@@ -31,6 +32,9 @@ export const AssignmentPage = () => {
 
   if (!publication) return null;
 
+  const assignmentPayload = publication.publicationPayload as AssignmentPayload;
+  const isPeerReviewEnabled = assignmentPayload?.isPeerReviewEnabled;
+
   return (
     <div className={styles.page} data-test-id="AssignmentPage">
       {isTeacher && (
@@ -43,6 +47,9 @@ export const AssignmentPage = () => {
           >
             <Tab label="Задание" value="assignment" data-test-id="AssignmentPage-tab-assignment" />
             <Tab label="Работы учащихся" value="submissions" data-test-id="AssignmentPage-tab-submissions" />
+            {isPeerReviewEnabled && (
+              <Tab label="P2P оценка" value="peer-review" data-test-id="AssignmentPage-tab-peer-review" />
+            )}
           </Tabs>
         </div>
       )}
@@ -78,11 +85,20 @@ export const AssignmentPage = () => {
         <div className={styles.submissionsLayout}>
           <StudentSubmissionsTab
             assignmentId={id}
-            deadlineUtc={(publication.publicationPayload as AssignmentPayload)?.deadlineUtc ?? null}
-            latestDate={(publication.publicationPayload as AssignmentPayload)?.deadlineCriteria?.latePenalty?.latestDate ?? null}
-            minMark={(publication.publicationPayload as AssignmentPayload)?.minMark ?? null}
-            maxMark={(publication.publicationPayload as AssignmentPayload)?.maxMark ?? null}
+            deadlineUtc={assignmentPayload?.deadlineUtc ?? null}
+            latestDate={assignmentPayload?.deadlineCriteria?.latePenalty?.latestDate ?? null}
+            minMark={assignmentPayload?.minMark ?? null}
+            maxMark={assignmentPayload?.maxMark ?? null}
             criteria={publication.criteria}
+          />
+        </div>
+      )}
+
+      {activeTab === 'peer-review' && isTeacher && isPeerReviewEnabled && (
+        <div className={styles.submissionsLayout}>
+          <PeerReviewMappingsPanel
+            publicationId={id}
+            courseId={cid}
           />
         </div>
       )}

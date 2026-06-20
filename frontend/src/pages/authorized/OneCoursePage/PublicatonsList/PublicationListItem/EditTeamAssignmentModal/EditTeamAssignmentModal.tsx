@@ -39,7 +39,6 @@ import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/
 import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
 import { CheckBox } from '../../../../../../components/uikit/CheckBox.tsx';
 import { usePatchAssignmentMutation } from '../../../../../../services/api/api-client/TeamAssignmentQuery.ts';
-import { PeerReviewMappingsPanel } from '../../../PeerReviewMappingsPanel/PeerReviewMappingsPanel';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
 
@@ -106,7 +105,6 @@ export type EditTeamAssignmentModalProps = {
   initialDeadlineCriteria?: DeadlineCriteria | null;
   initialIsPeerReviewEnabled?: boolean;
   initialJuryCountPerDefendant?: number | null;
-  courseId: number;
 };
 
 export const EditTeamAssignmentModal = ({
@@ -129,7 +127,6 @@ export const EditTeamAssignmentModal = ({
   initialDeadlineCriteria,
   initialIsPeerReviewEnabled,
   initialJuryCountPerDefendant,
-  courseId,
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -342,24 +339,16 @@ export const EditTeamAssignmentModal = ({
             />
           </Field>
           {form.watch('isPeerReviewEnabled') && (
-            <>
-              <Field title="Количество жюри на ответчика">
-                <Input
-                  {...form.register('juryCountPerDefendant', {
-                    ...requiredRule(),
-                    min: { value: 1, message: 'Минимум 1' },
-                  })}
-                  type="number"
-                  errorText={form.formState.errors.juryCountPerDefendant?.message}
-                />
-              </Field>
-              {initialIsPeerReviewEnabled && (
-                <PeerReviewMappingsPanel
-                  publicationId={publicationId}
-                  courseId={courseId}
-                />
-              )}
-            </>
+            <Field title="Количество жюри на ответчика">
+              <Input
+                {...form.register('juryCountPerDefendant', {
+                  ...requiredRule(),
+                  min: { value: 1, message: 'Минимум 1' },
+                })}
+                type="number"
+                errorText={form.formState.errors.juryCountPerDefendant?.message}
+              />
+            </Field>
           )}
           <Field
             title="Тип распределения"

@@ -121,7 +121,6 @@ function renderModal(
         initialMarkType={initialMarkType}
         initialMinMark={initialMinMark}
         initialMaxMark={initialMaxMark}
-        courseId={1}
       />
     </MemoryRouter>,
   );
