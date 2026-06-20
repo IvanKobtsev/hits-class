@@ -105,26 +105,44 @@ public class PeerReviewService(
 
     public async Task<List<PeerReviewMappingDto>> GetMappings(int publicationId)
     {
-        await EnsureCanManagePeerReview(publicationId);
+        var publication = await EnsureCanManagePeerReview(publicationId);
+
+        var course = await dbContext
+            .Courses.Include(c => c.Students)
+            .GetOne(Course.HasId(publication.CourseId));
+
+        var defendants = publication.IsForEveryone
+            ? course.Students.ToList()
+            : await dbContext
+                .Publications.Include(p => p.TargetUsers)
+                .Where(p => p.Id == publicationId)
+                .SelectMany(p => p.TargetUsers)
+                .ToListAsync();
 
         var mappings = await dbContext
             .PeerReviewAssignments.Where(p => p.PublicationId == publicationId)
             .Include(p => p.JuryUser)
-            .Include(p => p.DefendantUser)
             .ToListAsync();
 
-        return mappings
+        var juryByDefendant = mappings
             .GroupBy(m => m.DefendantUserId)
-            .Select(g => new PeerReviewMappingDto
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                    g.Select(m => new JuryDto
+                        {
+                            UserId = m.JuryUserId,
+                            Name = m.JuryUser.LegalName,
+                        })
+                        .ToList()
+            );
+
+        return defendants
+            .Select(d => new PeerReviewMappingDto
             {
-                DefendantUserId = g.Key,
-                DefendantName = g.First().DefendantUser.LegalName,
-                Juries = g.Select(m => new JuryDto
-                    {
-                        UserId = m.JuryUserId,
-                        Name = m.JuryUser.LegalName,
-                    })
-                    .ToList(),
+                DefendantUserId = d.Id,
+                DefendantName = d.LegalName,
+                Juries = juryByDefendant.GetValueOrDefault(d.Id, []),
             })
             .ToList();
     }
