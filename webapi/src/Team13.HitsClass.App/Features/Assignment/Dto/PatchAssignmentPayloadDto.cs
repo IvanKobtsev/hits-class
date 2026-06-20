@@ -13,4 +13,6 @@ public class PatchAssignmentPayloadDto : PatchRequest<PublicationPayload>
     public int? MaxMark { get; set; }
     public int? MinMark { get; set; }
     public DeadlineCriteria? DeadlineCriteria { get; set; }
+    public bool? IsPeerReviewEnabled { get; set; }
+    public int? JuryCountPerDefendant { get; set; }
 }
