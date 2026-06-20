@@ -1,5 +1,11 @@
 import React, { useState, useCallback, DragEvent } from 'react';
-import { useGetMappingsQuery, useUpdateMappingsMutation, useRegenerateMappingsMutation } from 'services/api/api-client/PeerReviewQuery';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useGetMappingsQuery,
+  useUpdateMappingsMutation,
+  useRegenerateMappingsMutation,
+  getMappingsQueryKey,
+} from 'services/api/api-client/PeerReviewQuery';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
 import { Button, ButtonColor, ButtonWidth } from 'components/uikit/buttons/Button';
 import { Loading } from 'components/uikit/suspense/Loading';
@@ -12,10 +18,20 @@ type Props = {
 };
 
 export const PeerReviewMappingsPanel = ({ publicationId, courseId }: Props) => {
+  const queryClient = useQueryClient();
+  const queryKey = getMappingsQueryKey(publicationId);
   const { data: mappings, isLoading } = useGetMappingsQuery(publicationId);
   const { data: course } = useGetCourseQuery(courseId);
-  const updateMutation = useUpdateMappingsMutation(publicationId);
-  const regenerateMutation = useRegenerateMappingsMutation(publicationId);
+  const updateMutation = useUpdateMappingsMutation(publicationId, {
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey });
+    },
+  });
+  const regenerateMutation = useRegenerateMappingsMutation(publicationId, {
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey });
+    },
+  });
 
   const [dragState, setDragState] = useState<{
     juryUserId: string;
@@ -26,6 +42,8 @@ export const PeerReviewMappingsPanel = ({ publicationId, courseId }: Props) => {
 
   const saveMappings = useCallback(
     (updated: PeerReviewMappingDto[]) => {
+      queryClient.setQueryData(queryKey, updated);
+
       const dto: UpdatePeerReviewMappingsDto = {
         mappings: updated.map((m: PeerReviewMappingDto) => ({
           defendantUserId: m.defendantUserId,
@@ -34,7 +52,7 @@ export const PeerReviewMappingsPanel = ({ publicationId, courseId }: Props) => {
       };
       updateMutation.mutate(dto);
     },
-    [updateMutation],
+    [queryClient, queryKey, updateMutation],
   );
 
   const handleDragStart = useCallback(
