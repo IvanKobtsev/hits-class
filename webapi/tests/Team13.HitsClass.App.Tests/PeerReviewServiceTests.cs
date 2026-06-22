@@ -420,6 +420,41 @@ public class PeerReviewServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region CreatePeerReview Tests
+
+    [Fact]
+    public async Task CreatePeerReview_CreatesPeerReview() { }
+
+    [Fact]
+    public async Task CreatePeerReview_NotJury_ThrowsValidationException() { }
+
+    [Fact]
+    public async Task CreatePeerReview_AlreadyPeerReview_ThrowsValidationException() { }
+
+    [Fact]
+    public async Task CreatePeerReview_CriteriaEvaluationMissing_ThrowsValidationException() { }
+    #endregion
+
+    #region GetPeerReviewAssignments Tests
+
+    [Fact]
+    public async Task GetPeerReviewAssignments_ReturnsPeerReviewAssignments() { }
+
+    #endregion
+
+    #region DeletePeerReview Tests
+
+    [Fact]
+    public async Task DeletePeerReview_AsAuthor_DeletesPeerReview() { }
+
+    [Fact]
+    public async Task DeletePeerReview_SubmissionIsMarkedByTeacher_ThrowsValidationException() { }
+
+    [Fact]
+    public async Task DeletePeerReview_NotAsAuthor_ThrowsAccessDeniedException() { }
+
+    #endregion
+
     #region Helper Methods
 
     private async Task<List<User>> CreateStudents(int courseId, int count)
