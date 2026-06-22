@@ -93,6 +93,7 @@ public class PeerReviewService(
                         PublicationId = publicationId,
                         JuryUserId = jury.Id,
                         DefendantUserId = defendant.Id,
+                        State = PeerReviewState.NotReviewed,
                     }
                 );
                 juryCountMap[jury.Id] = juryCountMap.GetValueOrDefault(jury.Id, 0) + 1;
@@ -226,5 +227,109 @@ public class PeerReviewService(
             );
 
         return publication;
+    }
+
+    public async Task<PeerReviewDto> CreatePeerReview(
+        int peerReviewAssignmentId,
+        CreatePeerReviewDto reviewDto
+    )
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var peerReviewAssignment = await dbContext.PeerReviewAssignments.GetOne(
+            PeerReviewAssignment.HasId(peerReviewAssignmentId)
+        );
+        if (peerReviewAssignment.JuryUserId != userId)
+            throw new ValidationException(
+                $"Пользователь {userId} не является жюри для этого решения."
+            );
+        if (peerReviewAssignment.State == PeerReviewState.Checked)
+            throw new ValidationException("Решение уже оценено.");
+
+        var criteriaIds = reviewDto.Evaluations.Select(x => x.CriteriaId).Distinct().ToList();
+        var criteriaList = await dbContext
+            .AssignmentCriteria.Where(c => c.PublicationId == peerReviewAssignment.PublicationId)
+            .ToListAsync();
+        if (criteriaList.Count != criteriaIds.Count)
+        {
+            var existingIds = criteriaList.Select(c => c.Id);
+            var missingIds = existingIds.Except(criteriaIds);
+
+            throw new ValidationException(
+                $"Criteria not found for IDs: {string.Join(", ", missingIds)}"
+            );
+        }
+        var evaluations = reviewDto
+            .Evaluations.Select(e => new CriteriaEvaluation
+            {
+                Value = e.Value,
+                Note = e.Note,
+                CriteriaId = e.CriteriaId,
+            })
+            .ToList();
+
+        var peerReview = new Domain.PeerReview
+        {
+            Mark = reviewDto.Mark,
+            SubmittedAtUTC = DateTime.UtcNow,
+            AssignmentId = peerReviewAssignmentId,
+            Evaluations = evaluations,
+        };
+
+        await dbContext.PeerReviews.AddAsync(peerReview);
+        peerReviewAssignment.State = PeerReviewState.Reviewed;
+        await dbContext.SaveChangesAsync();
+
+        var review = await dbContext
+            .PeerReviews.Include(p => p.Evaluations)
+            .GetOne(Domain.PeerReview.HasId(peerReview.Id));
+        return review.ToPeerReviewDto();
+    }
+
+    public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewAssignments(int assignmentId)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+        var publication = await dbContext.Publications.GetOne(Publication.HasId(assignmentId));
+
+        var submissionsToReview = await dbContext
+            .PeerReviewAssignments.Include(p => p.DefendantUser)
+            .Where(p => p.PublicationId == assignmentId && p.JuryUserId == userId)
+            .Select(p => new PeerReviewAssignmentDto
+            {
+                Id = p.Id,
+                State = p.State,
+                DefendantUser = new JuryDto
+                {
+                    Name = p.DefendantUser.LegalName,
+                    UserId = p.DefendantUserId,
+                },
+            })
+            .ToListAsync();
+        return submissionsToReview;
+    }
+
+    public async Task DeletePeerReview(int id)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var peerReview = await dbContext.PeerReviews.GetOne(Domain.PeerReview.HasId(id));
+        var assignment = await dbContext.PeerReviewAssignments.GetOne(
+            PeerReviewAssignment.HasId(peerReview.AssignmentId)
+        );
+        if (assignment.State == PeerReviewState.Checked)
+            throw new ValidationException(
+                "Нельзя удалить после выставления оценки преподавателем."
+            );
+        if (peerReview.Assignment.JuryUserId != userId)
+            throw new AccessDeniedException(
+                $"Пользователь {userId} не является автором этой оценки и не может её удалить."
+            );
+
+        dbContext.PeerReviews.Remove(peerReview);
+        assignment.State = PeerReviewState.NotReviewed;
+        await dbContext.SaveChangesAsync();
     }
 }
