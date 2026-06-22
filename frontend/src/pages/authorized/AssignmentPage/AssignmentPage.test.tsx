@@ -35,6 +35,10 @@ vi.mock('./PublicCommentView/PublicCommentView', () => ({
   PublicCommentView: () => <div data-test-id="PublicCommentView" />,
 }));
 
+vi.mock('pages/authorized/OneCoursePage/PeerReviewMappingsPanel/PeerReviewMappingsPanel', () => ({
+  PeerReviewMappingsPanel: () => <div data-test-id="PeerReviewMappingsPanel" />,
+}));
+
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';
@@ -48,9 +52,18 @@ const mockedUseCourseRole = vi.mocked(useCourseRole);
 const mockPublication = {
   id: 1,
   type: 'Assignment',
-  publicationPayload: { publicationType: 'Assignment', title: 'Домашнее задание', deadlineUtc: null },
+  publicationPayload: {
+    publicationType: 'Assignment',
+    title: 'Домашнее задание',
+    deadlineUtc: null,
+  },
   content: null,
-  author: { id: 'u1', email: 'teacher@example.com', legalName: 'Иван Петров', groupNumber: null },
+  author: {
+    id: 'u1',
+    email: 'teacher@example.com',
+    legalName: 'Иван Петров',
+    groupNumber: null,
+  },
   createdAtUTC: new Date('2025-03-01T10:00:00Z'),
   lastUpdatedAtUTC: null,
   attachments: [],
@@ -100,7 +113,10 @@ describe('AssignmentPage', () => {
       data: mockSubmission,
       isError: false,
     } as any);
-    mockedUseGetCourseQuery.mockReturnValue({ isLoading: false, data: undefined } as any);
+    mockedUseGetCourseQuery.mockReturnValue({
+      isLoading: false,
+      data: undefined,
+    } as any);
     mockedUseCourseRole.mockReturnValue('student');
   });
 
