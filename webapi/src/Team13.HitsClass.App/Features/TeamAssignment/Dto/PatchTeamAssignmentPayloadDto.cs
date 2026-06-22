@@ -17,5 +17,7 @@ namespace Team13.HitsClass.App.Features.TeamAssignment.Dto
         public SubmissionType SubmissionType { get; set; }
         public bool AreTeamsFrozen { get; set; }
         public DeadlineCriteria? DeadlineCriteria { get; set; }
+        public bool? IsPeerReviewEnabled { get; set; }
+        public int? JuryCountPerDefendant { get; set; }
     }
 }

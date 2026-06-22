@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Team13.HitsClass.App.Features.Assignment;
 using Team13.HitsClass.App.Features.Notifications;
+using Team13.HitsClass.App.Features.PeerReview;
 using Team13.HitsClass.App.Features.Publications;
 using Team13.HitsClass.App.Features.Publications.Dto;
 using Team13.HitsClass.App.Features.TeamAssignment.Dto;
@@ -16,7 +17,8 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
     public class TeamAssignmentService(
         PublicationService publicationService,
         NotificationService notificationService,
-        HitsClassDbContext dbContext
+        HitsClassDbContext dbContext,
+        PeerReviewService peerReviewService
     )
     {
         //public async Task<AssignmentStatisticDto> GetAssignmentStatistics(int assignmentId)
@@ -88,6 +90,15 @@ namespace Team13.HitsClass.App.Features.TeamAssignment
             );
 
             await notificationService.NewAssignmentNotification(newAssignment.Id);
+
+            if (createTeamAssignmentDto.Payload.IsPeerReviewEnabled)
+            {
+                if (createTeamAssignmentDto.Payload.JuryCountPerDefendant is null or <= 0)
+                    throw new ValidationException(
+                        "Количество жюри на ответчика должно быть положительным числом при включённой P2P оценке."
+                    );
+                await peerReviewService.GeneratePeerReviewMappings(newAssignment.Id);
+            }
 
             return newAssignment;
         }

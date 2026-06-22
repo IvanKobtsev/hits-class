@@ -35,6 +35,7 @@ import styles from './CreatePersonalAssignmentModal.module.scss';
 import { wrapInLexical } from '../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { LexicalTextAreaControlled } from 'components/lexical/text-area/LexicalTextArea.tsx';
 import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
+import { CheckBox } from '../../../../../components/uikit/CheckBox.tsx';
 import { DeadlineCriteriaFields } from '../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
@@ -65,6 +66,8 @@ type CreatePersonalAssignmentForm = {
   earlyBonusType: BonusType;
   hasLatePenalty: boolean;
   latePenaltyLatestDate: Date | null;
+  isPeerReviewEnabled: boolean;
+  juryCountPerDefendant: number | null;
 };
 
 export type CreatePersonalAssignmentModalProps = {
@@ -143,17 +146,26 @@ export const CreatePersonalAssignmentModal = ({
             maxMark: data.maxMark ?? null,
             deadlineUtc: data.deadlineUtc ?? null,
             deadlineCriteria,
+            isPeerReviewEnabled: data.isPeerReviewEnabled,
+            juryCountPerDefendant: data.isPeerReviewEnabled
+              ? Number(data.juryCountPerDefendant)
+              : null,
           },
         });
         await queryClient.invalidateQueries({ queryKey: [] });
         onClose();
-      } catch {
-        void modal.showError({ text: 'Создание задания не удалось' });
+      } catch (e: any) {
+        const detail = e?.detail ?? e?.message;
+        void modal.showError({ text: detail || 'Создание задания не удалось' });
       }
     },
     {
       shouldResetOnSuccess: true,
-      defaultValues: { content: { json: wrapInLexical('').json } },
+      defaultValues: {
+        content: { json: wrapInLexical('').json },
+        isPeerReviewEnabled: false,
+        juryCountPerDefendant: null,
+      },
     },
   );
 
@@ -268,6 +280,24 @@ export const CreatePersonalAssignmentModal = ({
                 watch={form.watch}
                 deadlineSet={!!form.watch('deadlineUtc')}
               />
+              <Field title="P2P оценка">
+                <CheckBox
+                  {...form.register('isPeerReviewEnabled')}
+                  title="Включить P2P оценку"
+                />
+              </Field>
+              {form.watch('isPeerReviewEnabled') && (
+                <Field title="Количество жюри на ответчика">
+                  <Input
+                    {...form.register('juryCountPerDefendant', {
+                      ...requiredRule(),
+                      min: { value: 1, message: 'Минимум 1' },
+                    })}
+                    type="number"
+                    errorText={form.formState.errors.juryCountPerDefendant?.message}
+                  />
+                </Field>
+              )}
               <CriteriaFields
                 value={criteria}
                 onChange={setCriteria}

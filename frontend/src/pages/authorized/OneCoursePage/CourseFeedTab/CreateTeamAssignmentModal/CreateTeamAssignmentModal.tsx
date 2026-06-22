@@ -37,6 +37,7 @@ import { RadioButton } from '../../../../../components/uikit/RadioButton.tsx';
 import { useCreateAssignmentMutation } from '../../../../../services/api/api-client/TeamAssignmentQuery.ts';
 import { useDistributeRandomlyMutationWithParameters } from '../../../../../services/api/api-client/TeamQuery.ts';
 import { CriteriaFields, CriteriaItem } from '../../CriteriaFields/CriteriaFields.tsx';
+import { CheckBox } from '../../../../../components/uikit/CheckBox.tsx';
 import { DeadlineCriteriaFields } from '../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
@@ -71,6 +72,8 @@ type CreateTeamAssignmentForm = {
   earlyBonusType: BonusType;
   hasLatePenalty: boolean;
   latePenaltyLatestDate: Date | null;
+  isPeerReviewEnabled: boolean;
+  juryCountPerDefendant: number | null;
 };
 
 export type CreateTeamAssignmentModalProps = {
@@ -154,6 +157,10 @@ export const CreateTeamAssignmentModal = ({
           maxMark: data.maxMark,
           areTeamsFrozen: false,
           deadlineCriteria,
+          isPeerReviewEnabled: data.isPeerReviewEnabled,
+          juryCountPerDefendant: data.isPeerReviewEnabled
+            ? Number(data.juryCountPerDefendant)
+            : null,
         },
       });
       if (data.distributionType === TeamDistributionType.Random) {
@@ -166,7 +173,11 @@ export const CreateTeamAssignmentModal = ({
     },
     {
       shouldResetOnSuccess: true,
-      defaultValues: { content: { json: wrapInLexical('').json } },
+      defaultValues: {
+        content: { json: wrapInLexical('').json },
+        isPeerReviewEnabled: false,
+        juryCountPerDefendant: null,
+      },
     },
   );
 
@@ -251,6 +262,24 @@ export const CreateTeamAssignmentModal = ({
                 watch={form.watch}
                 deadlineSet={!!form.watch('deadlineUtc')}
               />
+              <Field title="P2P оценка">
+                <CheckBox
+                  {...form.register('isPeerReviewEnabled')}
+                  title="Включить P2P оценку"
+                />
+              </Field>
+              {form.watch('isPeerReviewEnabled') && (
+                <Field title="Количество жюри на ответчика">
+                  <Input
+                    {...form.register('juryCountPerDefendant', {
+                      ...requiredRule(),
+                      min: { value: 1, message: 'Минимум 1' },
+                    })}
+                    type="number"
+                    errorText={form.formState.errors.juryCountPerDefendant?.message}
+                  />
+                </Field>
+              )}
               <Field title="Тип оценки" fieldClassName={styles.markType}>
                 <RadioButton
                   {...form.register('markType')}

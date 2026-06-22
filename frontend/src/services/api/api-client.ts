@@ -44,6 +44,12 @@ export * as PublicationsQuery from './api-client/PublicationsQuery';
 
 
 
+export * as PeerReviewClient from './api-client/PeerReviewClient';
+
+export * as PeerReviewQuery from './api-client/PeerReviewQuery';
+
+
+
 export * as InvitationClient from './api-client/InvitationClient';
 
 export * as InvitationQuery from './api-client/InvitationQuery';
@@ -213,6 +219,9 @@ export function initPersister() {
 
   addResultTypeFactory('PublicationsClient___getPublications', (data: any) => Types.initPagedResultOfPublicationDto(data));
   addResultTypeFactory('PublicationsClient___getPublicationById', (data: any) => Types.initPublicationDto(data));
+
+
+  addResultTypeFactory('PeerReviewClient___getMappings', (data: any) => Types.initPeerReviewMappingDto(data));
 
 
   addResultTypeFactory('InvitationClient___getAllInvitations', (data: any) => Types.initInvitationDto(data));

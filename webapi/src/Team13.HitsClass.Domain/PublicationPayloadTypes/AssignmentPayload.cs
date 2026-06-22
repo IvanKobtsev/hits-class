@@ -14,4 +14,6 @@ public class AssignmentPayload : PublicationPayload
     public int? MaxMark { get; set; }
     public int? MinMark { get; set; }
     public DeadlineCriteria? DeadlineCriteria { get; set; }
+    public bool IsPeerReviewEnabled { get; set; } = false;
+    public int? JuryCountPerDefendant { get; set; }
 }

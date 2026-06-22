@@ -37,6 +37,7 @@ import styles from './EditTeamAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
 import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
+import { CheckBox } from '../../../../../../components/uikit/CheckBox.tsx';
 import { usePatchAssignmentMutation } from '../../../../../../services/api/api-client/TeamAssignmentQuery.ts';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
@@ -80,6 +81,8 @@ type EditTeamAssignmentForm = {
   earlyBonusType: BonusType;
   hasLatePenalty: boolean;
   latePenaltyLatestDate: Date | null;
+  isPeerReviewEnabled: boolean;
+  juryCountPerDefendant: number | null;
 };
 
 export type EditTeamAssignmentModalProps = {
@@ -100,6 +103,8 @@ export type EditTeamAssignmentModalProps = {
   initialMaxMark: number | null;
   initialCriteria?: CriteriaDto[];
   initialDeadlineCriteria?: DeadlineCriteria | null;
+  initialIsPeerReviewEnabled?: boolean;
+  initialJuryCountPerDefendant?: number | null;
 };
 
 export const EditTeamAssignmentModal = ({
@@ -120,6 +125,8 @@ export const EditTeamAssignmentModal = ({
   initialMaxMark,
   initialCriteria,
   initialDeadlineCriteria,
+  initialIsPeerReviewEnabled,
+  initialJuryCountPerDefendant,
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -180,6 +187,10 @@ export const EditTeamAssignmentModal = ({
           minMark: !data.minMark ? null : data.minMark,
           maxMark: !data.maxMark ? null : data.maxMark,
           deadlineCriteria,
+          isPeerReviewEnabled: data.isPeerReviewEnabled,
+          juryCountPerDefendant: data.isPeerReviewEnabled
+            ? Number(data.juryCountPerDefendant)
+            : null,
         },
       });
       await queryClient.invalidateQueries({
@@ -212,6 +223,8 @@ export const EditTeamAssignmentModal = ({
         earlyBonusType: initialDeadlineCriteria?.earlyBonus?.bonusType ?? BonusType.Score,
         hasLatePenalty: !!initialDeadlineCriteria?.latePenalty,
         latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate ?? null,
+        isPeerReviewEnabled: initialIsPeerReviewEnabled ?? false,
+        juryCountPerDefendant: initialJuryCountPerDefendant ?? null,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -319,6 +332,24 @@ export const EditTeamAssignmentModal = ({
             watch={form.watch}
             deadlineSet={!!form.watch('deadlineUtc')}
           />
+          <Field title="P2P оценка">
+            <CheckBox
+              {...form.register('isPeerReviewEnabled')}
+              title="Включить P2P оценку"
+            />
+          </Field>
+          {form.watch('isPeerReviewEnabled') && (
+            <Field title="Количество жюри на ответчика">
+              <Input
+                {...form.register('juryCountPerDefendant', {
+                  ...requiredRule(),
+                  min: { value: 1, message: 'Минимум 1' },
+                })}
+                type="number"
+                errorText={form.formState.errors.juryCountPerDefendant?.message}
+              />
+            </Field>
+          )}
           <Field
             title="Тип распределения"
             fieldClassName={styles.distributionType}

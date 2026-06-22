@@ -35,6 +35,7 @@ import styles from './EditAssignmentModal.module.scss';
 import { LexicalTextAreaControlled } from '../../../../../../components/lexical/text-area/LexicalTextArea.tsx';
 import { wrapInLexical } from '../../../../AssignmentPage/StudentSubmissionsTab/StudentSubmissionsTab.tsx';
 import { RadioButton } from '../../../../../../components/uikit/RadioButton.tsx';
+import { CheckBox } from '../../../../../../components/uikit/CheckBox.tsx';
 import { DeadlineCriteriaFields } from '../../../DeadlineCriteriaFields/DeadlineCriteriaFields.tsx';
 
 const MAX_FILE_SIZE_BYTES = 400 * 1024 * 1024;
@@ -74,6 +75,8 @@ type EditAssignmentForm = {
   earlyBonusType: BonusType;
   hasLatePenalty: boolean;
   latePenaltyLatestDate: Date | null;
+  isPeerReviewEnabled: boolean;
+  juryCountPerDefendant: number | null;
 };
 
 export type EditAssignmentModalProps = {
@@ -90,6 +93,8 @@ export type EditAssignmentModalProps = {
   initialDeadlineCriteria?: DeadlineCriteria | null;
   initialAttachments: Attachment[];
   initialCriteria?: CriteriaDto[];
+  initialIsPeerReviewEnabled?: boolean;
+  initialJuryCountPerDefendant?: number | null;
 };
 
 export const EditAssignmentModal = ({
@@ -106,6 +111,8 @@ export const EditAssignmentModal = ({
   initialDeadlineCriteria,
   initialAttachments,
   initialCriteria,
+  initialIsPeerReviewEnabled,
+  initialJuryCountPerDefendant,
 }: EditAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -163,6 +170,10 @@ export const EditAssignmentModal = ({
             maxMark: data.maxMark,
             deadlineUtc: data.deadlineUtc ?? null,
             deadlineCriteria,
+            isPeerReviewEnabled: data.isPeerReviewEnabled,
+            juryCountPerDefendant: data.isPeerReviewEnabled
+              ? Number(data.juryCountPerDefendant)
+              : null,
           },
         });
         await queryClient.invalidateQueries({
@@ -194,6 +205,8 @@ export const EditAssignmentModal = ({
         earlyBonusType: initialDeadlineCriteria?.earlyBonus?.bonusType ?? BonusType.Score,
         hasLatePenalty: !!initialDeadlineCriteria?.latePenalty,
         latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate ?? null,
+        isPeerReviewEnabled: initialIsPeerReviewEnabled ?? false,
+        juryCountPerDefendant: initialJuryCountPerDefendant ?? null,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -303,6 +316,24 @@ export const EditAssignmentModal = ({
             watch={form.watch}
             deadlineSet={!!form.watch('deadlineUtc')}
           />
+          <Field title="P2P оценка">
+            <CheckBox
+              {...form.register('isPeerReviewEnabled')}
+              title="Включить P2P оценку"
+            />
+          </Field>
+          {form.watch('isPeerReviewEnabled') && (
+            <Field title="Количество жюри на ответчика">
+              <Input
+                {...form.register('juryCountPerDefendant', {
+                  ...requiredRule(),
+                  min: { value: 1, message: 'Минимум 1' },
+                })}
+                type="number"
+                errorText={form.formState.errors.juryCountPerDefendant?.message}
+              />
+            </Field>
+          )}
           <CriteriaFields
             value={criteria}
             onChange={setCriteria}
