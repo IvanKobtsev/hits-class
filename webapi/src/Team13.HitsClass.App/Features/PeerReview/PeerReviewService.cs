@@ -9,6 +9,7 @@ using Team13.HitsClass.Persistence;
 using Team13.LowLevelPrimitives;
 using Team13.LowLevelPrimitives.Exceptions;
 using Team13.PersistenceHelpers;
+using Team13.WebApi.Patching;
 
 namespace Team13.HitsClass.App.Features.PeerReview;
 
@@ -237,15 +238,22 @@ public class PeerReviewService(
         var userId = userAccessor.GetUserId();
         var user = await dbContext.Users.GetOne(User.HasId(userId));
 
-        var peerReviewAssignment = await dbContext.PeerReviewAssignments.GetOne(
-            PeerReviewAssignment.HasId(peerReviewAssignmentId)
-        );
+        var peerReviewAssignment = await dbContext
+            .PeerReviewAssignments.Include(a => a.Publication)
+            .GetOne(PeerReviewAssignment.HasId(peerReviewAssignmentId));
         if (peerReviewAssignment.JuryUserId != userId)
             throw new ValidationException(
                 $"Пользователь {userId} не является жюри для этого решения."
             );
         if (peerReviewAssignment.State == PeerReviewState.Checked)
             throw new ValidationException("Решение уже оценено.");
+
+        var submission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
+            s.PublicationId == peerReviewAssignment.PublicationId
+            && s.AuthorId == peerReviewAssignment.DefendantUserId
+        );
+        if (submission == null)
+            throw new ValidationException("Нельзя оценить работу без решения.");
 
         var criteriaIds = reviewDto.Evaluations.Select(x => x.CriteriaId).Distinct().ToList();
         var criteriaList = await dbContext
@@ -295,11 +303,13 @@ public class PeerReviewService(
 
         var submissionsToReview = await dbContext
             .PeerReviewAssignments.Include(p => p.DefendantUser)
+            .Include(p => p.PeerReview)
             .Where(p => p.PublicationId == assignmentId && p.JuryUserId == userId)
             .Select(p => new PeerReviewAssignmentDto
             {
                 Id = p.Id,
                 State = p.State,
+                Mark = p.PeerReview.Mark,
                 DefendantUser = new JuryDto
                 {
                     Name = p.DefendantUser.LegalName,
@@ -321,15 +331,158 @@ public class PeerReviewService(
         );
         if (assignment.State == PeerReviewState.Checked)
             throw new ValidationException(
-                "Нельзя удалить после выставления оценки преподавателем."
+                "Ревью нельзя удалить после выставления оценки преподавателем."
             );
         if (peerReview.Assignment.JuryUserId != userId)
             throw new AccessDeniedException(
-                $"Пользователь {userId} не является автором этой оценки и не может её удалить."
+                $"Пользователь {userId} не является автором этого ревью и не может её удалить."
             );
 
         dbContext.PeerReviews.Remove(peerReview);
         assignment.State = PeerReviewState.NotReviewed;
         await dbContext.SaveChangesAsync();
+    }
+
+    public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewsGeneral(
+        int assignmentId,
+        string defendantId
+    )
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+        var publication = await dbContext.Publications.GetOne(Publication.HasId(assignmentId));
+        var course = await dbContext
+            .Courses.Include(c => c.Teachers)
+            .GetOne(Course.HasId(publication.CourseId));
+
+        var hasAccess =
+            course.OwnerId == userId
+            || course.Teachers.Any(t => t.Id == userId)
+            || await userManager.HasAnyOfRoles(user, [UserRoles.Admin]);
+
+        if (!hasAccess)
+        {
+            throw new AccessDeniedException(
+                $"Пользователь {userId} не может смотреть оценки других студентов."
+            );
+        }
+
+        var reviews = await dbContext
+            .PeerReviewAssignments.Include(p => p.DefendantUser)
+            .Include(p => p.PeerReview)
+            .Where(p => p.PublicationId == assignmentId && p.DefendantUserId == defendantId)
+            .Select(p => new PeerReviewAssignmentDto
+            {
+                Id = p.Id,
+                State = p.State,
+                Mark = p.PeerReview.Mark,
+                DefendantUser = new JuryDto
+                {
+                    Name = p.DefendantUser.LegalName,
+                    UserId = p.DefendantUserId,
+                },
+            })
+            .ToListAsync();
+        return reviews;
+    }
+
+    public async Task<PeerReviewDto> GetPeerReview(int id)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var review = await dbContext
+            .PeerReviews.Include(p => p.Evaluations)
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.Publication)
+            .GetOne(Domain.PeerReview.HasId(id));
+
+        var course = await dbContext
+            .Courses.Include(c => c.Teachers)
+            .GetOne(Course.HasId(review.Assignment.Publication.CourseId));
+
+        var hasAccess =
+            review.Assignment.JuryUserId == userId
+            || course.OwnerId == userId
+            || course.Teachers.Any(t => t.Id == userId)
+            || await userManager.HasAnyOfRoles(user, [UserRoles.Admin]);
+
+        if (!hasAccess)
+        {
+            throw new AccessDeniedException(
+                $"Пользователь {userId} не может просматривать это ревью."
+            );
+        }
+
+        return review.ToPeerReviewDto();
+    }
+
+    public async Task<PeerReviewDto> GetReview(int peerReviewAssignmentId)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var peerReviewAssignment = await dbContext.PeerReviewAssignments.GetOne(
+            PeerReviewAssignment.HasId(peerReviewAssignmentId)
+        );
+
+        var reviewId = peerReviewAssignment.PeerReviewId;
+        if (reviewId == null)
+            throw new PersistenceResourceNotFoundException(
+                $"Ревью для пары {peerReviewAssignmentId} не найдено."
+            );
+
+        return await GetPeerReview((int)reviewId);
+    }
+
+    public async Task<PeerReviewDto> UpdatePeerReview(int id, UpdatePeerReviewDto dto)
+    {
+        var userId = userAccessor.GetUserId();
+        var user = await dbContext.Users.GetOne(User.HasId(userId));
+
+        var review = await dbContext
+            .PeerReviews.Include(p => p.Evaluations)
+            .Include(p => p.Assignment)
+                .ThenInclude(a => a.Publication)
+            .GetOne(Domain.PeerReview.HasId(id));
+
+        if (review.Assignment.JuryUserId != userId)
+            throw new AccessDeniedException(
+                $"Пользователь {userId} не является автором этого ревью и не может её изменить."
+            );
+        if (review.Assignment.State == PeerReviewState.Checked)
+            throw new ValidationException(
+                "Нельзя изменить ревью после выставления оценки преподавателем."
+            );
+
+        if (dto.IsFieldPresent(nameof(dto.Evaluations)))
+        {
+            var criteriaIds = dto.Evaluations.Select(x => x.CriteriaId).Distinct().ToList();
+            var criteriaList = await dbContext
+                .AssignmentCriteria.Where(c => c.PublicationId == review.Assignment.PublicationId)
+                .ToListAsync();
+            if (criteriaList.Count != criteriaIds.Count)
+            {
+                var existingIds = criteriaList.Select(c => c.Id);
+                var missingIds = existingIds.Except(criteriaIds);
+
+                throw new ValidationException(
+                    $"Criteria not found for IDs: {string.Join(", ", missingIds)}"
+                );
+            }
+            var evaluations = dto
+                .Evaluations.Select(e => new CriteriaEvaluation
+                {
+                    Value = e.Value,
+                    Note = e.Note,
+                    CriteriaId = e.CriteriaId,
+                })
+                .ToList();
+            review.Evaluations = evaluations;
+        }
+        review.Update(dto);
+
+        await dbContext.SaveChangesAsync();
+        return review.ToPeerReviewDto();
     }
 }

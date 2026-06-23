@@ -10,6 +10,7 @@ namespace Team13.HitsClass.Domain
     {
         public int Id { get; set; }
         public string Mark { get; set; }
+        public string? Comment { get; set; }
         public DateTime SubmittedAtUTC { get; set; }
         public List<CriteriaEvaluation> Evaluations { get; set; }
         public int AssignmentId { get; set; }

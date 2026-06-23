@@ -153,10 +153,15 @@ public class SubmissionService(
                 .ThenInclude(c => c.Teachers)
             .GetOne(Publication.HasId(submission.PublicationId));
 
+        var isPeerReview = await dbContext.PeerReviewAssignments.FirstOrDefaultAsync(p =>
+            p.PublicationId == publication.Id && p.JuryUserId == userId
+        );
+
         var canView =
             await userManager.HasAnyOfRoles(user, [UserRoles.Admin, UserRoles.Teacher])
             || publication.Course.Teachers.Any(t => t.Id == userId)
-            || submission.AuthorId == userId;
+            || submission.AuthorId == userId
+            || isPeerReview != null;
 
         if (!canView)
             throw new AccessDeniedException("You do not have permission to view this submission.");
@@ -284,6 +289,17 @@ public class SubmissionService(
                 Author = user,
             };
             submission.Comments.Add(comment);
+        }
+
+        if (payload.IsPeerReviewEnabled)
+        {
+            var peerReviewAssignments = await dbContext
+                .PeerReviewAssignments.Where(a => a.PublicationId == publication.Id)
+                .ToListAsync();
+            foreach (var assignment in peerReviewAssignments)
+            {
+                assignment.State = PeerReviewState.Checked;
+            }
         }
 
         await dbContext.SaveChangesAsync();

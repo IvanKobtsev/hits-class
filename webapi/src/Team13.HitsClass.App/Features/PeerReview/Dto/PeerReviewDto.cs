@@ -7,6 +7,7 @@ namespace Team13.HitsClass.App.Features.PeerReview.Dto
     {
         public int Id { get; set; }
         public string Mark { get; set; }
+        public string? Comment { get; set; }
         public DateTime SubmittedAtUTC { get; set; }
         public List<CriteriaEvaluationDto> Evaluations { get; set; }
         public JuryDto Jury { get; set; }

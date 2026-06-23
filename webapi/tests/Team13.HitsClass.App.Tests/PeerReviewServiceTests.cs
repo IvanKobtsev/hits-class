@@ -697,6 +697,48 @@ public class PeerReviewServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region GetPeerReviewGeneral Tests
+
+    [Fact]
+    public async Task GetPeerReviewGeneral_AsTeacher_ReturnsReviews() { }
+
+    [Fact]
+    public async Task GetPeerReviewGeneral_AsStudent_ThrowsAccessDeniedException() { }
+
+    #endregion
+
+    #region GetPeerReview Tests
+
+    [Fact]
+    public async Task GetPeerReview_AsTeacher_ReturnsReview() { }
+
+    [Fact]
+    public async Task GetPeerReview_NoAccess_ThrowsAccessDeniedException() { }
+
+    #endregion
+
+    #region GetReview Tests
+    [Fact]
+    public async Task GetReview_AsAuthor_ReturnsReview() { }
+
+    [Fact]
+    public async Task GetReview_NoReview_ThrowsPersistenceResourceNotFoundException() { }
+    #endregion
+
+    #region UpdatePeerReview Tests
+    [Fact]
+    public async Task UpdatePeerReview_AsAuthor_UpdatesReview() { }
+
+    [Fact]
+    public async Task UpdatePeerReview_UpdateCriteria_UpdatesReview() { }
+
+    [Fact]
+    public async Task UpdatePeerReview_AlreadyMarkedByTeacher_ThrowsValidationException() { }
+
+    [Fact]
+    public async Task UpdatePeerReview_NoReview_ThrowsPersistenceResourceNotFoundException() { }
+    #endregion
+
     #region Helper Methods
 
     private async Task<List<User>> CreateStudents(int courseId, int count)

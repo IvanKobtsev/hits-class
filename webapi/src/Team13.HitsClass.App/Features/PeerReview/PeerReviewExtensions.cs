@@ -26,6 +26,7 @@ namespace Team13.HitsClass.App.Features.PeerReview
             {
                 Id = peerReview.Id,
                 Mark = peerReview.Mark,
+                Comment = peerReview.Comment,
                 SubmittedAtUTC = peerReview.SubmittedAtUTC,
                 Evaluations = peerReview
                     .Evaluations.Select(e => new CriteriaEvaluationDto
