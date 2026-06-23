@@ -39,6 +39,10 @@ vi.mock('pages/authorized/OneCoursePage/PeerReviewMappingsPanel/PeerReviewMappin
   PeerReviewMappingsPanel: () => <div data-test-id="PeerReviewMappingsPanel" />,
 }));
 
+vi.mock('./JuryReviewTab/JuryReviewTab', () => ({
+  JuryReviewTab: () => <div data-test-id="JuryReviewTab" />,
+}));
+
 import { useGetPublicationByIdQuery } from 'services/api/api-client/PublicationsQuery';
 import { useGetMySubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import { useGetCourseQuery } from 'services/api/api-client/CourseQuery';

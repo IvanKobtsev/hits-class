@@ -206,3 +206,37 @@ return useMutation({
   mutationKey: key,
 });
 }
+
+export function getPeerReviewAssignmentsQueryKey(assignmentId: number): QueryKey {
+  return trimArrayEnd(['PeerReviewClient', 'getPeerReviewAssignments', assignmentId as any]);
+}
+
+export function useGetPeerReviewAssignmentsQuery(assignmentId: number, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>, 'queryKey' | 'queryFn'>) {
+  const metaContext = useContext(QueryMetaContext);
+  const opts = addMetaToOptions(options, metaContext);
+  return useQuery<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>({
+    queryKey: getPeerReviewAssignmentsQueryKey(assignmentId),
+    queryFn: () => Client.getPeerReviewAssignments(assignmentId),
+    ...opts,
+  });
+}
+
+export function useCreatePeerReviewMutation(peerReviewAssignmentId: number, options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto>, 'mutationKey' | 'mutationFn'>) {
+  const metaContext = useContext(QueryMetaContext);
+  const opts = addMetaToOptions(options, metaContext);
+  return useMutation<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto>({
+    ...opts,
+    mutationFn: (dto: Types.CreatePeerReviewDto) => Client.createPeerReview(peerReviewAssignmentId, dto),
+    mutationKey: trimArrayEnd(['PeerReviewClient', 'createPeerReview', peerReviewAssignmentId as any]),
+  });
+}
+
+export function useDeletePeerReviewMutation(id: number, options?: Omit<UseMutationOptions<void, unknown, void>, 'mutationKey' | 'mutationFn'>) {
+  const metaContext = useContext(QueryMetaContext);
+  const opts = addMetaToOptions(options, metaContext);
+  return useMutation<void, unknown, void>({
+    ...opts,
+    mutationFn: () => Client.deletePeerReview(id),
+    mutationKey: trimArrayEnd(['PeerReviewClient', 'deletePeerReview', id as any]),
+  });
+}

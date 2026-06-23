@@ -1924,4 +1924,36 @@ export function throwException(message: string, status: number, response: string
 export function isAxiosError(obj: any | undefined): obj is AxiosError {
     return obj && obj.isAxiosError === true;
 }
+export enum PeerReviewState {
+  NotReviewed = "NotReviewed",
+  Reviewed = "Reviewed",
+  Checked = "Checked",
+}
+export interface PeerReviewAssignmentDto {
+  id: number;
+  state: PeerReviewState;
+  defendantUser: JuryDto;
+}
+export interface PeerReviewDto {
+  id: number;
+  mark: string;
+  submittedAtUTC: Date;
+  evaluations: CriteriaEvaluationResultDto[];
+  jury: JuryDto;
+}
+export interface CriteriaEvaluationResultDto {
+  id: number;
+  value: string;
+  note: string | null;
+  criteriaDescription: string;
+}
+export interface CreatePeerReviewDto {
+  mark: string | null;
+  evaluations: CreateCriteriaEvaluationDto[];
+}
+export interface CreateCriteriaEvaluationDto {
+  value: string;
+  note: string | null;
+  criteriaId: number;
+}
 //-----/Types.File-----

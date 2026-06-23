@@ -224,3 +224,33 @@ export function setRegenerateMappingsRequestConfig(value: Partial<AxiosRequestCo
 export function patchRegenerateMappingsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
   _requestConfigRegenerateMappings = patch(_requestConfigRegenerateMappings ?? {});
 }
+
+export function getPeerReviewAssignments(assignmentId: number, config?: AxiosRequestConfig): Promise<Types.PeerReviewAssignmentDto[]> {
+  const url = `${getBaseUrl()}/api/assignments/${encodeURIComponent(assignmentId)}/peer-review`;
+  return getAxios().request<Types.PeerReviewAssignmentDto[]>({
+    ...config,
+    method: 'GET',
+    url,
+    headers: { ...config?.headers, Accept: 'application/json' },
+  }).then(r => r.data);
+}
+
+export function createPeerReview(peerReviewAssignmentId: number, dto: Types.CreatePeerReviewDto, config?: AxiosRequestConfig): Promise<Types.PeerReviewDto> {
+  const url = `${getBaseUrl()}/api/peer-review-assignment/${encodeURIComponent(peerReviewAssignmentId)}`;
+  return getAxios().request<Types.PeerReviewDto>({
+    ...config,
+    method: 'POST',
+    url,
+    data: dto,
+    headers: { ...config?.headers, 'Content-Type': 'application/json', Accept: 'application/json' },
+  }).then(r => r.data);
+}
+
+export function deletePeerReview(id: number, config?: AxiosRequestConfig): Promise<void> {
+  const url = `${getBaseUrl()}/api/peer-review/${encodeURIComponent(id)}`;
+  return getAxios().request<void>({
+    ...config,
+    method: 'DELETE',
+    url,
+  }).then(r => r.data);
+}

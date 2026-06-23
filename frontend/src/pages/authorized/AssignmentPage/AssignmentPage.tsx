@@ -13,9 +13,10 @@ import { PublicCommentView } from './PublicCommentView/PublicCommentView';
 import { SubmissionPanel } from './CreateSubmissionPanel/SubmissionPanel';
 import { StudentSubmissionsTab } from './StudentSubmissionsTab/StudentSubmissionsTab';
 import { PeerReviewMappingsPanel } from 'pages/authorized/OneCoursePage/PeerReviewMappingsPanel/PeerReviewMappingsPanel';
+import { JuryReviewTab } from './JuryReviewTab/JuryReviewTab';
 import styles from './AssignmentPage.module.scss';
 
-type TabValue = 'assignment' | 'submissions' | 'peer-review';
+type TabValue = 'assignment' | 'submissions' | 'peer-review' | 'my-reviews';
 
 export const AssignmentPage = () => {
   const { assignmentId, courseId } = useParams();
@@ -34,10 +35,11 @@ export const AssignmentPage = () => {
 
   const assignmentPayload = publication.publicationPayload as AssignmentPayload;
   const isPeerReviewEnabled = assignmentPayload?.isPeerReviewEnabled;
+  const showTabs = isTeacher || isPeerReviewEnabled;
 
   return (
     <div className={styles.page} data-test-id="AssignmentPage">
-      {isTeacher && (
+      {showTabs && (
         <div className={styles.tabsWrapper}>
           <Tabs
             value={activeTab}
@@ -46,9 +48,14 @@ export const AssignmentPage = () => {
             data-test-id="AssignmentPage-tabs"
           >
             <Tab label="Задание" value="assignment" data-test-id="AssignmentPage-tab-assignment" />
-            <Tab label="Работы учащихся" value="submissions" data-test-id="AssignmentPage-tab-submissions" />
-            {isPeerReviewEnabled && (
+            {isTeacher && (
+              <Tab label="Работы учащихся" value="submissions" data-test-id="AssignmentPage-tab-submissions" />
+            )}
+            {isTeacher && isPeerReviewEnabled && (
               <Tab label="P2P оценка" value="peer-review" data-test-id="AssignmentPage-tab-peer-review" />
+            )}
+            {!isTeacher && isPeerReviewEnabled && (
+              <Tab label="Мои проверки" value="my-reviews" data-test-id="AssignmentPage-tab-my-reviews" />
             )}
           </Tabs>
         </div>
@@ -99,6 +106,17 @@ export const AssignmentPage = () => {
           <PeerReviewMappingsPanel
             publicationId={id}
             courseId={cid}
+          />
+        </div>
+      )}
+
+      {activeTab === 'my-reviews' && !isTeacher && isPeerReviewEnabled && (
+        <div className={styles.submissionsLayout}>
+          <JuryReviewTab
+            assignmentId={id}
+            criteria={publication.criteria}
+            minMark={assignmentPayload?.minMark ?? null}
+            maxMark={assignmentPayload?.maxMark ?? null}
           />
         </div>
       )}
