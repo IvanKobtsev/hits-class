@@ -8,6 +8,7 @@ namespace Team13.HitsClass.App.Features.PeerReview.Dto
     {
         public int Id { get; set; }
         public PeerReviewState State { get; set; }
+        public string? Mark { get; set; }
         public JuryDto DefendantUser { get; set; }
     }
 }

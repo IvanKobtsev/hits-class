@@ -5,6 +5,7 @@ namespace Team13.HitsClass.App.Features.PeerReview.Dto
     public class CreatePeerReviewDto
     {
         public string? Mark { get; set; }
+        public string? Comment { get; set; }
         public List<CreateCriteriaEvaluationDto> Evaluations { get; set; }
     }
 
