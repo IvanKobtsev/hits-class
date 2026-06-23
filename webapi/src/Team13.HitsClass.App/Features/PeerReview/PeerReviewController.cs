@@ -20,4 +20,18 @@ public class PeerReviewController(PeerReviewService peerReviewService)
     [HttpPost("regenerate")]
     public async Task RegenerateMappings([FromRoute] int assignmentId) =>
         await peerReviewService.RegenerateMappings(assignmentId);
+
+    [HttpPost("/api/peer-review-assignment/{id:int}")]
+    public async Task<PeerReviewDto> CreatePeerReview(
+        [FromRoute] int id,
+        [FromBody] CreatePeerReviewDto reviewDto
+    ) => await peerReviewService.CreatePeerReview(id, reviewDto);
+
+    [HttpGet]
+    public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewAssignments([FromRoute] int id) =>
+        await peerReviewService.GetPeerReviewAssignments(id);
+
+    [HttpDelete("/api/peer-review/{id:int}")]
+    public async Task DeletePeerReview([FromRoute] int id) =>
+        await peerReviewService.DeletePeerReview(id);
 }

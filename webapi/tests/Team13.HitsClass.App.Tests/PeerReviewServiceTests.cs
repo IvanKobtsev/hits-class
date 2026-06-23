@@ -10,6 +10,7 @@ using Team13.HitsClass.Domain;
 using Team13.HitsClass.Domain.PublicationPayloadTypes;
 using Team13.HitsClass.TestUtils;
 using Team13.LowLevelPrimitives.Exceptions;
+using Team13.PersistenceHelpers;
 
 namespace Team13.HitsClass.App.Tests;
 
@@ -420,6 +421,282 @@ public class PeerReviewServiceTests : AppServiceTestBase
 
     #endregion
 
+    #region CreatePeerReview Tests
+
+    [Fact]
+    public async Task CreatePeerReview_CreatesPeerReview()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        var criteria = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Requirement criteria"
+        );
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[1].Id);
+        var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+
+        var dto = new CreatePeerReviewDto
+        {
+            Mark = "Pass",
+            Evaluations =
+            [
+                new()
+                {
+                    CriteriaId = criteria.Id,
+                    Value = "true",
+                    Note = "criteria present",
+                },
+            ],
+        };
+
+        var result = await Sut.CreatePeerReview(reviewAssignment.Id, dto);
+
+        result.Should().NotBeNull();
+
+        await WithDbContext(async db =>
+        {
+            var review = await db.PeerReviews.Include(x => x.Evaluations).FirstAsync();
+
+            review.Mark.Should().Be("Pass");
+            review.Evaluations.Should().HaveCount(1);
+            review.Evaluations[0].Value.Should().Be("true");
+            review.Evaluations[0].Note.Should().Be("criteria present");
+        });
+    }
+
+    [Fact]
+    public async Task CreatePeerReview_NotJury_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        var criteria = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Requirement criteria"
+        );
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+
+        var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+
+        var dto = new CreatePeerReviewDto
+        {
+            Mark = "Pass",
+            Evaluations =
+            [
+                new()
+                {
+                    CriteriaId = criteria.Id,
+                    Value = "true",
+                    Note = "criteria present",
+                },
+            ],
+        };
+
+        var act = () => Sut.CreatePeerReview(assignment.Id, dto);
+
+        await act.Should().ThrowAsync<ValidationException>();
+    }
+
+    //[Fact]
+    //public async Task CreatePeerReview_AlreadyPeerReviewed_ThrowsValidationException()
+    //{
+    //    var course = await CreateCourse();
+    //    var students = await CreateStudents(course.Id, 2);
+    //    var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+    //    var criteria = await CreateCriteria(
+    //        assignment.Id,
+    //        CriteriaType.Requirement,
+    //        "Requirement criteria"
+    //    );
+    //    await Sut.GeneratePeerReviewMappings(assignment.Id);
+    //    var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+    //    await CheckPeerReviewAssignment(reviewAssignment.Id);
+
+    //    _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[1].Id);
+    //    var dto = new CreatePeerReviewDto
+    //    {
+    //        Mark = "Pass",
+    //        Evaluations =
+    //        [
+    //            new()
+    //            {
+    //                CriteriaId = criteria.Id,
+    //                Value = "true",
+    //                Note = "criteria present",
+    //            },
+    //        ],
+    //    };
+
+    //    var act = () => Sut.CreatePeerReview(reviewAssignment.Id, dto);
+
+    //    await act.Should().ThrowAsync<ValidationException>();
+    //}
+
+    [Fact]
+    public async Task CreatePeerReview_CriteriaEvaluationMissing_ThrowsValidationException()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        var criteria = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Requirement criteria"
+        );
+        var criteria2 = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Second criteria"
+        );
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[1].Id);
+        var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+
+        var dto = new CreatePeerReviewDto
+        {
+            Mark = "Pass",
+            Evaluations =
+            [
+                new()
+                {
+                    CriteriaId = criteria.Id,
+                    Value = "true",
+                    Note = "criteria present",
+                },
+            ],
+        };
+
+        var act = () => Sut.CreatePeerReview(assignment.Id, dto);
+
+        await act.Should().ThrowAsync<ValidationException>();
+    }
+
+    #endregion
+
+    #region GetPeerReviewAssignments Tests
+
+    [Fact]
+    public async Task GetPeerReviewAssignments_ReturnsPeerReviewAssignments()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[1].Id);
+        var result = await Sut.GetPeerReviewAssignments(assignment.Id);
+
+        result.Should().HaveCount(1);
+    }
+
+    #endregion
+
+    #region DeletePeerReview Tests
+
+    [Fact]
+    public async Task DeletePeerReview_AsAuthor_DeletesPeerReview()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        var criteria = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Requirement criteria"
+        );
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+        var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+        var review = await CreatePeerReview(
+            reviewAssignment.Id,
+            [
+                new()
+                {
+                    CriteriaId = criteria.Id,
+                    Value = "true",
+                    Note = "criteria present",
+                },
+            ]
+        );
+
+        _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[1].Id);
+        await Sut.DeletePeerReview(review.Id);
+
+        await WithDbContext(async db =>
+        {
+            (await db.PeerReviews.FirstOrDefaultAsync(p => p.Id == review.Id)).Should().BeNull();
+        });
+    }
+
+    //[Fact]
+    //public async Task DeletePeerReview_SubmissionIsMarkedByTeacher_ThrowsValidationException()
+    //{
+    //    var course = await CreateCourse();
+    //    var students = await CreateStudents(course.Id, 2);
+    //    var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+    //    var criteria = await CreateCriteria(
+    //        assignment.Id,
+    //        CriteriaType.Requirement,
+    //        "Requirement criteria"
+    //    );
+    //    await Sut.GeneratePeerReviewMappings(assignment.Id);
+    //    var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[0].Id);
+    //    await CheckPeerReviewAssignment(reviewAssignment.Id);
+    //    var review = await CreatePeerReview(
+    //        reviewAssignment.Id,
+    //        [
+    //            new()
+    //            {
+    //                CriteriaId = criteria.Id,
+    //                Value = "true",
+    //                Note = "criteria present",
+    //            },
+    //        ]
+    //    );
+
+    //    _userAccessorMock.Setup(x => x.GetUserId()).Returns(students[0].Id);
+    //    var act = () => Sut.DeletePeerReview(review.Id);
+
+    //    await act.Should().ThrowAsync<ValidationException>();
+    //}
+
+    [Fact]
+    public async Task DeletePeerReview_NotAsAuthor_ThrowsAccessDeniedException()
+    {
+        var course = await CreateCourse();
+        var students = await CreateStudents(course.Id, 2);
+        var assignment = await CreateAssignmentWithP2P(course.Id, 1);
+        var criteria = await CreateCriteria(
+            assignment.Id,
+            CriteriaType.Requirement,
+            "Requirement criteria"
+        );
+        await Sut.GeneratePeerReviewMappings(assignment.Id);
+        var reviewAssignment = await GetPeerReviewAssignmentForJury(assignment.Id, students[1].Id);
+        var review = await CreatePeerReview(
+            reviewAssignment.Id,
+            [
+                new()
+                {
+                    CriteriaId = criteria.Id,
+                    Value = "true",
+                    Note = "criteria present",
+                },
+            ]
+        );
+
+        var act = () => Sut.DeletePeerReview(review.Id);
+
+        await act.Should().ThrowAsync<AccessDeniedException>();
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private async Task<List<User>> CreateStudents(int courseId, int count)
@@ -600,6 +877,71 @@ public class PeerReviewServiceTests : AppServiceTestBase
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
+    }
+
+    private async Task<Criteria> CreateCriteria(
+        int publicationId,
+        CriteriaType type,
+        string description
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            var criteria = new Criteria
+            {
+                Type = type,
+                PublicationId = publicationId,
+                Description = description,
+            };
+
+            await db.AssignmentCriteria.AddAsync(criteria);
+            await db.SaveChangesAsync();
+
+            return criteria;
+        });
+    }
+
+    private async Task<PeerReviewAssignment> GetPeerReviewAssignmentForJury(
+        int publicationId,
+        string juryUserId
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            return await db.PeerReviewAssignments.FirstAsync(x =>
+                x.PublicationId == publicationId && x.JuryUserId == juryUserId
+            );
+        });
+    }
+
+    private async Task CheckPeerReviewAssignment(int id)
+    {
+        await WithDbContext(async db =>
+        {
+            var assignment = await db.PeerReviewAssignments.GetOne(PeerReviewAssignment.HasId(id));
+            assignment.State = PeerReviewState.Checked;
+            await db.SaveChangesAsync();
+        });
+    }
+
+    private async Task<PeerReview> CreatePeerReview(
+        int publicationId,
+        List<CriteriaEvaluation> evaluations
+    )
+    {
+        return await WithDbContext(async db =>
+        {
+            var peerReview = new PeerReview
+            {
+                Mark = "Pass",
+                SubmittedAtUTC = DateTime.UtcNow,
+                AssignmentId = publicationId,
+                Evaluations = evaluations,
+            };
+            await db.PeerReviews.AddAsync(peerReview);
+            await db.SaveChangesAsync();
+            return peerReview;
+        });
     }
 
     #endregion

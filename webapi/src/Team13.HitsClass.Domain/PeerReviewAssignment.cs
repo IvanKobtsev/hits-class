@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Team13.DomainHelpers;
+using Team13.HitsClass.Common;
 
 namespace Team13.HitsClass.Domain
 {
@@ -8,6 +9,10 @@ namespace Team13.HitsClass.Domain
         public int Id { get; set; }
         public int PublicationId { get; set; }
         public Publication Publication { get; set; }
+        public PeerReviewState State { get; set; }
+
+        public PeerReview? PeerReview { get; set; }
+        public int? PeerReviewId { get; set; }
 
         public string JuryUserId { get; set; }
 
@@ -28,6 +33,11 @@ namespace Team13.HitsClass.Domain
                 p => p.PublicationId == publicationId,
                 publicationId
             );
+        }
+
+        public static Specification<PeerReviewAssignment> HasId(int id)
+        {
+            return new Specification<PeerReviewAssignment>(nameof(HasId), p => p.Id == id, id);
         }
 
         #endregion

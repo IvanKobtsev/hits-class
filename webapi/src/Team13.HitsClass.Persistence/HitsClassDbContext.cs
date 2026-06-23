@@ -27,6 +27,7 @@ public class HitsClassDbContext
     public DbSet<Invitation> Invitations { get; set; }
     public DbSet<Criteria> AssignmentCriteria { get; set; }
     public DbSet<PeerReviewAssignment> PeerReviewAssignments { get; set; }
+    public DbSet<PeerReview> PeerReviews { get; set; }
 
     public HitsClassDbContext(
         DbContextOptions<HitsClassDbContext> options,
@@ -171,6 +172,18 @@ public class HitsClassDbContext
         {
             b.HasOne(i => i.User).WithMany().HasForeignKey(i => i.UserId);
             b.HasOne(i => i.Team).WithMany().HasForeignKey(i => i.TeamId);
+        });
+
+        builder.Entity<CriteriaEvaluation>(ce =>
+        {
+            ce.HasOne(c => c.Criteria).WithMany().HasForeignKey(c => c.CriteriaId);
+            ce.HasOne(p => p.PeerReview).WithMany().HasForeignKey(p => p.PeerReviewId);
+        });
+
+        builder.Entity<PeerReview>(p =>
+        {
+            p.HasOne(a => a.Assignment).WithMany().HasForeignKey(a => a.AssignmentId);
+            p.HasMany(c => c.Evaluations).WithOne(e => e.PeerReview);
         });
     }
 
