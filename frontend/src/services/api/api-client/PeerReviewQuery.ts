@@ -35,8 +35,7 @@ export type CreatePeerReviewPeerReviewQueryParameters = {
 }
 
 export type GetPeerReviewAssignmentsPeerReviewQueryParameters = {
-  id: number ;
-  assignmentId: string ;
+  assignmentId: number ;
 }
 
 export type DeletePeerReviewPeerReviewQueryParameters = {
@@ -290,11 +289,8 @@ return useMutation({
 });
 }
   
-export function getPeerReviewAssignmentsUrl(id: number, assignmentId: string): string {
+export function getPeerReviewAssignmentsUrl(assignmentId: number): string {
   let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/peer-review";
-if (id === undefined || id === null)
-  throw new Error("The parameter 'id' must be defined.");
-url_ = url_.replace("{id}", encodeURIComponent("" + id));
 if (assignmentId === undefined || assignmentId === null)
   throw new Error("The parameter 'assignmentId' must be defined.");
 url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
@@ -312,16 +308,14 @@ export function setGetPeerReviewAssignmentsDefaultOptions(options: typeof getPee
   getPeerReviewAssignmentsDefaultOptions = options;
 }
 
-export function getPeerReviewAssignmentsQueryKey(dto: GetPeerReviewAssignmentsPeerReviewQueryParameters): QueryKey;
-export function getPeerReviewAssignmentsQueryKey(id: number, assignmentId: string): QueryKey;
+export function getPeerReviewAssignmentsQueryKey(assignmentId: number): QueryKey;
 export function getPeerReviewAssignmentsQueryKey(...params: any[]): QueryKey {
   if (params.length === 1 && isParameterObject(params[0])) {
-    const { id, assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters;
+    const { assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters;
 
     return trimArrayEnd([
         'PeerReviewClient',
         'getPeerReviewAssignments',
-        id as any,
         assignmentId as any,
       ]);
   } else {
@@ -334,27 +328,26 @@ export function getPeerReviewAssignmentsQueryKey(...params: any[]): QueryKey {
 }
 function __getPeerReviewAssignments(context: QueryFunctionContext) {
   return Client.getPeerReviewAssignments(
-      context.queryKey[2] as number,       context.queryKey[3] as string    );
+      context.queryKey[2] as number    );
 }
 
 export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(dto: GetPeerReviewAssignmentsPeerReviewQueryParameters, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 /**
  * Get peer review assignments
  */
-export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(id: number, assignmentId: string, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(assignmentId: number, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
 export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
   let options: UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData> | undefined = undefined;
   let axiosConfig: AxiosRequestConfig |undefined;
-  let id: any = undefined;
   let assignmentId: any = undefined;
   
   if (params.length > 0) {
     if (isParameterObject(params[0])) {
-      ({ id, assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters);
+      ({ assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters);
       options = params[1];
       axiosConfig = params[2];
     } else {
-      [id, assignmentId, options, axiosConfig] = params;
+      [assignmentId, options, axiosConfig] = params;
     }
   }
 
@@ -367,7 +360,7 @@ export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewA
 
   return useQuery<Types.PeerReviewAssignmentDto[], TError, TSelectData>({
     queryFn: __getPeerReviewAssignments,
-    queryKey: getPeerReviewAssignmentsQueryKey(id, assignmentId),
+    queryKey: getPeerReviewAssignmentsQueryKey(assignmentId),
     ...getPeerReviewAssignmentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>,
     ...options,
   });
@@ -375,8 +368,8 @@ export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewA
 /**
  * Get peer review assignments
  */
-export function setGetPeerReviewAssignmentsData(queryClient: QueryClient, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[], id: number, assignmentId: string) {
-  queryClient.setQueryData(getPeerReviewAssignmentsQueryKey(id, assignmentId),
+export function setGetPeerReviewAssignmentsData(queryClient: QueryClient, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[], assignmentId: number) {
+  queryClient.setQueryData(getPeerReviewAssignmentsQueryKey(assignmentId),
     updater
   );
 }

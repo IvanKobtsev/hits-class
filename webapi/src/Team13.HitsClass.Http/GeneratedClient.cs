@@ -4784,7 +4784,7 @@ namespace Team13.HitsClass.Http.Generated
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(PeerReviewClientGetPeerReviewAssignmentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
-            return GetPeerReviewAssignmentsAsync(parameters.id, parameters.assignmentId, cancellationToken);
+            return GetPeerReviewAssignmentsAsync(parameters.assignmentId, cancellationToken);
         }
 
             /// <summary>Get general information about peer review for one defendant (for teachers)</summary>
@@ -4866,14 +4866,14 @@ namespace Team13.HitsClass.Http.Generated
         /// Get peer review assignments
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int id, string assignmentId);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int assignmentId);
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
         /// <summary>
         /// Get peer review assignments
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int id, string assignmentId, System.Threading.CancellationToken cancellationToken);
+        System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken);
 
         /// <summary>
         /// Delete peer review
@@ -4951,9 +4951,7 @@ namespace Team13.HitsClass.Http.Generated
     public partial class PeerReviewClientGetPeerReviewAssignmentsParametersDto
     {
 
-        public int id { get; set; }
-
-        public string assignmentId { get; set; }
+        public int assignmentId { get; set; }
     }
 
     public partial class PeerReviewClientGetPeerReviewsGeneralParametersDto
@@ -5364,9 +5362,9 @@ namespace Team13.HitsClass.Http.Generated
         /// Get peer review assignments
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int id, string assignmentId)
+        public virtual System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int assignmentId)
         {
-            return GetPeerReviewAssignmentsAsync(id, assignmentId, System.Threading.CancellationToken.None);
+            return GetPeerReviewAssignmentsAsync(assignmentId, System.Threading.CancellationToken.None);
         }
 
         /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
@@ -5374,17 +5372,13 @@ namespace Team13.HitsClass.Http.Generated
         /// Get peer review assignments
         /// </summary>
         /// <exception cref="ApiException">A server side error occurred.</exception>
-        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int id, string assignmentId, System.Threading.CancellationToken cancellationToken)
+        public virtual async System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(int assignmentId, System.Threading.CancellationToken cancellationToken)
         {
-            if (id == null)
-                throw new System.ArgumentNullException("id");
-
             if (assignmentId == null)
                 throw new System.ArgumentNullException("assignmentId");
 
             var urlBuilder_ = new System.Text.StringBuilder();
             urlBuilder_.Append(BaseUrl != null ? BaseUrl.TrimEnd('/') : "").Append("/api/assignments/{assignmentId}/peer-review");
-            urlBuilder_.Replace("{id}", System.Uri.EscapeDataString(ConvertToString(id, System.Globalization.CultureInfo.InvariantCulture)));
             urlBuilder_.Replace("{assignmentId}", System.Uri.EscapeDataString(ConvertToString(assignmentId, System.Globalization.CultureInfo.InvariantCulture)));
 
             var client_ = _httpClient;
@@ -6042,7 +6036,7 @@ namespace Team13.HitsClass.Http.Generated
         /// <exception cref="ApiException">A server side error occurred.</exception>
         public System.Threading.Tasks.Task<System.Collections.Generic.ICollection<PeerReviewAssignmentDto>> GetPeerReviewAssignmentsAsync(PeerReviewClientGetPeerReviewAssignmentsParametersDto parameters, System.Threading.CancellationToken cancellationToken)
         {
-            return GetPeerReviewAssignmentsAsync(parameters.id, parameters.assignmentId, cancellationToken);
+            return GetPeerReviewAssignmentsAsync(parameters.assignmentId, cancellationToken);
         }
 
             /// <summary>Get general information about peer review for one defendant (for teachers)</summary>

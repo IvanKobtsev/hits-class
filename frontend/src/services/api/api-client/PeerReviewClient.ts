@@ -263,11 +263,8 @@ function processCreatePeerReview(response: AxiosResponse): Promise<Types.PeerRev
 /**
  * Get peer review assignments
  */
-export function getPeerReviewAssignments(id: number, assignmentId: string, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewAssignmentDto[]> {
+export function getPeerReviewAssignments(assignmentId: number, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewAssignmentDto[]> {
     let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/peer-review";
-    if (id === undefined || id === null)
-      throw new Error("The parameter 'id' must be defined.");
-    url_ = url_.replace("{id}", encodeURIComponent("" + id));
     if (assignmentId === undefined || assignmentId === null)
       throw new Error("The parameter 'assignmentId' must be defined.");
     url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
