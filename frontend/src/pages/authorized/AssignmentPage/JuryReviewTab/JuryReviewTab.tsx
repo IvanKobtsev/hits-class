@@ -4,14 +4,15 @@ import {
   useGetPeerReviewAssignmentsQuery,
   useCreatePeerReviewMutation,
   useDeletePeerReviewMutation,
-  useGetReviewByAssignmentQuery,
+  useGetReviewQuery,
   useUpdatePeerReviewMutation,
   getPeerReviewAssignmentsQueryKey,
-  getReviewByAssignmentQueryKey,
+  getReviewQueryKey,
 } from 'services/api/api-client/PeerReviewQuery';
 import { useGetSubmissionsQuery, useGetSubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import {
   type CriteriaDto,
+  type CriteriaEvaluationDto,
   CriteriaType,
   type CreatePeerReviewDto,
   type UpdatePeerReviewDto,
@@ -146,7 +147,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   const isChecked = assignment.state === PeerReviewState.Checked;
   const hasExistingReview = isReviewed || isChecked;
 
-  const { data: existingReview, isLoading: reviewLoading } = useGetReviewByAssignmentQuery(
+  const { data: existingReview, isLoading: reviewLoading } = useGetReviewQuery(
     assignment.id,
     { enabled: hasExistingReview },
   );
@@ -187,8 +188,8 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   }, [existingReview, hasExistingReview, criteria]);
 
   const invalidateAll = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getPeerReviewAssignmentsQueryKey(assignmentId) });
-    void queryClient.invalidateQueries({ queryKey: getReviewByAssignmentQueryKey(assignment.id) });
+    void queryClient.invalidateQueries({ queryKey: getPeerReviewAssignmentsQueryKey(assignmentId, String(assignmentId)) });
+    void queryClient.invalidateQueries({ queryKey: getReviewQueryKey(assignment.id) });
   }, [queryClient, assignmentId, assignment.id]);
 
   const createMutation = useCreatePeerReviewMutation(assignment.id, {
@@ -253,8 +254,8 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
 
   const handleUpdateReview = useCallback(() => {
     const dto: UpdatePeerReviewDto = {
-      mark: criteria.length > 0 ? finalMarkValue || null : null,
-      comment: comment || null,
+      mark: criteria.length > 0 ? finalMarkValue || undefined : undefined,
+      comment: comment || undefined,
       evaluations: buildEvaluations(),
     };
     updateMutation.mutate(dto);
@@ -308,7 +309,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
           {existingReview.comment && (
             <div className={styles.existingReviewMark}>Комментарий: {existingReview.comment}</div>
           )}
-          {existingReview.evaluations.map((ev) => (
+          {existingReview.evaluations.map((ev: CriteriaEvaluationDto) => (
             <div key={ev.id} className={styles.existingEvaluation}>
               <strong>{ev.criteriaDescription}:</strong> {ev.value}
               {ev.note && <div className={styles.evaluationNote}>{ev.note}</div>}
