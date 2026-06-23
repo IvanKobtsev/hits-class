@@ -97,6 +97,7 @@ export const AssignmentPage = () => {
             minMark={assignmentPayload?.minMark ?? null}
             maxMark={assignmentPayload?.maxMark ?? null}
             criteria={publication.criteria}
+            isPeerReviewEnabled={isPeerReviewEnabled}
           />
         </div>
       )}

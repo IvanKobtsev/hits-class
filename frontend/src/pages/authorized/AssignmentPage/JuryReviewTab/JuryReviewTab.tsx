@@ -9,7 +9,7 @@ import {
   getPeerReviewAssignmentsQueryKey,
   getReviewQueryKey,
 } from 'services/api/api-client/PeerReviewQuery';
-import { useGetSubmissionsQuery, useGetSubmissionQuery } from 'services/api/api-client/SubmissionQuery';
+import { useGetSubmissionQuery } from 'services/api/api-client/SubmissionQuery';
 import {
   type CriteriaDto,
   type CriteriaEvaluationDto,
@@ -20,7 +20,6 @@ import {
   PeerReviewState,
   type Attachment,
   type FileInfoDto,
-  type SubmissionListItem,
 } from 'services/api/api-client.types';
 import {
   AttachmentsList,
@@ -74,7 +73,7 @@ type Props = {
 };
 
 export const JuryReviewTab: React.FC<Props> = ({ assignmentId, criteria, minMark, maxMark }) => {
-  const { data: assignments, isLoading } = useGetPeerReviewAssignmentsQuery(assignmentId, String(assignmentId));
+  const { data: assignments, isLoading } = useGetPeerReviewAssignmentsQuery(assignmentId);
   const [selectedAssignment, setSelectedAssignment] = useState<PeerReviewAssignmentDto | null>(null);
 
   const handleBack = useCallback(() => setSelectedAssignment(null), []);
@@ -152,13 +151,9 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
     { enabled: hasExistingReview },
   );
 
-  const { data: submissionsData } = useGetSubmissionsQuery(assignmentId, 0, 100);
-  const defendantSubmissionListItem = submissionsData?.data?.find(
-    (s: SubmissionListItem) => s.author.id === assignment.defendantUser.userId,
-  );
   const { data: defendantSubmission } = useGetSubmissionQuery(
-    defendantSubmissionListItem?.id ?? 0,
-    { enabled: !!defendantSubmissionListItem },
+    assignment.submissionId ?? 0,
+    { enabled: !!assignment.submissionId },
   );
 
   const [criteriaScores, setCriteriaScores] = useState<Record<number, string>>({});
@@ -188,7 +183,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   }, [existingReview, hasExistingReview, criteria]);
 
   const invalidateAll = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: getPeerReviewAssignmentsQueryKey(assignmentId, String(assignmentId)) });
+    void queryClient.invalidateQueries({ queryKey: getPeerReviewAssignmentsQueryKey(assignmentId) });
     void queryClient.invalidateQueries({ queryKey: getReviewQueryKey(assignment.id) });
   }, [queryClient, assignmentId, assignment.id]);
 

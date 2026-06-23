@@ -1510,6 +1510,7 @@ export interface PeerReviewAssignmentDto  {
   state: PeerReviewState;
   mark: string | null;
   defendantUser: JuryDto;
+  submissionId: number | null;
 }
 export function deserializePeerReviewAssignmentDto(json: string): PeerReviewAssignmentDto {
   const data = JSON.parse(json) as PeerReviewAssignmentDto;

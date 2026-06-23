@@ -287,6 +287,7 @@ public class PeerReviewService(
 
         await dbContext.PeerReviews.AddAsync(peerReview);
         peerReviewAssignment.State = PeerReviewState.Reviewed;
+        peerReviewAssignment.PeerReview = peerReview;
         await dbContext.SaveChangesAsync();
 
         var review = await dbContext
@@ -301,6 +302,11 @@ public class PeerReviewService(
         var user = await dbContext.Users.GetOne(User.HasId(userId));
         var publication = await dbContext.Publications.GetOne(Publication.HasId(assignmentId));
 
+        var submissions = await dbContext
+            .Submissions.Where(s => s.PublicationId == assignmentId)
+            .ToListAsync();
+        var submissionByAuthor = submissions.ToDictionary(s => s.AuthorId, s => s.Id);
+
         var submissionsToReview = await dbContext
             .PeerReviewAssignments.Include(p => p.DefendantUser)
             .Include(p => p.PeerReview)
@@ -309,7 +315,7 @@ public class PeerReviewService(
             {
                 Id = p.Id,
                 State = p.State,
-                Mark = p.PeerReview.Mark,
+                Mark = p.PeerReview != null ? p.PeerReview.Mark : null,
                 DefendantUser = new JuryDto
                 {
                     Name = p.DefendantUser.LegalName,
@@ -317,6 +323,13 @@ public class PeerReviewService(
                 },
             })
             .ToListAsync();
+
+        foreach (var item in submissionsToReview)
+        {
+            if (submissionByAuthor.TryGetValue(item.DefendantUser.UserId, out var subId))
+                item.SubmissionId = subId;
+        }
+
         return submissionsToReview;
     }
 
@@ -368,19 +381,15 @@ public class PeerReviewService(
         }
 
         var reviews = await dbContext
-            .PeerReviewAssignments.Include(p => p.DefendantUser)
+            .PeerReviewAssignments.Include(p => p.JuryUser)
             .Include(p => p.PeerReview)
             .Where(p => p.PublicationId == assignmentId && p.DefendantUserId == defendantId)
             .Select(p => new PeerReviewAssignmentDto
             {
                 Id = p.Id,
                 State = p.State,
-                Mark = p.PeerReview.Mark,
-                DefendantUser = new JuryDto
-                {
-                    Name = p.DefendantUser.LegalName,
-                    UserId = p.DefendantUserId,
-                },
+                Mark = p.PeerReview != null ? p.PeerReview.Mark : null,
+                DefendantUser = new JuryDto { Name = p.JuryUser.LegalName, UserId = p.JuryUserId },
             })
             .ToListAsync();
         return reviews;
@@ -393,6 +402,7 @@ public class PeerReviewService(
 
         var review = await dbContext
             .PeerReviews.Include(p => p.Evaluations)
+                .ThenInclude(e => e.Criteria)
             .Include(p => p.Assignment)
                 .ThenInclude(a => a.Publication)
             .GetOne(Domain.PeerReview.HasId(id));
@@ -428,9 +438,16 @@ public class PeerReviewService(
 
         var reviewId = peerReviewAssignment.PeerReviewId;
         if (reviewId == null)
-            throw new PersistenceResourceNotFoundException(
-                $"Ревью для пары {peerReviewAssignmentId} не найдено."
+        {
+            var fallback = await dbContext.PeerReviews.FirstOrDefaultAsync(r =>
+                r.AssignmentId == peerReviewAssignmentId
             );
+            if (fallback == null)
+                throw new PersistenceResourceNotFoundException(
+                    $"Ревью для пары {peerReviewAssignmentId} не найдено."
+                );
+            reviewId = fallback.Id;
+        }
 
         return await GetPeerReview((int)reviewId);
     }
@@ -442,6 +459,7 @@ public class PeerReviewService(
 
         var review = await dbContext
             .PeerReviews.Include(p => p.Evaluations)
+                .ThenInclude(e => e.Criteria)
             .Include(p => p.Assignment)
                 .ThenInclude(a => a.Publication)
             .GetOne(Domain.PeerReview.HasId(id));
