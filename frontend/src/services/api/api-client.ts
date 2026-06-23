@@ -222,6 +222,10 @@ export function initPersister() {
 
 
   addResultTypeFactory('PeerReviewClient___getMappings', (data: any) => Types.initPeerReviewMappingDto(data));
+  addResultTypeFactory('PeerReviewClient___getPeerReviewAssignments', (data: any) => Types.initPeerReviewAssignmentDto(data));
+  addResultTypeFactory('PeerReviewClient___getPeerReviewsGeneral', (data: any) => Types.initPeerReviewAssignmentDto(data));
+  addResultTypeFactory('PeerReviewClient___getPeerReview', (data: any) => Types.initPeerReviewDto(data));
+  addResultTypeFactory('PeerReviewClient___getReview', (data: any) => Types.initPeerReviewDto(data));
 
 
   addResultTypeFactory('InvitationClient___getAllInvitations', (data: any) => Types.initInvitationDto(data));

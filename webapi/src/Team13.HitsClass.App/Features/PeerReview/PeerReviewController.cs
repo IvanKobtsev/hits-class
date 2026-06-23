@@ -47,7 +47,7 @@ public class PeerReviewController(PeerReviewService peerReviewService)
     /// <summary>
     /// Get general information about peer review for one defendant (for teachers)
     /// </summary>
-    [HttpGet("/api/assignments/{assignmentId:int}/defendant/{defendantId:string}/peer-reviews")]
+    [HttpGet("/api/assignments/{assignmentId:int}/defendant/{defendantId}/peer-reviews")]
     public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewsGeneral(
         [FromRoute] int assignmentId,
         [FromRoute] string defendantId

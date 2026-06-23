@@ -192,6 +192,465 @@ function processRegenerateMappings(response: AxiosResponse): Promise<void> {
     }
     return Promise.resolve<void>(null as any);
 }
+
+/**
+ * Submit peer review
+ */
+export function createPeerReview(id: number, reviewDto: Types.CreatePeerReviewDto, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewDto> {
+    let url_ = getBaseUrl() + "/api/peer-review-assignment/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeCreatePeerReviewDto(reviewDto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigCreatePeerReview,
+        ...config,
+        data: content_,
+        method: "POST",
+        url: url_,
+        headers: {
+            ..._requestConfigCreatePeerReview?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processCreatePeerReview(_response);
+    });
+}
+
+function processCreatePeerReview(response: AxiosResponse): Promise<Types.PeerReviewDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPeerReviewDto(resultData200);
+        return Promise.resolve<Types.PeerReviewDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewDto>(null as any);
+}
+
+/**
+ * Get peer review assignments
+ */
+export function getPeerReviewAssignments(id: number, assignmentId: string, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewAssignmentDto[]> {
+    let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/peer-review";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetPeerReviewAssignments,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetPeerReviewAssignments?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetPeerReviewAssignments(_response);
+    });
+}
+
+function processGetPeerReviewAssignments(response: AxiosResponse): Promise<Types.PeerReviewAssignmentDto[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initPeerReviewAssignmentDto(item)
+              );
+            }
+        return Promise.resolve<Types.PeerReviewAssignmentDto[]>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewAssignmentDto[]>(null as any);
+}
+
+/**
+ * Delete peer review
+ */
+export function deletePeerReview(id: number, config?: AxiosRequestConfig | undefined): Promise<void> {
+    let url_ = getBaseUrl() + "/api/peer-review/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigDeletePeerReview,
+        ...config,
+        method: "DELETE",
+        url: url_,
+        headers: {
+            ..._requestConfigDeletePeerReview?.headers,
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processDeletePeerReview(_response);
+    });
+}
+
+function processDeletePeerReview(response: AxiosResponse): Promise<void> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        return Promise.resolve<void>(null as any);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<void>(null as any);
+}
+
+/**
+ * Get general information about peer review for one defendant (for teachers)
+ */
+export function getPeerReviewsGeneral(assignmentId: number, defendantId: string, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewAssignmentDto[]> {
+    let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/defendant/{defendantId}/peer-reviews";
+    if (assignmentId === undefined || assignmentId === null)
+      throw new Error("The parameter 'assignmentId' must be defined.");
+    url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+    if (defendantId === undefined || defendantId === null)
+      throw new Error("The parameter 'defendantId' must be defined.");
+    url_ = url_.replace("{defendantId}", encodeURIComponent("" + defendantId));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetPeerReviewsGeneral,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetPeerReviewsGeneral?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetPeerReviewsGeneral(_response);
+    });
+}
+
+function processGetPeerReviewsGeneral(response: AxiosResponse): Promise<Types.PeerReviewAssignmentDto[]> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        if (Array.isArray(resultData200)) {
+              result200 = resultData200.map(item => 
+                Types.initPeerReviewAssignmentDto(item)
+              );
+            }
+        return Promise.resolve<Types.PeerReviewAssignmentDto[]>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewAssignmentDto[]>(null as any);
+}
+
+/**
+ * Get full review information by review id
+ */
+export function getPeerReview(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewDto> {
+    let url_ = getBaseUrl() + "/api/peer-reviews/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetPeerReview,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetPeerReview?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetPeerReview(_response);
+    });
+}
+
+function processGetPeerReview(response: AxiosResponse): Promise<Types.PeerReviewDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPeerReviewDto(resultData200);
+        return Promise.resolve<Types.PeerReviewDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewDto>(null as any);
+}
+
+/**
+ * Update review
+ */
+export function updatePeerReview(id: number, dto: Types.UpdatePeerReviewDto, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewDto> {
+    let url_ = getBaseUrl() + "/api/peer-reviews/{id}";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    const content_ = Types.serializeUpdatePeerReviewDto(dto);
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigUpdatePeerReview,
+        ...config,
+        data: content_,
+        method: "PUT",
+        url: url_,
+        headers: {
+            ..._requestConfigUpdatePeerReview?.headers,
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processUpdatePeerReview(_response);
+    });
+}
+
+function processUpdatePeerReview(response: AxiosResponse): Promise<Types.PeerReviewDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPeerReviewDto(resultData200);
+        return Promise.resolve<Types.PeerReviewDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewDto>(null as any);
+}
+
+/**
+ * Get full review information by assignment id (for students)
+ */
+export function getReview(id: number, config?: AxiosRequestConfig | undefined): Promise<Types.PeerReviewDto> {
+    let url_ = getBaseUrl() + "/api/peer-review-assignment/{id}/review";
+    if (id === undefined || id === null)
+      throw new Error("The parameter 'id' must be defined.");
+    url_ = url_.replace("{id}", encodeURIComponent("" + id));
+      url_ = url_.replace(/[?&]$/, "");
+
+    let options_: AxiosRequestConfig = {
+        ..._requestConfigGetReview,
+        ...config,
+        method: "GET",
+        url: url_,
+        headers: {
+            ..._requestConfigGetReview?.headers,
+            "Accept": "application/json"
+        }
+    };
+
+    return getAxios().request(options_).catch((_error: any) => {
+        if (isAxiosError(_error) && _error.response) {
+            return _error.response;
+        } else {
+            throw _error;
+        }
+    }).then((_response: AxiosResponse) => {
+        return processGetReview(_response);
+    });
+}
+
+function processGetReview(response: AxiosResponse): Promise<Types.PeerReviewDto> {
+    const status = response.status;
+    let _headers: any = {};
+    if (response.headers && typeof response.headers === "object") {
+        for (let k in response.headers) {
+            if (response.headers.hasOwnProperty(k)) {
+                _headers[k] = response.headers[k];
+            }
+        }
+    }
+    if (status === 400) {
+        const _responseText = response.data;
+        let result400: any = null;
+        let resultData400  = _responseText;
+        result400 = Types.initValidationProblemDetails(resultData400);
+        return throwException("A server side error occurred.", status, _responseText, _headers, result400);
+
+    } else if (status === 200) {
+        const _responseText = response.data;
+        let result200: any = null;
+        let resultData200  = _responseText;
+        result200 = Types.initPeerReviewDto(resultData200);
+        return Promise.resolve<Types.PeerReviewDto>(result200);
+
+    } else if (status !== 200 && status !== 204) {
+        const _responseText = response.data;
+        return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+    }
+    return Promise.resolve<Types.PeerReviewDto>(null as any);
+}
 let _requestConfigGetMappings: Partial<AxiosRequestConfig> | null;
 export function getGetMappingsRequestConfig() {
   return _requestConfigGetMappings;
@@ -225,32 +684,79 @@ export function patchRegenerateMappingsRequestConfig(patch: (value: Partial<Axio
   _requestConfigRegenerateMappings = patch(_requestConfigRegenerateMappings ?? {});
 }
 
-export function getPeerReviewAssignments(assignmentId: number, config?: AxiosRequestConfig): Promise<Types.PeerReviewAssignmentDto[]> {
-  const url = `${getBaseUrl()}/api/assignments/${encodeURIComponent(assignmentId)}/peer-review`;
-  return getAxios().request<Types.PeerReviewAssignmentDto[]>({
-    ...config,
-    method: 'GET',
-    url,
-    headers: { ...config?.headers, Accept: 'application/json' },
-  }).then(r => r.data);
+let _requestConfigCreatePeerReview: Partial<AxiosRequestConfig> | null;
+export function getCreatePeerReviewRequestConfig() {
+  return _requestConfigCreatePeerReview;
+}
+export function setCreatePeerReviewRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigCreatePeerReview = value;
+}
+export function patchCreatePeerReviewRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigCreatePeerReview = patch(_requestConfigCreatePeerReview ?? {});
 }
 
-export function createPeerReview(peerReviewAssignmentId: number, dto: Types.CreatePeerReviewDto, config?: AxiosRequestConfig): Promise<Types.PeerReviewDto> {
-  const url = `${getBaseUrl()}/api/peer-review-assignment/${encodeURIComponent(peerReviewAssignmentId)}`;
-  return getAxios().request<Types.PeerReviewDto>({
-    ...config,
-    method: 'POST',
-    url,
-    data: dto,
-    headers: { ...config?.headers, 'Content-Type': 'application/json', Accept: 'application/json' },
-  }).then(r => r.data);
+let _requestConfigGetPeerReviewAssignments: Partial<AxiosRequestConfig> | null;
+export function getGetPeerReviewAssignmentsRequestConfig() {
+  return _requestConfigGetPeerReviewAssignments;
+}
+export function setGetPeerReviewAssignmentsRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReviewAssignments = value;
+}
+export function patchGetPeerReviewAssignmentsRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReviewAssignments = patch(_requestConfigGetPeerReviewAssignments ?? {});
 }
 
-export function deletePeerReview(id: number, config?: AxiosRequestConfig): Promise<void> {
-  const url = `${getBaseUrl()}/api/peer-review/${encodeURIComponent(id)}`;
-  return getAxios().request<void>({
-    ...config,
-    method: 'DELETE',
-    url,
-  }).then(r => r.data);
+let _requestConfigDeletePeerReview: Partial<AxiosRequestConfig> | null;
+export function getDeletePeerReviewRequestConfig() {
+  return _requestConfigDeletePeerReview;
+}
+export function setDeletePeerReviewRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigDeletePeerReview = value;
+}
+export function patchDeletePeerReviewRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigDeletePeerReview = patch(_requestConfigDeletePeerReview ?? {});
+}
+
+let _requestConfigGetPeerReviewsGeneral: Partial<AxiosRequestConfig> | null;
+export function getGetPeerReviewsGeneralRequestConfig() {
+  return _requestConfigGetPeerReviewsGeneral;
+}
+export function setGetPeerReviewsGeneralRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReviewsGeneral = value;
+}
+export function patchGetPeerReviewsGeneralRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReviewsGeneral = patch(_requestConfigGetPeerReviewsGeneral ?? {});
+}
+
+let _requestConfigGetPeerReview: Partial<AxiosRequestConfig> | null;
+export function getGetPeerReviewRequestConfig() {
+  return _requestConfigGetPeerReview;
+}
+export function setGetPeerReviewRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReview = value;
+}
+export function patchGetPeerReviewRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetPeerReview = patch(_requestConfigGetPeerReview ?? {});
+}
+
+let _requestConfigUpdatePeerReview: Partial<AxiosRequestConfig> | null;
+export function getUpdatePeerReviewRequestConfig() {
+  return _requestConfigUpdatePeerReview;
+}
+export function setUpdatePeerReviewRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigUpdatePeerReview = value;
+}
+export function patchUpdatePeerReviewRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigUpdatePeerReview = patch(_requestConfigUpdatePeerReview ?? {});
+}
+
+let _requestConfigGetReview: Partial<AxiosRequestConfig> | null;
+export function getGetReviewRequestConfig() {
+  return _requestConfigGetReview;
+}
+export function setGetReviewRequestConfig(value: Partial<AxiosRequestConfig>) {
+  _requestConfigGetReview = value;
+}
+export function patchGetReviewRequestConfig(patch: (value: Partial<AxiosRequestConfig>) => Partial<AxiosRequestConfig>) {
+  _requestConfigGetReview = patch(_requestConfigGetReview ?? {});
 }

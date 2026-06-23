@@ -30,6 +30,36 @@ export type RegenerateMappingsPeerReviewQueryParameters = {
   assignmentId: number ;
 }
 
+export type CreatePeerReviewPeerReviewQueryParameters = {
+  id: number ;
+}
+
+export type GetPeerReviewAssignmentsPeerReviewQueryParameters = {
+  id: number ;
+  assignmentId: string ;
+}
+
+export type DeletePeerReviewPeerReviewQueryParameters = {
+  id: number ;
+}
+
+export type GetPeerReviewsGeneralPeerReviewQueryParameters = {
+  assignmentId: number ;
+  defendantId: string ;
+}
+
+export type GetPeerReviewPeerReviewQueryParameters = {
+  id: number ;
+}
+
+export type UpdatePeerReviewPeerReviewQueryParameters = {
+  id: number ;
+}
+
+export type GetReviewPeerReviewQueryParameters = {
+  id: number ;
+}
+
 export function getMappingsUrl(assignmentId: number): string {
   let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/peer-review/mappings";
 if (assignmentId === undefined || assignmentId === null)
@@ -206,37 +236,540 @@ return useMutation({
   mutationKey: key,
 });
 }
-
-export function getPeerReviewAssignmentsQueryKey(assignmentId: number): QueryKey {
-  return trimArrayEnd(['PeerReviewClient', 'getPeerReviewAssignments', assignmentId as any]);
+  
+export function createPeerReviewUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/peer-review-assignment/{id}";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
 }
 
-export function useGetPeerReviewAssignmentsQuery(assignmentId: number, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>, 'queryKey' | 'queryFn'>) {
+export function createPeerReviewMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'PeerReviewClient',
+      'createPeerReview',
+      id as any,
+    ]);
+}
+
+/**
+ * Submit peer review
+ */
+export function useCreatePeerReviewMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto, TContext> {
+  const key = createPeerReviewMutationKey(id);
+  
   const metaContext = useContext(QueryMetaContext);
-  const opts = addMetaToOptions(options, metaContext);
-  return useQuery<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>({
-    queryKey: getPeerReviewAssignmentsQueryKey(assignmentId),
-    queryFn: () => Client.getPeerReviewAssignments(assignmentId),
-    ...opts,
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (reviewDto: Types.CreatePeerReviewDto) => Client.createPeerReview(id, reviewDto),
+    mutationKey: key,
   });
 }
-
-export function useCreatePeerReviewMutation(peerReviewAssignmentId: number, options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto>, 'mutationKey' | 'mutationFn'>) {
-  const metaContext = useContext(QueryMetaContext);
-  const opts = addMetaToOptions(options, metaContext);
-  return useMutation<Types.PeerReviewDto, unknown, Types.CreatePeerReviewDto>({
-    ...opts,
-    mutationFn: (dto: Types.CreatePeerReviewDto) => Client.createPeerReview(peerReviewAssignmentId, dto),
-    mutationKey: trimArrayEnd(['PeerReviewClient', 'createPeerReview', peerReviewAssignmentId as any]),
-  });
+  
+type CreatePeerReview__MutationParameters = CreatePeerReviewPeerReviewQueryParameters & {
+  reviewDto: Types.CreatePeerReviewDto;
 }
 
-export function useDeletePeerReviewMutation(id: number, options?: Omit<UseMutationOptions<void, unknown, void>, 'mutationKey' | 'mutationFn'>) {
+/**
+ * Submit peer review
+ */
+export function useCreatePeerReviewMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, CreatePeerReview__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: CreatePeerReviewPeerReviewQueryParameters}): UseMutationResult<Types.PeerReviewDto, unknown, CreatePeerReview__MutationParameters, TContext> {
+  const key = createPeerReviewMutationKey(options?.parameters?.id!);
+  
   const metaContext = useContext(QueryMetaContext);
-  const opts = addMetaToOptions(options, metaContext);
-  return useMutation<void, unknown, void>({
-    ...opts,
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: CreatePeerReview__MutationParameters) => Client.createPeerReview(data.id ?? options?.parameters?.id!, data.reviewDto),
+  mutationKey: key,
+});
+}
+  
+export function getPeerReviewAssignmentsUrl(id: number, assignmentId: string): string {
+  let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/peer-review";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getPeerReviewAssignmentsDefaultOptions: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>, 'queryKey'> = {
+  queryFn: __getPeerReviewAssignments,
+};
+export function getGetPeerReviewAssignmentsDefaultOptions() {
+  return getPeerReviewAssignmentsDefaultOptions;
+};
+export function setGetPeerReviewAssignmentsDefaultOptions(options: typeof getPeerReviewAssignmentsDefaultOptions) {
+  getPeerReviewAssignmentsDefaultOptions = options;
+}
+
+export function getPeerReviewAssignmentsQueryKey(dto: GetPeerReviewAssignmentsPeerReviewQueryParameters): QueryKey;
+export function getPeerReviewAssignmentsQueryKey(id: number, assignmentId: string): QueryKey;
+export function getPeerReviewAssignmentsQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { id, assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters;
+
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReviewAssignments',
+        id as any,
+        assignmentId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReviewAssignments',
+        ...params
+      ]);
+  }
+}
+function __getPeerReviewAssignments(context: QueryFunctionContext) {
+  return Client.getPeerReviewAssignments(
+      context.queryKey[2] as number,       context.queryKey[3] as string    );
+}
+
+export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(dto: GetPeerReviewAssignmentsPeerReviewQueryParameters, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Get peer review assignments
+ */
+export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(id: number, assignmentId: string, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPeerReviewAssignmentsQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let id: any = undefined;
+  let assignmentId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ id, assignmentId,  } = params[0] as GetPeerReviewAssignmentsPeerReviewQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [id, assignmentId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.PeerReviewAssignmentDto[], TError, TSelectData>({
+    queryFn: __getPeerReviewAssignments,
+    queryKey: getPeerReviewAssignmentsQueryKey(id, assignmentId),
+    ...getPeerReviewAssignmentsDefaultOptions as unknown as Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Get peer review assignments
+ */
+export function setGetPeerReviewAssignmentsData(queryClient: QueryClient, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[], id: number, assignmentId: string) {
+  queryClient.setQueryData(getPeerReviewAssignmentsQueryKey(id, assignmentId),
+    updater
+  );
+}
+
+/**
+ * Get peer review assignments
+ */
+export function setGetPeerReviewAssignmentsDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[]) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function deletePeerReviewUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/peer-review/{id}";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function deletePeerReviewMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'PeerReviewClient',
+      'deletePeerReview',
+      id as any,
+    ]);
+}
+
+/**
+ * Delete peer review
+ */
+export function useDeletePeerReviewMutation<TContext>(id: number, options?: Omit<UseMutationOptions<void, unknown, void, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<void, unknown, void, TContext> {
+  const key = deletePeerReviewMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
     mutationFn: () => Client.deletePeerReview(id),
-    mutationKey: trimArrayEnd(['PeerReviewClient', 'deletePeerReview', id as any]),
+    mutationKey: key,
   });
+}
+  
+type DeletePeerReview__MutationParameters = DeletePeerReviewPeerReviewQueryParameters
+
+/**
+ * Delete peer review
+ */
+export function useDeletePeerReviewMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<void, unknown, DeletePeerReview__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: DeletePeerReviewPeerReviewQueryParameters}): UseMutationResult<void, unknown, DeletePeerReview__MutationParameters, TContext> {
+  const key = deletePeerReviewMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: DeletePeerReview__MutationParameters) => Client.deletePeerReview(data.id ?? options?.parameters?.id!),
+  mutationKey: key,
+});
+}
+  
+export function getPeerReviewsGeneralUrl(assignmentId: number, defendantId: string): string {
+  let url_ = getBaseUrl() + "/api/assignments/{assignmentId}/defendant/{defendantId}/peer-reviews";
+if (assignmentId === undefined || assignmentId === null)
+  throw new Error("The parameter 'assignmentId' must be defined.");
+url_ = url_.replace("{assignmentId}", encodeURIComponent("" + assignmentId));
+if (defendantId === undefined || defendantId === null)
+  throw new Error("The parameter 'defendantId' must be defined.");
+url_ = url_.replace("{defendantId}", encodeURIComponent("" + defendantId));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getPeerReviewsGeneralDefaultOptions: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], unknown, Types.PeerReviewAssignmentDto[]>, 'queryKey'> = {
+  queryFn: __getPeerReviewsGeneral,
+};
+export function getGetPeerReviewsGeneralDefaultOptions() {
+  return getPeerReviewsGeneralDefaultOptions;
+};
+export function setGetPeerReviewsGeneralDefaultOptions(options: typeof getPeerReviewsGeneralDefaultOptions) {
+  getPeerReviewsGeneralDefaultOptions = options;
+}
+
+export function getPeerReviewsGeneralQueryKey(dto: GetPeerReviewsGeneralPeerReviewQueryParameters): QueryKey;
+export function getPeerReviewsGeneralQueryKey(assignmentId: number, defendantId: string): QueryKey;
+export function getPeerReviewsGeneralQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { assignmentId, defendantId,  } = params[0] as GetPeerReviewsGeneralPeerReviewQueryParameters;
+
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReviewsGeneral',
+        assignmentId as any,
+        defendantId as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReviewsGeneral',
+        ...params
+      ]);
+  }
+}
+function __getPeerReviewsGeneral(context: QueryFunctionContext) {
+  return Client.getPeerReviewsGeneral(
+      context.queryKey[2] as number,       context.queryKey[3] as string    );
+}
+
+export function useGetPeerReviewsGeneralQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(dto: GetPeerReviewsGeneralPeerReviewQueryParameters, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Get general information about peer review for one defendant (for teachers)
+ */
+export function useGetPeerReviewsGeneralQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(assignmentId: number, defendantId: string, options?: Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPeerReviewsGeneralQuery<TSelectData = Types.PeerReviewAssignmentDto[], TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let assignmentId: any = undefined;
+  let defendantId: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ assignmentId, defendantId,  } = params[0] as GetPeerReviewsGeneralPeerReviewQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [assignmentId, defendantId, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.PeerReviewAssignmentDto[], TError, TSelectData>({
+    queryFn: __getPeerReviewsGeneral,
+    queryKey: getPeerReviewsGeneralQueryKey(assignmentId, defendantId),
+    ...getPeerReviewsGeneralDefaultOptions as unknown as Omit<UseQueryOptions<Types.PeerReviewAssignmentDto[], TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Get general information about peer review for one defendant (for teachers)
+ */
+export function setGetPeerReviewsGeneralData(queryClient: QueryClient, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[], assignmentId: number, defendantId: string) {
+  queryClient.setQueryData(getPeerReviewsGeneralQueryKey(assignmentId, defendantId),
+    updater
+  );
+}
+
+/**
+ * Get general information about peer review for one defendant (for teachers)
+ */
+export function setGetPeerReviewsGeneralDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PeerReviewAssignmentDto[] | undefined) => Types.PeerReviewAssignmentDto[]) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function getPeerReviewUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/peer-reviews/{id}";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getPeerReviewDefaultOptions: Omit<UseQueryOptions<Types.PeerReviewDto, unknown, Types.PeerReviewDto>, 'queryKey'> = {
+  queryFn: __getPeerReview,
+};
+export function getGetPeerReviewDefaultOptions() {
+  return getPeerReviewDefaultOptions;
+};
+export function setGetPeerReviewDefaultOptions(options: typeof getPeerReviewDefaultOptions) {
+  getPeerReviewDefaultOptions = options;
+}
+
+export function getPeerReviewQueryKey(id: number): QueryKey;
+export function getPeerReviewQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { id,  } = params[0] as GetPeerReviewPeerReviewQueryParameters;
+
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReview',
+        id as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getPeerReview',
+        ...params
+      ]);
+  }
+}
+function __getPeerReview(context: QueryFunctionContext) {
+  return Client.getPeerReview(
+      context.queryKey[2] as number    );
+}
+
+export function useGetPeerReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(dto: GetPeerReviewPeerReviewQueryParameters, options?: Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Get full review information by review id
+ */
+export function useGetPeerReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(id: number, options?: Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetPeerReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.PeerReviewDto, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let id: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ id,  } = params[0] as GetPeerReviewPeerReviewQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [id, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.PeerReviewDto, TError, TSelectData>({
+    queryFn: __getPeerReview,
+    queryKey: getPeerReviewQueryKey(id),
+    ...getPeerReviewDefaultOptions as unknown as Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Get full review information by review id
+ */
+export function setGetPeerReviewData(queryClient: QueryClient, updater: (data: Types.PeerReviewDto | undefined) => Types.PeerReviewDto, id: number) {
+  queryClient.setQueryData(getPeerReviewQueryKey(id),
+    updater
+  );
+}
+
+/**
+ * Get full review information by review id
+ */
+export function setGetPeerReviewDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PeerReviewDto | undefined) => Types.PeerReviewDto) {
+  queryClient.setQueryData(queryKey, updater);
+}
+    
+export function updatePeerReviewUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/peer-reviews/{id}";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+export function updatePeerReviewMutationKey(id: number): MutationKey {
+  return trimArrayEnd([
+      'PeerReviewClient',
+      'updatePeerReview',
+      id as any,
+    ]);
+}
+
+/**
+ * Update review
+ */
+export function useUpdatePeerReviewMutation<TContext>(id: number, options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, Types.UpdatePeerReviewDto, TContext>, 'mutationKey' | 'mutationFn'>): UseMutationResult<Types.PeerReviewDto, unknown, Types.UpdatePeerReviewDto, TContext> {
+  const key = updatePeerReviewMutationKey(id);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+  return useMutation({
+    ...options,
+    mutationFn: (dto: Types.UpdatePeerReviewDto) => Client.updatePeerReview(id, dto),
+    mutationKey: key,
+  });
+}
+  
+type UpdatePeerReview__MutationParameters = UpdatePeerReviewPeerReviewQueryParameters & {
+  dto: Types.UpdatePeerReviewDto;
+}
+
+/**
+ * Update review
+ */
+export function useUpdatePeerReviewMutationWithParameters<TContext>(options?: Omit<UseMutationOptions<Types.PeerReviewDto, unknown, UpdatePeerReview__MutationParameters, TContext>, 'mutationKey' | 'mutationFn'> & { parameters?: UpdatePeerReviewPeerReviewQueryParameters}): UseMutationResult<Types.PeerReviewDto, unknown, UpdatePeerReview__MutationParameters, TContext> {
+  const key = updatePeerReviewMutationKey(options?.parameters?.id!);
+  
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  
+return useMutation({
+  ...options, 
+  mutationFn: (data: UpdatePeerReview__MutationParameters) => Client.updatePeerReview(data.id ?? options?.parameters?.id!, data.dto),
+  mutationKey: key,
+});
+}
+  
+export function getReviewUrl(id: number): string {
+  let url_ = getBaseUrl() + "/api/peer-review-assignment/{id}/review";
+if (id === undefined || id === null)
+  throw new Error("The parameter 'id' must be defined.");
+url_ = url_.replace("{id}", encodeURIComponent("" + id));
+  url_ = url_.replace(/[?&]$/, "");
+  return url_;
+}
+
+let getReviewDefaultOptions: Omit<UseQueryOptions<Types.PeerReviewDto, unknown, Types.PeerReviewDto>, 'queryKey'> = {
+  queryFn: __getReview,
+};
+export function getGetReviewDefaultOptions() {
+  return getReviewDefaultOptions;
+};
+export function setGetReviewDefaultOptions(options: typeof getReviewDefaultOptions) {
+  getReviewDefaultOptions = options;
+}
+
+export function getReviewQueryKey(id: number): QueryKey;
+export function getReviewQueryKey(...params: any[]): QueryKey {
+  if (params.length === 1 && isParameterObject(params[0])) {
+    const { id,  } = params[0] as GetReviewPeerReviewQueryParameters;
+
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getReview',
+        id as any,
+      ]);
+  } else {
+    return trimArrayEnd([
+        'PeerReviewClient',
+        'getReview',
+        ...params
+      ]);
+  }
+}
+function __getReview(context: QueryFunctionContext) {
+  return Client.getReview(
+      context.queryKey[2] as number    );
+}
+
+export function useGetReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(dto: GetReviewPeerReviewQueryParameters, options?: Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+/**
+ * Get full review information by assignment id (for students)
+ */
+export function useGetReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(id: number, options?: Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>, axiosConfig?: Partial<AxiosRequestConfig>): UseQueryResult<TSelectData, TError>;
+export function useGetReviewQuery<TSelectData = Types.PeerReviewDto, TError = unknown>(...params: any []): UseQueryResult<TSelectData, TError> {
+  let options: UseQueryOptions<Types.PeerReviewDto, TError, TSelectData> | undefined = undefined;
+  let axiosConfig: AxiosRequestConfig |undefined;
+  let id: any = undefined;
+  
+  if (params.length > 0) {
+    if (isParameterObject(params[0])) {
+      ({ id,  } = params[0] as GetReviewPeerReviewQueryParameters);
+      options = params[1];
+      axiosConfig = params[2];
+    } else {
+      [id, options, axiosConfig] = params;
+    }
+  }
+
+  const metaContext = useContext(QueryMetaContext);
+  options = addMetaToOptions(options, metaContext);
+  if (axiosConfig) {
+    options = options ?? { } as any;
+    options!.meta = { ...options!.meta, axiosConfig };
+  }
+
+  return useQuery<Types.PeerReviewDto, TError, TSelectData>({
+    queryFn: __getReview,
+    queryKey: getReviewQueryKey(id),
+    ...getReviewDefaultOptions as unknown as Omit<UseQueryOptions<Types.PeerReviewDto, TError, TSelectData>, 'queryKey'>,
+    ...options,
+  });
+}
+/**
+ * Get full review information by assignment id (for students)
+ */
+export function setGetReviewData(queryClient: QueryClient, updater: (data: Types.PeerReviewDto | undefined) => Types.PeerReviewDto, id: number) {
+  queryClient.setQueryData(getReviewQueryKey(id),
+    updater
+  );
+}
+
+/**
+ * Get full review information by assignment id (for students)
+ */
+export function setGetReviewDataByQueryId(queryClient: QueryClient, queryKey: QueryKey, updater: (data: Types.PeerReviewDto | undefined) => Types.PeerReviewDto) {
+  queryClient.setQueryData(queryKey, updater);
 }
