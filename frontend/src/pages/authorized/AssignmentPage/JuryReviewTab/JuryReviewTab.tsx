@@ -315,7 +315,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
           )}
           {existingReview.evaluations.map((ev: CriteriaEvaluationDto) => (
             <div key={ev.id} className={styles.existingEvaluation}>
-              <strong>{ev.criteriaDescription}:</strong> {ev.value}
+              <strong>{ev.criteriaDescription}:</strong> {ev.value === 'true' ? '✅' : ev.value === 'false' ? '❌' : ev.value}
               {ev.note && <div className={styles.evaluationNote}>{ev.note}</div>}
             </div>
           ))}
