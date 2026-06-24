@@ -99,7 +99,10 @@ type ModalProps = {
 };
 
 const ReviewDetailModal: React.FC<ModalProps> = ({ peerReviewAssignmentId, onClose }) => {
-  const { data: review, isLoading } = useGetReviewQuery(peerReviewAssignmentId);
+  const { data: review, isLoading, isError } = useGetReviewQuery(
+    peerReviewAssignmentId,
+    { throwOnError: false, retry: false },
+  );
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -110,6 +113,10 @@ const ReviewDetailModal: React.FC<ModalProps> = ({ peerReviewAssignmentId, onClo
         </div>
 
         {isLoading && <div className={styles.loading}>Загрузка...</div>}
+
+        {isError && (
+          <div className={styles.loading}>Проверка не найдена или была удалена.</div>
+        )}
 
         {review && (
           <>
@@ -144,8 +151,12 @@ const ReviewDetailModal: React.FC<ModalProps> = ({ peerReviewAssignmentId, onClo
                 <div className={styles.modalLabel}>Критерии</div>
                 {review.evaluations.map((ev: CriteriaEvaluationDto) => (
                   <div key={ev.id} className={styles.evaluationItem}>
-                    <div className={styles.evaluationCriteria}>{ev.criteriaDescription}</div>
-                    <div className={styles.evaluationValue}>{ev.value}</div>
+                    <div className={styles.evaluationRow}>
+                      <span className={styles.evaluationCriteria}>{ev.criteriaDescription}</span>
+                      <span className={styles.evaluationValue}>
+                        {ev.value === 'true' ? '✅' : ev.value === 'false' ? '❌' : ev.value}
+                      </span>
+                    </div>
                     {ev.note && <div className={styles.evaluationNote}>{ev.note}</div>}
                   </div>
                 ))}

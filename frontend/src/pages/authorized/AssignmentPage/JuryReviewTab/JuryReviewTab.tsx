@@ -146,9 +146,9 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   const isChecked = assignment.state === PeerReviewState.Checked;
   const hasExistingReview = isReviewed || isChecked;
 
-  const { data: existingReview, isLoading: reviewLoading } = useGetReviewQuery(
+  const { data: existingReview, isLoading: reviewLoading, isError: reviewError } = useGetReviewQuery(
     assignment.id,
-    { enabled: hasExistingReview },
+    { enabled: hasExistingReview, throwOnError: false, retry: false },
   );
 
   const { data: defendantSubmission } = useGetSubmissionQuery(
@@ -163,6 +163,8 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   const [clampMessage, setClampMessage] = useState('');
   const [comment, setComment] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const noSubmission = !assignment.submissionId;
 
   useEffect(() => {
     if (existingReview && hasExistingReview) {
@@ -187,16 +189,23 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
     void queryClient.invalidateQueries({ queryKey: getReviewQueryKey(assignment.id) });
   }, [queryClient, assignmentId, assignment.id]);
 
+  const handleMutationError = useCallback((e: any) => {
+    setErrorMessage(e?.detail ?? e?.message ?? 'Произошла ошибка');
+  }, []);
+
   const createMutation = useCreatePeerReviewMutation(assignment.id, {
-    onSuccess: () => { invalidateAll(); onBack(); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); onBack(); },
+    onError: handleMutationError,
   });
 
   const updateMutation = useUpdatePeerReviewMutation(existingReview?.id ?? 0, {
-    onSuccess: () => { invalidateAll(); setIsEditing(false); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); setIsEditing(false); },
+    onError: handleMutationError,
   });
 
   const deleteMutation = useDeletePeerReviewMutation(existingReview?.id ?? 0, {
-    onSuccess: () => { invalidateAll(); onBack(); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); onBack(); },
+    onError: handleMutationError,
   });
 
   const scoreCriteria = criteria.filter((c) => c.type === CriteriaType.Score);
@@ -256,8 +265,9 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
     updateMutation.mutate(dto);
   }, [criteria, finalMarkValue, comment, criteriaScores, criteriaNotes, updateMutation]);
 
-  const showForm = (!hasExistingReview) || (isReviewed && isEditing);
-  const showReadonly = hasExistingReview && !isEditing;
+  const reviewAvailable = hasExistingReview && !reviewError && !!existingReview;
+  const showForm = !reviewAvailable || (isReviewed && isEditing);
+  const showReadonly = reviewAvailable && !isEditing;
 
   if (reviewLoading && hasExistingReview) return <Loading loading />;
 
@@ -306,7 +316,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
           )}
           {existingReview.evaluations.map((ev: CriteriaEvaluationDto) => (
             <div key={ev.id} className={styles.existingEvaluation}>
-              <strong>{ev.criteriaDescription}:</strong> {ev.value}
+              <strong>{ev.criteriaDescription}:</strong> {ev.value === 'true' ? '✅' : ev.value === 'false' ? '❌' : ev.value}
               {ev.note && <div className={styles.evaluationNote}>{ev.note}</div>}
             </div>
           ))}
@@ -454,7 +464,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
             <button
               className={styles.markSaveButton}
               onClick={handleUpdateReview}
-              disabled={updateMutation.isPending || (!finalMarkValue && criteria.length > 0)}
+              disabled={updateMutation.isPending || noSubmission || (!finalMarkValue && criteria.length > 0)}
             >
               Сохранить изменения
             </button>
@@ -462,11 +472,22 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
             <button
               className={styles.markSaveButton}
               onClick={handleSubmitReview}
-              disabled={createMutation.isPending || (!finalMarkValue && criteria.length > 0)}
+              disabled={createMutation.isPending || noSubmission || (!finalMarkValue && criteria.length > 0)}
             >
               Отправить проверку
             </button>
           )}
+        </div>
+      )}
+
+      {noSubmission && !hasExistingReview && (
+        <div className={styles.toast}>
+          Вы не можете оценить работу, пока её не прикрепили
+        </div>
+      )}
+      {errorMessage && (
+        <div className={styles.toast}>
+          {errorMessage}
         </div>
       )}
     </div>

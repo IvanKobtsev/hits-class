@@ -159,6 +159,13 @@
   }
 }
 
+.evaluationRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .evaluationCriteria {
   font-size: 13px;
   font-weight: 500;
