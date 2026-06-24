@@ -34,8 +34,9 @@ public class PeerReviewController(PeerReviewService peerReviewService)
     /// Get peer review assignments
     /// </summary>
     [HttpGet]
-    public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewAssignments([FromRoute] int id) =>
-        await peerReviewService.GetPeerReviewAssignments(id);
+    public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewAssignments(
+        [FromRoute] int assignmentId
+    ) => await peerReviewService.GetPeerReviewAssignments(assignmentId);
 
     /// <summary>
     /// Delete peer review
@@ -47,7 +48,7 @@ public class PeerReviewController(PeerReviewService peerReviewService)
     /// <summary>
     /// Get general information about peer review for one defendant (for teachers)
     /// </summary>
-    [HttpGet("/api/assignments/{assignmentId:int}/defendant/{defendantId:string}/peer-reviews")]
+    [HttpGet("/api/assignments/{assignmentId:int}/defendant/{defendantId}/peer-reviews")]
     public async Task<List<PeerReviewAssignmentDto>> GetPeerReviewsGeneral(
         [FromRoute] int assignmentId,
         [FromRoute] string defendantId

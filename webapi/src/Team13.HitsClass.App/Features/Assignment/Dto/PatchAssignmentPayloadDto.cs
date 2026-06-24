@@ -15,4 +15,6 @@ public class PatchAssignmentPayloadDto : PatchRequest<PublicationPayload>
     public DeadlineCriteria? DeadlineCriteria { get; set; }
     public bool? IsPeerReviewEnabled { get; set; }
     public int? JuryCountPerDefendant { get; set; }
+    public bool? PeerReviewOnlyAfterDeadline { get; set; }
+    public bool? PeerReviewOnlyAfterOwnSubmission { get; set; }
 }

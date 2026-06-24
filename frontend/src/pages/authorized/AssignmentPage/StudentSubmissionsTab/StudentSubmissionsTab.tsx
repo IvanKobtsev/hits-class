@@ -21,6 +21,7 @@ import {
   AttachmentsList
 } from 'pages/authorized/OneCoursePage/PublicatonsList/PublicationListItem/AttachmentsList/AttachmentsList';
 import {LexicalViewer} from 'components/lexical/LexicalViewer';
+import { PeerReviewMarksPanel } from './PeerReviewMarksPanel/PeerReviewMarksPanel';
 import styles from './StudentSubmissionsTab.module.scss';
 
 const AVATAR_COLORS = [
@@ -152,6 +153,7 @@ type StudentSubmissionsTabProps = {
   minMark: number | null;
   maxMark: number | null;
   criteria: CriteriaDto[];
+  isPeerReviewEnabled?: boolean;
 };
 
 export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
@@ -161,6 +163,7 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
   minMark,
   maxMark,
   criteria,
+  isPeerReviewEnabled,
 }) => {
   const queryClient = useQueryClient();
   const [selectedSubmissionId, setSelectedSubmissionId] = useState<
@@ -648,6 +651,13 @@ export const StudentSubmissionsTab: React.FC<StudentSubmissionsTabProps> = ({
                 </button>
               </div>
             </div>
+
+            {isPeerReviewEnabled && (
+              <PeerReviewMarksPanel
+                assignmentId={assignmentId}
+                defendantUserId={selectedSubmission.author.id}
+              />
+            )}
           </div>
         </div>
       </div>

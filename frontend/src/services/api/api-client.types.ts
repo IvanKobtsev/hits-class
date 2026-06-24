@@ -506,6 +506,8 @@ export interface AssignmentPayload extends PublicationPayload  {
   deadlineCriteria: DeadlineCriteria | null;
   isPeerReviewEnabled: boolean;
   juryCountPerDefendant: number | null;
+  peerReviewOnlyAfterDeadline: boolean;
+  peerReviewOnlyAfterOwnSubmission: boolean;
 }
 export function deserializeAssignmentPayload(json: string): AssignmentPayload {
   const data = JSON.parse(json) as AssignmentPayload;
@@ -856,6 +858,8 @@ export interface PatchTeamAssignmentPayloadDto  {
   deadlineCriteria?: DeadlineCriteria | null;
   isPeerReviewEnabled?: boolean | null;
   juryCountPerDefendant?: number | null;
+  peerReviewOnlyAfterDeadline?: boolean | null;
+  peerReviewOnlyAfterOwnSubmission?: boolean | null;
 }
 export function deserializePatchTeamAssignmentPayloadDto(json: string): PatchTeamAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchTeamAssignmentPayloadDto;
@@ -1381,6 +1385,223 @@ export function prepareSerializeUpdatePeerReviewMappingItem(_data: UpdatePeerRev
   const data: Record<string, any> = { ..._data };
   return data as UpdatePeerReviewMappingItem;
 }
+export interface PeerReviewDto  {
+  id: number;
+  mark: string;
+  comment: string | null;
+  submittedAtUTC: Date;
+  evaluations: CriteriaEvaluationDto[];
+  jury: JuryDto;
+}
+export function deserializePeerReviewDto(json: string): PeerReviewDto {
+  const data = JSON.parse(json) as PeerReviewDto;
+  initPeerReviewDto(data);
+  return data;
+}
+export function initPeerReviewDto(_data: PeerReviewDto) {
+  if (_data) {
+    _data.submittedAtUTC = _data["submittedAtUTC"] ? new Date(_data["submittedAtUTC"].toString()) : <any>null;
+    if (Array.isArray(_data["evaluations"])) {
+      _data.evaluations = _data["evaluations"].map(item => 
+        initCriteriaEvaluationDto(item)
+      );
+    }
+    _data.jury = _data["jury"] && initJuryDto(_data["jury"]);
+  }
+  return _data;
+}
+export function serializePeerReviewDto(_data: PeerReviewDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePeerReviewDto(_data as PeerReviewDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePeerReviewDto(_data: PeerReviewDto): PeerReviewDto {
+  const data: Record<string, any> = { ..._data };
+  data["submittedAtUTC"] = _data.submittedAtUTC && _data.submittedAtUTC.toISOString();
+  if (Array.isArray(_data.evaluations)) {
+    data["evaluations"] = _data.evaluations.map(item => 
+        prepareSerializeCriteriaEvaluationDto(item)
+    );
+  }
+  data["jury"] = _data.jury && prepareSerializeJuryDto(_data.jury);
+  return data as PeerReviewDto;
+}
+export interface CriteriaEvaluationDto  {
+  id: number;
+  value: string;
+  note: string | null;
+  criteriaDescription: string;
+}
+export function deserializeCriteriaEvaluationDto(json: string): CriteriaEvaluationDto {
+  const data = JSON.parse(json) as CriteriaEvaluationDto;
+  initCriteriaEvaluationDto(data);
+  return data;
+}
+export function initCriteriaEvaluationDto(_data: CriteriaEvaluationDto) {
+    return _data;
+}
+export function serializeCriteriaEvaluationDto(_data: CriteriaEvaluationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCriteriaEvaluationDto(_data as CriteriaEvaluationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCriteriaEvaluationDto(_data: CriteriaEvaluationDto): CriteriaEvaluationDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CriteriaEvaluationDto;
+}
+export interface CreatePeerReviewDto  {
+  mark: string | null;
+  comment: string | null;
+  evaluations: CreateCriteriaEvaluationDto[];
+}
+export function deserializeCreatePeerReviewDto(json: string): CreatePeerReviewDto {
+  const data = JSON.parse(json) as CreatePeerReviewDto;
+  initCreatePeerReviewDto(data);
+  return data;
+}
+export function initCreatePeerReviewDto(_data: CreatePeerReviewDto) {
+  if (_data) {
+    if (Array.isArray(_data["evaluations"])) {
+      _data.evaluations = _data["evaluations"].map(item => 
+        initCreateCriteriaEvaluationDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeCreatePeerReviewDto(_data: CreatePeerReviewDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreatePeerReviewDto(_data as CreatePeerReviewDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreatePeerReviewDto(_data: CreatePeerReviewDto): CreatePeerReviewDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.evaluations)) {
+    data["evaluations"] = _data.evaluations.map(item => 
+        prepareSerializeCreateCriteriaEvaluationDto(item)
+    );
+  }
+  return data as CreatePeerReviewDto;
+}
+export interface CreateCriteriaEvaluationDto  {
+  value: string;
+  note: string | null;
+  criteriaId: number;
+}
+export function deserializeCreateCriteriaEvaluationDto(json: string): CreateCriteriaEvaluationDto {
+  const data = JSON.parse(json) as CreateCriteriaEvaluationDto;
+  initCreateCriteriaEvaluationDto(data);
+  return data;
+}
+export function initCreateCriteriaEvaluationDto(_data: CreateCriteriaEvaluationDto) {
+    return _data;
+}
+export function serializeCreateCriteriaEvaluationDto(_data: CreateCriteriaEvaluationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeCreateCriteriaEvaluationDto(_data as CreateCriteriaEvaluationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeCreateCriteriaEvaluationDto(_data: CreateCriteriaEvaluationDto): CreateCriteriaEvaluationDto {
+  const data: Record<string, any> = { ..._data };
+  return data as CreateCriteriaEvaluationDto;
+}
+export interface PeerReviewAssignmentDto  {
+  id: number;
+  state: PeerReviewState;
+  mark: string | null;
+  defendantUser: JuryDto;
+  submissionId: number | null;
+}
+export function deserializePeerReviewAssignmentDto(json: string): PeerReviewAssignmentDto {
+  const data = JSON.parse(json) as PeerReviewAssignmentDto;
+  initPeerReviewAssignmentDto(data);
+  return data;
+}
+export function initPeerReviewAssignmentDto(_data: PeerReviewAssignmentDto) {
+  if (_data) {
+    _data.state = _data["state"];
+    _data.defendantUser = _data["defendantUser"] && initJuryDto(_data["defendantUser"]);
+  }
+  return _data;
+}
+export function serializePeerReviewAssignmentDto(_data: PeerReviewAssignmentDto | undefined) {
+  if (_data) {
+    _data = prepareSerializePeerReviewAssignmentDto(_data as PeerReviewAssignmentDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializePeerReviewAssignmentDto(_data: PeerReviewAssignmentDto): PeerReviewAssignmentDto {
+  const data: Record<string, any> = { ..._data };
+  data["defendantUser"] = _data.defendantUser && prepareSerializeJuryDto(_data.defendantUser);
+  return data as PeerReviewAssignmentDto;
+}
+export enum PeerReviewState {
+    NotReviewed = "NotReviewed",
+    Reviewed = "Reviewed",
+    Checked = "Checked",
+}
+export interface UpdatePeerReviewDto  {
+  mark?: string;
+  comment?: string;
+  evaluations?: UpdateCriteriaEvaluationDto[];
+}
+export function deserializeUpdatePeerReviewDto(json: string): UpdatePeerReviewDto {
+  const data = JSON.parse(json) as UpdatePeerReviewDto;
+  initUpdatePeerReviewDto(data);
+  return data;
+}
+export function initUpdatePeerReviewDto(_data: UpdatePeerReviewDto) {
+  if (_data) {
+    if (Array.isArray(_data["evaluations"])) {
+      _data.evaluations = _data["evaluations"].map(item => 
+        initUpdateCriteriaEvaluationDto(item)
+      );
+    }
+  }
+  return _data;
+}
+export function serializeUpdatePeerReviewDto(_data: UpdatePeerReviewDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeUpdatePeerReviewDto(_data as UpdatePeerReviewDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeUpdatePeerReviewDto(_data: UpdatePeerReviewDto): UpdatePeerReviewDto {
+  const data: Record<string, any> = { ..._data };
+  if (Array.isArray(_data.evaluations)) {
+    data["evaluations"] = _data.evaluations.map(item => 
+        prepareSerializeUpdateCriteriaEvaluationDto(item)
+    );
+  }
+  return data as UpdatePeerReviewDto;
+}
+export interface UpdateCriteriaEvaluationDto  {
+  value: string;
+  note: string | null;
+  criteriaId: number;
+}
+export function deserializeUpdateCriteriaEvaluationDto(json: string): UpdateCriteriaEvaluationDto {
+  const data = JSON.parse(json) as UpdateCriteriaEvaluationDto;
+  initUpdateCriteriaEvaluationDto(data);
+  return data;
+}
+export function initUpdateCriteriaEvaluationDto(_data: UpdateCriteriaEvaluationDto) {
+    return _data;
+}
+export function serializeUpdateCriteriaEvaluationDto(_data: UpdateCriteriaEvaluationDto | undefined) {
+  if (_data) {
+    _data = prepareSerializeUpdateCriteriaEvaluationDto(_data as UpdateCriteriaEvaluationDto);
+  }
+  return JSON.stringify(_data);
+}
+export function prepareSerializeUpdateCriteriaEvaluationDto(_data: UpdateCriteriaEvaluationDto): UpdateCriteriaEvaluationDto {
+  const data: Record<string, any> = { ..._data };
+  return data as UpdateCriteriaEvaluationDto;
+}
 export interface InvitationDto  {
   id: number;
   teamId: number;
@@ -1765,6 +1986,8 @@ export interface PatchAssignmentPayloadDto  {
   deadlineCriteria?: DeadlineCriteria | null;
   isPeerReviewEnabled?: boolean | null;
   juryCountPerDefendant?: number | null;
+  peerReviewOnlyAfterDeadline?: boolean | null;
+  peerReviewOnlyAfterOwnSubmission?: boolean | null;
 }
 export function deserializePatchAssignmentPayloadDto(json: string): PatchAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchAssignmentPayloadDto;

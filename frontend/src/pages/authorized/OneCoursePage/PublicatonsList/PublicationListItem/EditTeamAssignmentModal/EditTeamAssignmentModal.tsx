@@ -83,6 +83,8 @@ type EditTeamAssignmentForm = {
   latePenaltyLatestDate: Date | null;
   isPeerReviewEnabled: boolean;
   juryCountPerDefendant: number | null;
+  peerReviewOnlyAfterDeadline: boolean;
+  peerReviewOnlyAfterOwnSubmission: boolean;
 };
 
 export type EditTeamAssignmentModalProps = {
@@ -105,6 +107,8 @@ export type EditTeamAssignmentModalProps = {
   initialDeadlineCriteria?: DeadlineCriteria | null;
   initialIsPeerReviewEnabled?: boolean;
   initialJuryCountPerDefendant?: number | null;
+  initialPeerReviewOnlyAfterDeadline?: boolean;
+  initialPeerReviewOnlyAfterOwnSubmission?: boolean;
 };
 
 export const EditTeamAssignmentModal = ({
@@ -127,6 +131,8 @@ export const EditTeamAssignmentModal = ({
   initialDeadlineCriteria,
   initialIsPeerReviewEnabled,
   initialJuryCountPerDefendant,
+  initialPeerReviewOnlyAfterDeadline,
+  initialPeerReviewOnlyAfterOwnSubmission,
 }: EditTeamAssignmentModalProps) => {
   const { mutateAsync, isPending } = usePatchAssignmentMutation(publicationId);
   const queryClient = useQueryClient();
@@ -191,6 +197,8 @@ export const EditTeamAssignmentModal = ({
           juryCountPerDefendant: data.isPeerReviewEnabled
             ? Number(data.juryCountPerDefendant)
             : null,
+          peerReviewOnlyAfterDeadline: data.peerReviewOnlyAfterDeadline,
+          peerReviewOnlyAfterOwnSubmission: data.peerReviewOnlyAfterOwnSubmission,
         },
       });
       await queryClient.invalidateQueries({
@@ -218,13 +226,19 @@ export const EditTeamAssignmentModal = ({
         minMark: initialMinMark,
         maxMark: initialMaxMark,
         hasEarlyBonus: !!initialDeadlineCriteria?.earlyBonus,
-        earlyBonusEarliestDate: initialDeadlineCriteria?.earlyBonus?.earliestDate ?? null,
+        earlyBonusEarliestDate: initialDeadlineCriteria?.earlyBonus?.earliestDate
+          ? new Date(initialDeadlineCriteria.earlyBonus.earliestDate)
+          : null,
         earlyBonusValue: String(initialDeadlineCriteria?.earlyBonus?.bonusValue ?? ''),
         earlyBonusType: initialDeadlineCriteria?.earlyBonus?.bonusType ?? BonusType.Score,
         hasLatePenalty: !!initialDeadlineCriteria?.latePenalty,
-        latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate ?? null,
+        latePenaltyLatestDate: initialDeadlineCriteria?.latePenalty?.latestDate
+          ? new Date(initialDeadlineCriteria.latePenalty.latestDate)
+          : null,
         isPeerReviewEnabled: initialIsPeerReviewEnabled ?? false,
         juryCountPerDefendant: initialJuryCountPerDefendant ?? null,
+        peerReviewOnlyAfterDeadline: initialPeerReviewOnlyAfterDeadline ?? false,
+        peerReviewOnlyAfterOwnSubmission: initialPeerReviewOnlyAfterOwnSubmission ?? false,
       });
       setFiles(initialAttachments.map(attachmentToFileItem));
       setExistingAttachmentsByFileId(
@@ -339,16 +353,26 @@ export const EditTeamAssignmentModal = ({
             />
           </Field>
           {form.watch('isPeerReviewEnabled') && (
-            <Field title="Количество жюри на ответчика">
-              <Input
-                {...form.register('juryCountPerDefendant', {
-                  ...requiredRule(),
-                  min: { value: 1, message: 'Минимум 1' },
-                })}
-                type="number"
-                errorText={form.formState.errors.juryCountPerDefendant?.message}
+            <>
+              <Field title="Количество жюри на ответчика">
+                <Input
+                  {...form.register('juryCountPerDefendant', {
+                    ...requiredRule(),
+                    min: { value: 1, message: 'Минимум 1' },
+                  })}
+                  type="number"
+                  errorText={form.formState.errors.juryCountPerDefendant?.message}
+                />
+              </Field>
+              <CheckBox
+                {...form.register('peerReviewOnlyAfterDeadline')}
+                title="Проверка только после дедлайна"
               />
-            </Field>
+              <CheckBox
+                {...form.register('peerReviewOnlyAfterOwnSubmission')}
+                title="Проверка только после собственной сдачи"
+              />
+            </>
           )}
           <Field
             title="Тип распределения"

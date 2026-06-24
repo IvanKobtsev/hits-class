@@ -1,0 +1,413 @@
+@use 'src/styles/variables' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.list {
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.listHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid $border-input;
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.defendantRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid $border-input;
+  transition: background 0.15s;
+  cursor: pointer;
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
+.defendantInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.defendantName {
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.statusBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.statusNotReviewed {
+  background: #fef7e0;
+  color: #b8860b;
+}
+
+.statusReviewed {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.statusChecked {
+  background: #e8eaed;
+  color: #5f6368;
+}
+
+// Review form
+.reviewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reviewHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.reviewStudentInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reviewStudentName {
+  font-size: 16px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.backButton {
+  padding: 8px 16px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: $classroom-text-primary;
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
+.submissionSection {
+  padding: 16px 20px;
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+  margin-bottom: 12px;
+}
+
+.noSubmission {
+  color: $classroom-text-secondary;
+  font-size: 14px;
+  font-style: italic;
+}
+
+.criteriaSection {
+  padding: 16px 20px;
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.criteriaItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid $border-input;
+  gap: 16px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.criteriaDescription {
+  font-size: 14px;
+  color: $classroom-text-primary;
+  flex: 1;
+  min-width: 0;
+}
+
+.criteriaControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.criteriaScoreInput {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.criteriaRange {
+  font-size: 13px;
+  color: $classroom-text-secondary;
+}
+
+.criteriaCheckboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.criteriaCheckbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.criteriaNoteInput {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-top: 6px;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $classroom-text-secondary;
+  }
+}
+
+.criteriaSummary {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 2px solid $border-input;
+}
+
+.criteriaSummaryRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.criteriaSummaryItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.criteriaSummaryLabel {
+  color: $classroom-text-secondary;
+}
+
+.criteriaApplyButton {
+  padding: 6px 14px;
+  background: $classroom-blue;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+.requirementWarning {
+  font-size: 12px;
+  color: #d93025;
+}
+
+.markSection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: $classroom-surface;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.markBadge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e8eaed;
+  color: $classroom-text-primary;
+  margin-right: 8px;
+}
+
+.commentInput {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 200px;
+
+  &::placeholder {
+    color: $classroom-text-secondary;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $classroom-blue;
+  }
+}
+
+.markLabel {
+  font-size: 14px;
+  color: $classroom-text-primary;
+}
+
+.markInput {
+  width: 80px;
+  padding: 6px 10px;
+  border: 1px solid $border-input;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+
+  &:focus {
+    outline: none;
+    border-color: $classroom-blue;
+  }
+}
+
+.markSaveButton {
+  padding: 8px 20px;
+  background: $classroom-blue;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.markDeleteButton {
+  padding: 8px 20px;
+  background: #d93025;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: $classroom-text-secondary;
+  font-size: 14px;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.clampMessage {
+  font-size: 12px;
+  color: #f9ab00;
+}
+
+.existingReview {
+  padding: 16px 20px;
+  background: #e6f4ea;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.existingReviewHeader {
+  font-size: 14px;
+  font-weight: 500;
+  color: #137333;
+  margin-bottom: 8px;
+}
+
+.existingReviewMark {
+  font-size: 14px;
+  color: $classroom-text-primary;
+}
+
+.existingEvaluation {
+  padding: 6px 0;
+  font-size: 13px;
+  color: $classroom-text-primary;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.evaluationNote {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  margin-top: 2px;
+}

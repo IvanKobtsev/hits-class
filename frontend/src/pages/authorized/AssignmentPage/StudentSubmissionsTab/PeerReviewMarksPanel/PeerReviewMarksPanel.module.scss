@@ -1,0 +1,186 @@
+@use 'src/styles/variables' as *;
+
+.container {
+  margin-top: 16px;
+}
+
+.header {
+  font-size: 14px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+  margin-bottom: 8px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reviewRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: $classroom-surface-alt;
+  }
+}
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.juryName {
+  flex: 1;
+  font-size: 13px;
+  color: $classroom-text-primary;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mark {
+  font-size: 13px;
+  font-weight: 600;
+  color: $classroom-text-primary;
+}
+
+.noReview {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  font-style: italic;
+}
+
+.average {
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: $classroom-text-primary;
+  border-top: 1px solid $border-input;
+}
+
+.empty {
+  font-size: 13px;
+  color: $classroom-text-secondary;
+  padding: 8px 0;
+}
+
+// Modal
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: $classroom-surface;
+  border-radius: 12px;
+  padding: 24px;
+  min-width: 420px;
+  max-width: 560px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.modalTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $classroom-text-primary;
+}
+
+.modalClose {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: $classroom-text-secondary;
+  padding: 4px 8px;
+  line-height: 1;
+
+  &:hover {
+    color: $classroom-text-primary;
+  }
+}
+
+.modalSection {
+  margin-bottom: 16px;
+}
+
+.modalLabel {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  margin-bottom: 4px;
+}
+
+.modalValue {
+  font-size: 14px;
+  color: $classroom-text-primary;
+}
+
+.modalMark {
+  font-size: 20px;
+  font-weight: 600;
+  color: $classroom-text-primary;
+}
+
+.evaluationItem {
+  padding: 8px 0;
+  border-bottom: 1px solid $border-input;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.evaluationCriteria {
+  font-size: 13px;
+  font-weight: 500;
+  color: $classroom-text-primary;
+}
+
+.evaluationValue {
+  font-size: 13px;
+  color: $classroom-text-primary;
+  margin-top: 2px;
+}
+
+.evaluationNote {
+  font-size: 12px;
+  color: $classroom-text-secondary;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: $classroom-text-secondary;
+  font-size: 13px;
+}
