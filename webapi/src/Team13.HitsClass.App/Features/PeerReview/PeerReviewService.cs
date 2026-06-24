@@ -248,6 +248,29 @@ public class PeerReviewService(
         if (peerReviewAssignment.State == PeerReviewState.Checked)
             throw new ValidationException("Решение уже оценено.");
 
+        var payload = (AssignmentPayload)peerReviewAssignment.Publication.PublicationPayload;
+
+        if (payload.PeerReviewOnlyAfterDeadline)
+        {
+            if (payload.DeadlineUtc == null || DateTime.UtcNow < payload.DeadlineUtc)
+                throw new ValidationException(
+                    "Проверка доступна только после наступления дедлайна."
+                );
+        }
+
+        if (payload.PeerReviewOnlyAfterOwnSubmission)
+        {
+            var jurySubmission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
+                s.PublicationId == peerReviewAssignment.PublicationId
+                && s.AuthorId == userId
+                && s.State != SubmissionState.Draft
+            );
+            if (jurySubmission == null)
+                throw new ValidationException(
+                    "Проверка доступна только после сдачи собственной работы."
+                );
+        }
+
         var submission = await dbContext.Submissions.FirstOrDefaultAsync(s =>
             s.PublicationId == peerReviewAssignment.PublicationId
             && s.AuthorId == peerReviewAssignment.DefendantUserId
