@@ -16,4 +16,6 @@ public class AssignmentPayload : PublicationPayload
     public DeadlineCriteria? DeadlineCriteria { get; set; }
     public bool IsPeerReviewEnabled { get; set; } = false;
     public int? JuryCountPerDefendant { get; set; }
+    public bool PeerReviewOnlyAfterDeadline { get; set; } = false;
+    public bool PeerReviewOnlyAfterOwnSubmission { get; set; } = false;
 }

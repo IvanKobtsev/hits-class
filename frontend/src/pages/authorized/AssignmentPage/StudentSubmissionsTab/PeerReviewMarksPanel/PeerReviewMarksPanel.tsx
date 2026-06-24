@@ -68,6 +68,20 @@ export const PeerReviewMarksPanel: React.FC<Props> = ({ assignmentId, defendantU
           </div>
         ))}
       </div>
+      {(() => {
+        const marks = reviews
+          .map((r: PeerReviewAssignmentDto) => r.mark)
+          .filter((m): m is string => m != null)
+          .map(Number)
+          .filter((n) => !isNaN(n));
+        if (marks.length === 0) return null;
+        const avg = marks.reduce((a, b) => a + b, 0) / marks.length;
+        return (
+          <div className={styles.average}>
+            Средний балл: <strong>{parseFloat(avg.toFixed(2))}</strong>
+          </div>
+        );
+      })()}
 
       {selectedReviewAssignmentId != null && (
         <ReviewDetailModal

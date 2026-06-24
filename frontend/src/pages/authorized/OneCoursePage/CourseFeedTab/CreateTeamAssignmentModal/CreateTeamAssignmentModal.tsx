@@ -74,6 +74,8 @@ type CreateTeamAssignmentForm = {
   latePenaltyLatestDate: Date | null;
   isPeerReviewEnabled: boolean;
   juryCountPerDefendant: number | null;
+  peerReviewOnlyAfterDeadline: boolean;
+  peerReviewOnlyAfterOwnSubmission: boolean;
 };
 
 export type CreateTeamAssignmentModalProps = {
@@ -161,6 +163,8 @@ export const CreateTeamAssignmentModal = ({
           juryCountPerDefendant: data.isPeerReviewEnabled
             ? Number(data.juryCountPerDefendant)
             : null,
+          peerReviewOnlyAfterDeadline: data.peerReviewOnlyAfterDeadline,
+          peerReviewOnlyAfterOwnSubmission: data.peerReviewOnlyAfterOwnSubmission,
         },
       });
       if (data.distributionType === TeamDistributionType.Random) {
@@ -177,6 +181,8 @@ export const CreateTeamAssignmentModal = ({
         content: { json: wrapInLexical('').json },
         isPeerReviewEnabled: false,
         juryCountPerDefendant: null,
+        peerReviewOnlyAfterDeadline: false,
+        peerReviewOnlyAfterOwnSubmission: false,
       },
     },
   );
@@ -269,16 +275,26 @@ export const CreateTeamAssignmentModal = ({
                 />
               </Field>
               {form.watch('isPeerReviewEnabled') && (
-                <Field title="Количество жюри на ответчика">
-                  <Input
-                    {...form.register('juryCountPerDefendant', {
-                      ...requiredRule(),
-                      min: { value: 1, message: 'Минимум 1' },
-                    })}
-                    type="number"
-                    errorText={form.formState.errors.juryCountPerDefendant?.message}
+                <>
+                  <Field title="Количество жюри на ответчика">
+                    <Input
+                      {...form.register('juryCountPerDefendant', {
+                        ...requiredRule(),
+                        min: { value: 1, message: 'Минимум 1' },
+                      })}
+                      type="number"
+                      errorText={form.formState.errors.juryCountPerDefendant?.message}
+                    />
+                  </Field>
+                  <CheckBox
+                    {...form.register('peerReviewOnlyAfterDeadline')}
+                    title="Проверка только после дедлайна"
                   />
-                </Field>
+                  <CheckBox
+                    {...form.register('peerReviewOnlyAfterOwnSubmission')}
+                    title="Проверка только после собственной сдачи"
+                  />
+                </>
               )}
               <Field title="Тип оценки" fieldClassName={styles.markType}>
                 <RadioButton

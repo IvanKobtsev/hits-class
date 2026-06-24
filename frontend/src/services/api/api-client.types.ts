@@ -506,6 +506,8 @@ export interface AssignmentPayload extends PublicationPayload  {
   deadlineCriteria: DeadlineCriteria | null;
   isPeerReviewEnabled: boolean;
   juryCountPerDefendant: number | null;
+  peerReviewOnlyAfterDeadline: boolean;
+  peerReviewOnlyAfterOwnSubmission: boolean;
 }
 export function deserializeAssignmentPayload(json: string): AssignmentPayload {
   const data = JSON.parse(json) as AssignmentPayload;
@@ -856,6 +858,8 @@ export interface PatchTeamAssignmentPayloadDto  {
   deadlineCriteria?: DeadlineCriteria | null;
   isPeerReviewEnabled?: boolean | null;
   juryCountPerDefendant?: number | null;
+  peerReviewOnlyAfterDeadline?: boolean | null;
+  peerReviewOnlyAfterOwnSubmission?: boolean | null;
 }
 export function deserializePatchTeamAssignmentPayloadDto(json: string): PatchTeamAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchTeamAssignmentPayloadDto;
@@ -1982,6 +1986,8 @@ export interface PatchAssignmentPayloadDto  {
   deadlineCriteria?: DeadlineCriteria | null;
   isPeerReviewEnabled?: boolean | null;
   juryCountPerDefendant?: number | null;
+  peerReviewOnlyAfterDeadline?: boolean | null;
+  peerReviewOnlyAfterOwnSubmission?: boolean | null;
 }
 export function deserializePatchAssignmentPayloadDto(json: string): PatchAssignmentPayloadDto {
   const data = JSON.parse(json) as PatchAssignmentPayloadDto;
