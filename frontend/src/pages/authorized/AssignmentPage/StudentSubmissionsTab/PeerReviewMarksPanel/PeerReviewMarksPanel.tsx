@@ -99,7 +99,10 @@ type ModalProps = {
 };
 
 const ReviewDetailModal: React.FC<ModalProps> = ({ peerReviewAssignmentId, onClose }) => {
-  const { data: review, isLoading } = useGetReviewQuery(peerReviewAssignmentId);
+  const { data: review, isLoading, isError } = useGetReviewQuery(
+    peerReviewAssignmentId,
+    { throwOnError: false, retry: false },
+  );
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -110,6 +113,10 @@ const ReviewDetailModal: React.FC<ModalProps> = ({ peerReviewAssignmentId, onClo
         </div>
 
         {isLoading && <div className={styles.loading}>Загрузка...</div>}
+
+        {isError && (
+          <div className={styles.loading}>Проверка не найдена или была удалена.</div>
+        )}
 
         {review && (
           <>

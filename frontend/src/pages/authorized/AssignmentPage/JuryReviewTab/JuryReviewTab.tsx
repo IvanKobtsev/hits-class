@@ -146,9 +146,9 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   const isChecked = assignment.state === PeerReviewState.Checked;
   const hasExistingReview = isReviewed || isChecked;
 
-  const { data: existingReview, isLoading: reviewLoading } = useGetReviewQuery(
+  const { data: existingReview, isLoading: reviewLoading, isError: reviewError } = useGetReviewQuery(
     assignment.id,
-    { enabled: hasExistingReview },
+    { enabled: hasExistingReview, throwOnError: false, retry: false },
   );
 
   const { data: defendantSubmission } = useGetSubmissionQuery(
@@ -265,8 +265,9 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
     updateMutation.mutate(dto);
   }, [criteria, finalMarkValue, comment, criteriaScores, criteriaNotes, updateMutation]);
 
-  const showForm = (!hasExistingReview) || (isReviewed && isEditing);
-  const showReadonly = hasExistingReview && !isEditing;
+  const reviewAvailable = hasExistingReview && !reviewError && !!existingReview;
+  const showForm = !reviewAvailable || (isReviewed && isEditing);
+  const showReadonly = reviewAvailable && !isEditing;
 
   if (reviewLoading && hasExistingReview) return <Loading loading />;
 
