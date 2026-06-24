@@ -163,6 +163,8 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
   const [clampMessage, setClampMessage] = useState('');
   const [comment, setComment] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const noSubmission = !assignment.submissionId;
 
   useEffect(() => {
     if (existingReview && hasExistingReview) {
@@ -187,16 +189,23 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
     void queryClient.invalidateQueries({ queryKey: getReviewQueryKey(assignment.id) });
   }, [queryClient, assignmentId, assignment.id]);
 
+  const handleMutationError = useCallback((e: any) => {
+    setErrorMessage(e?.detail ?? e?.message ?? 'Произошла ошибка');
+  }, []);
+
   const createMutation = useCreatePeerReviewMutation(assignment.id, {
-    onSuccess: () => { invalidateAll(); onBack(); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); onBack(); },
+    onError: handleMutationError,
   });
 
   const updateMutation = useUpdatePeerReviewMutation(existingReview?.id ?? 0, {
-    onSuccess: () => { invalidateAll(); setIsEditing(false); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); setIsEditing(false); },
+    onError: handleMutationError,
   });
 
   const deleteMutation = useDeletePeerReviewMutation(existingReview?.id ?? 0, {
-    onSuccess: () => { invalidateAll(); onBack(); },
+    onSuccess: () => { setErrorMessage(null); invalidateAll(); onBack(); },
+    onError: handleMutationError,
   });
 
   const scoreCriteria = criteria.filter((c) => c.type === CriteriaType.Score);
@@ -454,7 +463,7 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
             <button
               className={styles.markSaveButton}
               onClick={handleUpdateReview}
-              disabled={updateMutation.isPending || (!finalMarkValue && criteria.length > 0)}
+              disabled={updateMutation.isPending || noSubmission || (!finalMarkValue && criteria.length > 0)}
             >
               Сохранить изменения
             </button>
@@ -462,11 +471,22 @@ const JuryReviewForm: React.FC<ReviewFormProps> = ({
             <button
               className={styles.markSaveButton}
               onClick={handleSubmitReview}
-              disabled={createMutation.isPending || (!finalMarkValue && criteria.length > 0)}
+              disabled={createMutation.isPending || noSubmission || (!finalMarkValue && criteria.length > 0)}
             >
               Отправить проверку
             </button>
           )}
+        </div>
+      )}
+
+      {noSubmission && !hasExistingReview && (
+        <div className={styles.toast}>
+          Вы не можете оценить работу, пока её не прикрепили
+        </div>
+      )}
+      {errorMessage && (
+        <div className={styles.toast}>
+          {errorMessage}
         </div>
       )}
     </div>
