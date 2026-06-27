@@ -13,8 +13,10 @@ import { TeamsViewAsTeacher } from './TeamsView/TeamsViewAsTeacher.tsx';
 import { TeamsViewAsStudent } from './TeamsView/TeamsViewAsStudent.tsx';
 import { Links } from '../../../application/constants/links.ts';
 import { TeamSubmissionsView } from './TeamSubmissionsView/TeamSubmissionsView.tsx';
+import { PeerReviewMappingsPanel } from 'pages/authorized/OneCoursePage/PeerReviewMappingsPanel/PeerReviewMappingsPanel';
+import { JuryReviewTab } from '../AssignmentPage/JuryReviewTab/JuryReviewTab';
 
-type TabValue = 'assignment' | 'submissions' | 'teams';
+type TabValue = 'assignment' | 'submissions' | 'teams' | 'peer-review' | 'my-reviews';
 
 export const TeamAssignmentPage = () => {
   const params = Links.Authorized.TeamAssignmentRoutes.useParams();
@@ -28,6 +30,7 @@ export const TeamAssignmentPage = () => {
   if (!publication) return null;
 
   const payload = publication.publicationPayload as TeamAssignmentPayload;
+  const isPeerReviewEnabled = payload?.isPeerReviewEnabled;
 
   return (
     <div className={styles.page} data-test-id="TeamAssignmentPage">
@@ -53,6 +56,20 @@ export const TeamAssignmentPage = () => {
               label="Работы"
               value="submissions"
               data-test-id="TeamAssignmentPage-tab-submissions"
+            />
+          )}
+          {isTeacher && isPeerReviewEnabled && (
+            <Tab
+              label="P2P оценка"
+              value="peer-review"
+              data-test-id="TeamAssignmentPage-tab-peer-review"
+            />
+          )}
+          {!isTeacher && isPeerReviewEnabled && (
+            <Tab
+              label="Мои проверки"
+              value="my-reviews"
+              data-test-id="TeamAssignmentPage-tab-my-reviews"
             />
           )}
         </Tabs>
@@ -84,6 +101,24 @@ export const TeamAssignmentPage = () => {
         (isTeacher ? <TeamsViewAsTeacher /> : <TeamsViewAsStudent />)}
       {params.queryParams.tab === 'submissions' && isTeacher && (
         <TeamSubmissionsView />
+      )}
+      {params.queryParams.tab === 'peer-review' && isTeacher && isPeerReviewEnabled && (
+        <div className={styles.submissionsLayout}>
+          <PeerReviewMappingsPanel
+            publicationId={params.assignmentId}
+            courseId={params.courseId}
+          />
+        </div>
+      )}
+      {params.queryParams.tab === 'my-reviews' && !isTeacher && isPeerReviewEnabled && (
+        <div className={styles.submissionsLayout}>
+          <JuryReviewTab
+            assignmentId={params.assignmentId}
+            criteria={publication.criteria}
+            minMark={payload?.minMark ?? null}
+            maxMark={payload?.maxMark ?? null}
+          />
+        </div>
       )}
     </div>
   );

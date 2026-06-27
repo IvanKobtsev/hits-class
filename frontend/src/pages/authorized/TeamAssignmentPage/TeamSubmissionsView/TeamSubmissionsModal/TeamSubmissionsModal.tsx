@@ -24,6 +24,7 @@ import { AttachmentsList } from '../../../OneCoursePage/PublicatonsList/Publicat
 import { useState } from 'react';
 import { Field } from 'components/uikit/Field';
 import { Input } from 'components/uikit/inputs/Input';
+import { PeerReviewMarksPanel } from '../../../AssignmentPage/StudentSubmissionsTab/PeerReviewMarksPanel/PeerReviewMarksPanel';
 
 type TeamSubmissionsModalProps = {
   assignmentId: number;
@@ -35,6 +36,7 @@ type TeamSubmissionsModalProps = {
 };
 
 export const TeamSubmissionsModal = ({
+  assignmentId,
   teamId,
   isOpen,
   onClose,
@@ -108,6 +110,13 @@ export const TeamSubmissionsModal = ({
               attachments={teamSubmissionQuery.data?.attachments}
               onError={() => null}
             />
+            {assignmentPayload.isPeerReviewEnabled && teamSubmissionQuery.data.members.map((m) => (
+              <PeerReviewMarksPanel
+                key={m.user.id}
+                assignmentId={assignmentId}
+                defendantUserId={m.user.id}
+              />
+            ))}
             <div className={styles.footer}>
               <Button
                 variant="contained"
